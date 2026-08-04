@@ -1,0 +1,34 @@
+{
+  "cashIn": [
+    "Salary",
+    "Business Income",
+    "Freelance Income",
+    "Interest",
+    "Rental Income",
+    "Refund",
+    "Gift Received",
+    "Savings",
+    "Other"
+  ],
+  "cashOut": [
+    "Groceries",
+    "Food and Dining",
+    "Rent",
+    "Electricity",
+    "Water",
+    "Gas",
+    "Mobile Recharge",
+    "Internet",
+    "Transportation",
+    "Fuel",
+    "Medical",
+    "Education",
+    "Shopping",
+    "Entertainment",
+    "Home Maintenance",
+    "Insurance",
+    "EMI/Loan",
+    "Gifts",
+    "Other"
+  ]
+}
