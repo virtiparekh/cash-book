@@ -1,0 +1,24 @@
+.select-group {
+  margin-bottom: 20px;
+}
+
+.select-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.select-field {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 15px;
+  background: white;
+}
+
+.select-field:focus {
+  outline: none;
+  border-color: #2563eb;
+}

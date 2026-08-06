@@ -1,11 +1,31 @@
-import {
-//   FormEvent,
-  useState,
-} from "react";
+import { useState } from "react";
 
+import "./../styles/CashBookSetupPage.css";
 import {
-  createCashBookGroup,
-} from "../services/cashBookService";
+  DEFAULT_CURRENCY,
+  DEFAULT_OPENING_BALANCE,
+} from "../constants/app";
+import Card from "../components/common/Card/Card";
+import Button from "../components/common/Button/Button";
+import Input from "../components/common/Input/Input";
+import NumberInput from "../components/common/NumberInput/NumberInput";
+import Select from "../components/common/Select/Select";
+import TextArea from "../components/common/TextArea/TextArea";
+import PageHeader from "../components/common/PageHeader/PageHeader";
+import { CURRENCY_OPTIONS } from "../constants/currencies";
+import { loadMyCashBookGroups } from "../services/groupService";
+import Alert from "../components/common/Alert/Alert";
+import Loader from "../components/common/Loader/Loader";
+
+import { createCashBookGroup }
+  from "../services/cashBookService";
+
+import { validateCashBook }
+  from "../utils/cashBookValidation";
+
+import { useCashBook }
+  from "../hooks/useCashBook";
+
 
 type CashBookSetupPageProps = {
   defaultOwnerName: string;
@@ -16,370 +36,222 @@ type CashBookSetupPageProps = {
 
 function CashBookSetupPage({
   defaultOwnerName,
-  onGroupCreated,
+  onGroupCreated
 }: CashBookSetupPageProps) {
+
   const [cashBookName, setCashBookName] =
     useState("");
 
-  const [
-    description,
-    setDescription,
-  ] = useState("");
+  const [description, setDescription] =
+    useState("");
 
-  const [
-    ownerName,
-    setOwnerName,
-  ] = useState(defaultOwnerName);
+  const [ownerName, setOwnerName] =
+    useState(defaultOwnerName);
+
+  const [currencyCode, setCurrencyCode] =
+    useState(DEFAULT_CURRENCY)
 
   const [
     openingBalance,
     setOpeningBalance,
-  ] = useState("0");
+  ] = useState(DEFAULT_OPENING_BALANCE)
 
   const [loading, setLoading] =
     useState(false);
 
-  const [
-    errorMessage,
-    setErrorMessage,
-  ] = useState("");
+  const [errorMessage, setErrorMessage] =
+    useState("");
+
+  const {
+    setSelectedCashBook,
+  } = useCashBook();
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>
   ): Promise<void> => {
+
+    if (loading) {
+      return;
+    }
+
     event.preventDefault();
 
     setErrorMessage("");
 
-    const trimmedCashBookName =
-      cashBookName.trim();
-
-    const trimmedOwnerName =
-      ownerName.trim();
-
-    const parsedOpeningBalance =
-      Number(openingBalance);
-
-    if (!trimmedCashBookName) {
-      setErrorMessage(
-        "Please enter a cash book name."
+    const validationError =
+      validateCashBook(
+        cashBookName,
+        ownerName,
+        openingBalance
       );
-      return;
-    }
 
-    if (!trimmedOwnerName) {
-      setErrorMessage(
-        "Please enter the owner name."
-      );
-      return;
-    }
-
-    if (
-      Number.isNaN(
-        parsedOpeningBalance
-      )
-    ) {
-      setErrorMessage(
-        "Opening balance must be a valid number."
-      );
-      return;
-    }
-
-    if (
-      parsedOpeningBalance < 0
-    ) {
-      setErrorMessage(
-        "Opening balance cannot be negative."
-      );
+    if (validationError) {
+      setErrorMessage(validationError);
       return;
     }
 
     try {
+
       setLoading(true);
 
       const groupId =
         await createCashBookGroup({
-          name:
-            trimmedCashBookName,
-          description:
-            description.trim(),
-          currencyCode:
-            "INR",
-          openingBalance:
-            parsedOpeningBalance,
-          ownerName:
-            trimmedOwnerName,
+
+          name: cashBookName.trim(),
+
+          description: description.trim(),
+
+          currencyCode,
+
+          openingBalance,
+
+          ownerName: ownerName.trim(),
+
         });
 
-      onGroupCreated(groupId);
-    } catch (error: unknown) {
+      const groups =
+        await loadMyCashBookGroups();
+
+      const createdGroup =
+        groups.find(
+          (group) => group.id === groupId
+        );
+
+      if (!createdGroup) {
+        throw new Error(
+          "Unable to load the newly created Cash Book."
+        );
+      }
+
+      setSelectedCashBook(createdGroup);
+
+      onGroupCreated(createdGroup.id);
+
+    }
+
+    catch (error: unknown) {
+
       const message =
         error instanceof Error
           ? error.message
-          : "Unable to create the cash book.";
+          : "Unable to create Cash Book.";
 
       setErrorMessage(message);
-    } finally {
-      setLoading(false);
+
     }
+
+    finally {
+
+      setLoading(false);
+
+    }
+
   };
-
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        padding: "24px",
-      }}
-    >
-      <section
-        style={{
-          width: "100%",
-          maxWidth: "600px",
-          padding: "32px",
-          border:
-            "1px solid #d1d5db",
-          borderRadius: "16px",
-        }}
-      >
-        <h1>
-          Create Your Cash Book
-        </h1>
+    <main className="cashbook-setup-page">
 
-        <p>
-          Set up your family cash book.
-          You will become the group
-          administrator.
-        </p>
+      <div className="cashbook-setup-container">
 
-        {errorMessage && (
-          <div
-            role="alert"
-            style={{
-              marginBottom:
-                "16px",
-              padding: "12px",
-              border:
-                "1px solid #dc2626",
-              borderRadius:
-                "8px",
-            }}
-          >
-            {errorMessage}
-          </div>
-        )}
+        <Card className="cashbook-card">
 
-        <form
-          onSubmit={handleSubmit}
-        >
-          <div
-            style={{
-              marginBottom:
-                "16px",
-            }}
-          >
-            <label
-              htmlFor="cashBookName"
-            >
-              Cash Book Name
-            </label>
+          <PageHeader
+            title="Create Your Family Cash Book"
+            subtitle="Track income, expenses and balances together with your family."
+          />
 
-            <input
-              id="cashBookName"
-              type="text"
+          {errorMessage && (
+            <Alert variant="error">
+              {errorMessage}
+            </Alert>
+          )}
+
+          <form onSubmit={handleSubmit}
+            autoComplete="off">
+
+            <Input
+              label="Cash Book Name"
               value={cashBookName}
-              onChange={(
-                event
-              ) => {
-                setCashBookName(
-                  event.target.value
-                );
-              }}
-              placeholder={
-                "Parekh Family Cash Book"
-              }
+              required={true}
               disabled={loading}
-              required
-              style={{
-                width: "100%",
-                marginTop:
-                  "6px",
-                padding:
-                  "12px",
-                boxSizing:
-                  "border-box",
+              placeholder="e.g. Parekh Family Cash Book"
+              onChange={(event) => {
+                setErrorMessage("");
+                setCashBookName(event.target.value);
               }}
             />
-          </div>
 
-          <div
-            style={{
-              marginBottom:
-                "16px",
-            }}
-          >
-            <label
-              htmlFor="description"
-            >
-              Description
-              {" "}
-              (Optional)
-            </label>
-
-            <textarea
-              id="description"
+            <TextArea
+              label="Description"
               value={description}
-              onChange={(
-                event
-              ) => {
-                setDescription(
-                  event.target.value
-                );
-              }}
-              placeholder={
-                "Family daily income and expenses"
-              }
               disabled={loading}
-              rows={3}
-              style={{
-                width: "100%",
-                marginTop:
-                  "6px",
-                padding:
-                  "12px",
-                boxSizing:
-                  "border-box",
-                resize:
-                  "vertical",
+              placeholder="Optional description"
+              onChange={(event) => {
+                setErrorMessage("");
+                setDescription(event.target.value);
               }}
             />
-          </div>
 
-          <div
-            style={{
-              marginBottom:
-                "16px",
-            }}
-          >
-            <label
-              htmlFor="ownerName"
-            >
-              Owner Name
-            </label>
-
-            <input
-              id="ownerName"
-              type="text"
+            <Input
+              label="Owner Name"
               value={ownerName}
-              onChange={(
-                event
-              ) => {
-                setOwnerName(
-                  event.target.value
-                );
-              }}
               disabled={loading}
-              required
-              style={{
-                width: "100%",
-                marginTop:
-                  "6px",
-                padding:
-                  "12px",
-                boxSizing:
-                  "border-box",
+              required={true}
+              placeholder="Owner name"
+              onChange={(event) => {
+                setErrorMessage("");
+                setOwnerName(event.target.value);
               }}
             />
-          </div>
 
-          <div
-            style={{
-              marginBottom:
-                "16px",
-            }}
-          >
-            <label
-              htmlFor="currency"
-            >
-              Currency
-            </label>
-
-            <input
-              id="currency"
-              type="text"
-              value="INR (₹)"
-              disabled
-              style={{
-                width: "100%",
-                marginTop:
-                  "6px",
-                padding:
-                  "12px",
-                boxSizing:
-                  "border-box",
+            <Select
+              label="Currency"
+              disabled={loading}
+              value={currencyCode}
+              options={CURRENCY_OPTIONS}
+              onChange={(event) => {
+                setErrorMessage("");
+                setCurrencyCode(event.target.value);
               }}
             />
-          </div>
 
-          <div
-            style={{
-              marginBottom:
-                "20px",
-            }}
-          >
-            <label
-              htmlFor="openingBalance"
-            >
-              Opening Balance
-            </label>
-
-            <input
-              id="openingBalance"
-              type="number"
+            <NumberInput
+              label="Opening Balance"
+              disabled={loading}
               value={openingBalance}
-              onChange={(
-                event
-              ) => {
-                setOpeningBalance(
-                  event.target.value
-                );
-              }}
-              min="0"
-              step="0.01"
-              disabled={loading}
-              required
-              style={{
-                width: "100%",
-                marginTop:
-                  "6px",
-                padding:
-                  "12px",
-                boxSizing:
-                  "border-box",
+              onChange={(value) => {
+                setErrorMessage("");
+                setOpeningBalance(value);
               }}
             />
-          </div>
+            <p className="cashbook-help-text">
+              You can keep this as 0 if you're starting fresh.
+            </p>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding:
-                "12px",
-              cursor:
-                loading
-                  ? "wait"
-                  : "pointer",
-            }}
-          >
-            {loading
-              ? "Creating Cash Book..."
-              : "Create Cash Book"}
-          </button>
-        </form>
-      </section>
+            <div className="cashbook-actions">
+
+              <Button
+                type="submit"
+                disabled={loading}
+              >
+
+                {loading ? (
+                  <Loader
+                    text="Creating Cash Book..."
+                  />
+                ) : (
+                  "Create Cash Book"
+                )}
+
+              </Button>
+
+            </div>
+
+          </form>
+
+        </Card>
+
+      </div>
+
     </main>
   );
 }

@@ -1,0 +1,49 @@
+.cashbook-setup-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f8fafc;
+  padding: 32px;
+}
+
+.cashbook-setup-container {
+  width: 100%;
+  max-width: 700px;
+}
+
+.cashbook-card {
+  width: 100%;
+}
+
+.cashbook-actions {
+  margin-top: 24px;
+}
+
+.cashbook-actions button {
+  width: 100%;
+}
+
+.cashbook-card {
+  padding: 36px;
+}
+
+.cashbook-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.cashbook-actions {
+  margin-top: 16px;
+}
+
+.cashbook-actions button {
+  width: 100%;
+}
+
+.cashbook-help-text {
+  margin-top: -12px;
+  margin-bottom: 18px;
+  font-size: 13px;
+  color: #6b7280;
+}

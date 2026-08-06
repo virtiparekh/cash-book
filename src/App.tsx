@@ -7,6 +7,8 @@ import DashboardPage from "./pages/DashboardPage";
 import CashBookSetupPage from "./pages/CashBookSetupPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
+import { useCashBook } from "./hooks/useCashBook";
+import { useEffect } from "react";
 
 function App() {
   const {
@@ -21,10 +23,31 @@ function App() {
     error,
   } = useCashBookGroups();
 
+  const {
+    selectedCashBook,
+    setSelectedCashBook,
+  } = useCashBook();
+
   const [authPage, setAuthPage] = useState<"login" | "signup">("login");
 
-  // Temporary debugging
-  console.log("Groups:", groups);
+  useEffect(() => {
+
+    if (
+      groups.length > 0 &&
+      !selectedCashBook
+    ) {
+
+      setSelectedCashBook(
+        groups[0]
+      );
+
+    }
+
+  }, [
+    groups,
+    selectedCashBook,
+    setSelectedCashBook,
+  ]);
 
   // Authentication loading
   if (authLoading) {
@@ -115,6 +138,19 @@ function App() {
     );
   }
 
+  if (!selectedCashBook) {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        <p>Loading your Cash Book...</p>
+      </main>
+    );
+  }
   // Dashboard
   return (
     <DashboardPage

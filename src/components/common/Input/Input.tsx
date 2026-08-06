@@ -8,7 +8,7 @@ import {
 type InputProps = {
   label: string;
   type?: React.HTMLInputTypeAttribute;
-  value: string;
+  value: string | number;
   onChange: (
     event: React.ChangeEvent<HTMLInputElement>
   ) => void;

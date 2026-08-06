@@ -1,0 +1,25 @@
+.textarea-group {
+  margin-bottom: 20px;
+}
+
+.textarea-label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.textarea-field {
+  width: 100%;
+  padding: 12px;
+  resize: vertical;
+  min-height: 110px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  box-sizing: border-box;
+  font-size: 15px;
+}
+
+.textarea-field:focus {
+  outline: none;
+  border-color: #2563eb;
+}
