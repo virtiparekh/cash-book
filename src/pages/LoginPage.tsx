@@ -1,9 +1,12 @@
-import {
-//   FormEvent,
-  useState,
-} from "react";
-
+import { useState } from "react";
+import "./../styles/LoginPage.css";
+import Logo from "../components/common/Logo/Logo";
 import { supabase } from "../lib/supabase";
+import Button from "../components/common/Button/Button";
+import Input from "../components/common/Input/Input";
+import Card from "../components/common/Card/Card";
+import Alert from "../components/common/Alert/Alert";
+import Loader from "../components/common/Loader/Loader";
 
 type LoginPageProps = {
   onShowSignup: () => void;
@@ -50,12 +53,11 @@ function LoginPage({
     try {
       setLoading(true);
 
-      const {
-        error,
-      } = await supabase.auth.signInWithPassword({
-        email: trimmedEmail,
-        password,
-      });
+      const { error } =
+        await supabase.auth.signInWithPassword({
+          email: trimmedEmail,
+          password,
+        });
 
       if (error) {
         throw error;
@@ -64,7 +66,7 @@ function LoginPage({
       const message =
         error instanceof Error
           ? error.message
-          : "Unable to log in. Please try again.";
+          : "Unable to login.";
 
       setErrorMessage(message);
     } finally {
@@ -73,144 +75,130 @@ function LoginPage({
   };
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        padding: "24px",
-      }}
-    >
-      <section
-        style={{
-          width: "100%",
-          maxWidth: "460px",
-          padding: "32px",
-          border: "1px solid #d1d5db",
-          borderRadius: "16px",
-        }}
-      >
-        <h1>Family Cash Book</h1>
+    <main className="login-page">
 
-        <h2>Welcome back</h2>
+      <div className="login-container">
 
-        <p>
-          Log in to access your family
-          cash books.
-        </p>
+        <section className="login-brand">
 
-        {errorMessage && (
-          <div
-            role="alert"
-            style={{
-              marginBottom: "16px",
-              padding: "12px",
-              border: "1px solid #dc2626",
-              borderRadius: "8px",
-            }}
-          >
-            {errorMessage}
-          </div>
-        )}
+          <Logo />
 
-        <form
-          onSubmit={handleLogin}
-        >
-          <div
-            style={{
-              marginBottom: "16px",
-            }}
-          >
-            <label htmlFor="loginEmail">
-              Email Address
-            </label>
+          <p>
+            A simple and secure way
+            for your family to manage
+            income, expenses and
+            shared cash books together.
+          </p>
 
-            <input
-              id="loginEmail"
-              type="email"
-              value={email}
-              onChange={(event) => {
-                setEmail(
-                  event.target.value
-                );
-              }}
-              placeholder="name@example.com"
-              autoComplete="email"
-              disabled={loading}
-              required
-              style={{
-                width: "100%",
-                marginTop: "6px",
-                padding: "12px",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
+        </section>
 
-          <div
-            style={{
-              marginBottom: "20px",
-            }}
-          >
-            <label htmlFor="loginPassword">
-              Password
-            </label>
+        <section>
+          <Card className="login-card">
+            <h2>
+              Welcome Back
+            </h2>
 
-            <input
-              id="loginPassword"
-              type="password"
-              value={password}
-              onChange={(event) => {
-                setPassword(
-                  event.target.value
-                );
-              }}
-              placeholder="Enter your password"
-              autoComplete="current-password"
-              disabled={loading}
-              required
-              style={{
-                width: "100%",
-                marginTop: "6px",
-                padding: "12px",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
+            <p>
+              Login to continue
+            </p>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              padding: "12px",
-              cursor: loading
-                ? "wait"
-                : "pointer",
-            }}
-          >
-            {loading
-              ? "Logging in..."
-              : "Login"}
-          </button>
-        </form>
+            {errorMessage && (
+              <Alert variant="error">
+                {errorMessage}
+              </Alert>
+            )}
 
-        <p
-          style={{
-            marginTop: "20px",
-          }}
-        >
-          New to Family Cash Book?{" "}
+            <form
+              onSubmit={handleLogin}
+            >
 
-          <button
-            type="button"
-            onClick={onShowSignup}
-            disabled={loading}
-          >
-            Create an account
-          </button>
-        </p>
-      </section>
+              <Input
+                label="Email Address"
+                type="email"
+                value={email}
+                placeholder="name@example.com"
+                disabled={loading}
+                required={true}
+                autoComplete="email"
+                onChange={(event) =>
+                  setEmail(event.target.value)
+                }
+              />
+
+              <Input
+                label="Password"
+                type="password"
+                value={password}
+                placeholder="Enter password"
+                disabled={loading}
+                required={true}
+                autoComplete="current-password"
+                onChange={(event) =>
+                  setPassword(event.target.value)
+                }
+              />
+
+              <div className="login-options">
+
+                <label className="remember-me">
+
+                  <input
+                    type="checkbox"
+                  />
+
+                  {" "}
+                  Remember Me
+
+                </label>
+
+              </div>
+
+              <div className="login-actions">
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <Loader text="Logging In..." />
+                  ) : (
+                    "Login"
+                  )}
+                </Button>
+
+              </div>
+
+            </form>
+
+            <div className="login-footer">
+
+              <p>
+
+                Don't have an account?
+
+              </p>
+              <p>
+                Secure login powered by Supabase Authentication.
+              </p>
+
+              <Button
+                variant="secondary"
+                onClick={onShowSignup}
+              >
+                Create Account
+              </Button>
+
+              <div className="login-bottom-text">
+                © 2026 Family Cash Book
+              </div>
+
+            </div>
+          </Card>
+
+        </section>
+
+      </div>
+
     </main>
   );
 }

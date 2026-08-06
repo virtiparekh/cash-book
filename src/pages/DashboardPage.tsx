@@ -1,14 +1,18 @@
+import { useCashBook } from "../hooks/useCashBook";
+
 type DashboardPageProps = {
-  groupId: string;
   userEmail: string;
   onLogout: () => void;
 };
 
 function DashboardPage({
-  groupId,
   userEmail,
   onLogout,
 }: DashboardPageProps) {
+
+  const {
+    selectedCashBook,
+  } = useCashBook();
   return (
     <main
       style={{
@@ -47,15 +51,26 @@ function DashboardPage({
 
         <p
           style={{
-            marginTop:
-              "24px",
+            marginTop: "24px",
           }}
         >
-          Cash Book Group ID:
+          Current Cash Book
         </p>
 
         <code>
-          {groupId}
+          {selectedCashBook?.name}
+        </code>
+
+        <br />
+
+        <code>
+          {selectedCashBook?.id}
+        </code>
+
+        <br />
+
+        <code>
+          {selectedCashBook?.role}
         </code>
 
         <p

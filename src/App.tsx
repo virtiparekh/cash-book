@@ -1,9 +1,7 @@
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useState } from "react";
 
 import { useAuth } from "./contexts/AuthContext";
+import { useCashBookGroups } from "./hooks/useCashBookGroups";
 
 import DashboardPage from "./pages/DashboardPage";
 import CashBookSetupPage from "./pages/CashBookSetupPage";
@@ -13,27 +11,23 @@ import SignupPage from "./pages/SignupPage";
 function App() {
   const {
     user,
-    loading,
+    loading: authLoading,
     signOut,
   } = useAuth();
 
-  const [authPage, setAuthPage] =
-    useState<"login" | "signup">(
-      "login"
-    );
+  const {
+    groups,
+    loading: groupsLoading,
+    error,
+  } = useCashBookGroups();
 
-  const [groupId, setGroupId] =
-    useState<string | null>(
-      null
-    );
+  const [authPage, setAuthPage] = useState<"login" | "signup">("login");
 
-  useEffect(() => {
-    if (!user) {
-      setGroupId(null);
-    }
-  }, [user]);
+  // Temporary debugging
+  console.log("Groups:", groups);
 
-  if (loading) {
+  // Authentication loading
+  if (authLoading) {
     return (
       <main
         style={{
@@ -42,23 +36,18 @@ function App() {
           placeItems: "center",
         }}
       >
-        <p>
-          Loading Family Cash Book...
-        </p>
+        <p>Loading Family Cash Book...</p>
       </main>
     );
   }
 
+  // Login / Signup
   if (!user) {
-    if (
-      authPage === "signup"
-    ) {
+    if (authPage === "signup") {
       return (
         <SignupPage
           onShowLogin={() => {
-            setAuthPage(
-              "login"
-            );
+            setAuthPage("login");
           }}
         />
       );
@@ -67,44 +56,69 @@ function App() {
     return (
       <LoginPage
         onShowSignup={() => {
-          setAuthPage(
-            "signup"
-          );
+          setAuthPage("signup");
         }}
       />
     );
   }
 
-  if (!groupId) {
+  // Cash Book loading
+  if (groupsLoading) {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        <p>Loading your Cash Books...</p>
+      </main>
+    );
+  }
+
+  // Error while loading groups
+  if (error) {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+          padding: "2rem",
+        }}
+      >
+        <div>
+          <h2>Unable to load your Cash Books</h2>
+          <p>{error}</p>
+        </div>
+      </main>
+    );
+  }
+
+  // First-time user
+  if (groups.length === 0) {
     const defaultOwnerName =
-      typeof user.user_metadata
-        ?.full_name === "string"
-        ? user.user_metadata
-            .full_name
+      typeof user.user_metadata?.full_name === "string"
+        ? user.user_metadata.full_name
         : "";
 
     return (
       <CashBookSetupPage
-        defaultOwnerName={
-          defaultOwnerName
-        }
-        onGroupCreated={(
-          createdGroupId
-        ) => {
-          setGroupId(
-            createdGroupId
-          );
+        defaultOwnerName={defaultOwnerName}
+        onGroupCreated={() => {
+          // Nothing required.
+          // useCashBookGroups() will automatically reload
+          // in the next phase.
         }}
       />
     );
   }
 
+  // Dashboard
   return (
     <DashboardPage
-      groupId={groupId}
-      userEmail={
-        user.email ?? ""
-      }
+      userEmail={user.email ?? ""}
       onLogout={() => {
         void signOut();
       }}

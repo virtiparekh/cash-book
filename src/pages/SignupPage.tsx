@@ -1,8 +1,17 @@
-import {
-    useState,
-    //   type FormEvent,
-} from "react";
+import { useState } from "react";
 import { supabase } from "../lib/supabase";
+
+import "./../styles/SignupPage.css";
+
+import Logo from "../components/common/Logo/Logo";
+import Card from "../components/common/Card/Card";
+import Button from "../components/common/Button/Button";
+import Input from "../components/common/Input/Input";
+import Alert from "../components/common/Alert/Alert";
+import Loader from "../components/common/Loader/Loader";
+import {
+    getPasswordStrength,
+} from "../utils/passwordUtils";
 
 type SignupPageProps = {
     onShowLogin: () => void;
@@ -14,18 +23,27 @@ function SignupPage({
     const [fullName, setFullName] =
         useState("");
 
-    const [email, setEmail] =
-        useState("");
-
     const [contactNo, setContactNo] =
         useState("");
 
+    const [email, setEmail] =
+        useState("");
 
     const [password, setPassword] =
         useState("");
 
-    const [confirmPassword, setConfirmPassword] =
-        useState("");
+    const [
+        confirmPassword,
+        setConfirmPassword,
+    ] = useState("");
+
+    const passwordStrength =
+        getPasswordStrength(password);
+
+    const passwordsMatch =
+        password.length > 0 &&
+        confirmPassword.length > 0 &&
+        password === confirmPassword;
 
     const [loading, setLoading] =
         useState(false);
@@ -44,12 +62,36 @@ function SignupPage({
         setErrorMessage("");
         setSuccessMessage("");
 
-        const trimmedName = fullName.trim();
-        const trimmedEmail = email.trim();
+        const trimmedName =
+            fullName.trim();
+
+        const trimmedEmail =
+            email.trim();
+
+        const trimmedContactNo =
+            contactNo.trim();
 
         if (!trimmedName) {
             setErrorMessage(
                 "Please enter your full name."
+            );
+            return;
+        }
+
+        if (!trimmedContactNo) {
+            setErrorMessage(
+                "Please enter your contact number."
+            );
+            return;
+        }
+
+        if (
+            !/^[0-9]{10}$/.test(
+                trimmedContactNo
+            )
+        ) {
+            setErrorMessage(
+                "Please enter a valid 10-digit contact number."
             );
             return;
         }
@@ -61,23 +103,6 @@ function SignupPage({
             return;
         }
 
-        const trimmedContactNo =
-            contactNo.trim();
-
-        if (!trimmedContactNo) {
-            setErrorMessage(
-                "Please enter your contact number."
-            );
-            return;
-        }
-
-        if (!/^[0-9]{10}$/.test(trimmedContactNo)) {
-            setErrorMessage(
-                "Please enter a valid 10-digit contact number."
-            );
-            return;
-        }
-
         if (password.length < 6) {
             setErrorMessage(
                 "Password must contain at least 6 characters."
@@ -85,7 +110,10 @@ function SignupPage({
             return;
         }
 
-        if (password !== confirmPassword) {
+        if (
+            password !==
+            confirmPassword
+        ) {
             setErrorMessage(
                 "Passwords do not match."
             );
@@ -98,16 +126,19 @@ function SignupPage({
             const {
                 data,
                 error,
-            } = await supabase.auth.signUp({
-                email: trimmedEmail,
-                password,
-                options: {
-                    data: {
-                        full_name: trimmedName,
-                        contact_no: trimmedContactNo,
+            } =
+                await supabase.auth.signUp({
+                    email: trimmedEmail,
+                    password,
+                    options: {
+                        data: {
+                            full_name:
+                                trimmedName,
+                            contact_no:
+                                trimmedContactNo,
+                        },
                     },
-                },
-            });
+                });
 
             if (error) {
                 throw error;
@@ -115,21 +146,24 @@ function SignupPage({
 
             if (data.session) {
                 setSuccessMessage(
-                    "Your account was created successfully."
+                    "Account created successfully."
                 );
             } else {
                 setSuccessMessage(
-                    "Your account was created. Please check your email and confirm your account before logging in."
+                    "Account created. Please verify your email before logging in."
                 );
             }
+
+            setFullName("");
             setContactNo("");
+            setEmail("");
             setPassword("");
             setConfirmPassword("");
         } catch (error: unknown) {
             const message =
                 error instanceof Error
                     ? error.message
-                    : "Unable to create your account.";
+                    : "Unable to create account.";
 
             setErrorMessage(message);
         } finally {
@@ -138,265 +172,204 @@ function SignupPage({
     };
 
     return (
-        <main
-            style={{
-                minHeight: "100vh",
-                display: "grid",
-                placeItems: "center",
-                padding: "24px",
-            }}
-        >
-            <section
-                style={{
-                    width: "100%",
-                    maxWidth: "460px",
-                    padding: "32px",
-                    border: "1px solid #d1d5db",
-                    borderRadius: "16px",
-                }}
-            >
-                <h1>Family Cash Book</h1>
+        <main className="signup-page">
 
-                <h2>Create your account</h2>
+            <div className="signup-container">
 
+                <section className="signup-brand">
 
-                {errorMessage && (
-                    <div
-                        role="alert"
-                        style={{
-                            marginBottom: "16px",
-                            padding: "12px",
-                            borderRadius: "8px",
-                            border: "1px solid #dc2626",
-                        }}
-                    >
-                        {errorMessage}
-                    </div>
-                )}
+                    <Logo />
 
-                {successMessage && (
-                    <div
-                        role="status"
-                        style={{
-                            marginBottom: "16px",
-                            padding: "12px",
-                            borderRadius: "8px",
-                            border: "1px solid #16a34a",
-                        }}
-                    >
-                        {successMessage}
-                    </div>
-                )}
+                    <p>
+                        Manage your family's finances
+                        securely from anywhere.
+                    </p>
 
-                <form
-                    onSubmit={handleSignup}
-                >
-                    <div
-                        style={{
-                            marginBottom: "16px",
-                        }}
-                    >
-                        <label
-                            htmlFor="fullName"
+                </section>
+
+                <section>
+
+                    <Card className="signup-card">
+
+                        <h2>Create Account</h2>
+
+                        <p>
+                            Join your family cash book.
+                        </p>
+
+                        {errorMessage && (
+                            <Alert variant="error">
+                                {errorMessage}
+                            </Alert>
+                        )}
+
+                        {successMessage && (
+                            <Alert variant="success">
+                                {successMessage}
+                            </Alert>
+                        )}
+
+                        <form
+                            onSubmit={handleSignup}
                         >
-                            Full Name
-                        </label>
 
-                        <input
-                            id="fullName"
-                            type="text"
-                            value={fullName}
-                            onChange={(event) => {
-                                setFullName(
-                                    event.target.value
-                                );
-                            }}
-                            placeholder="Enter your full name"
-                            autoComplete="name"
-                            disabled={loading}
-                            required
-                            style={{
-                                width: "100%",
-                                marginTop: "6px",
-                                padding: "12px",
-                                boxSizing: "border-box",
-                            }}
-                        />
-                    </div>
+                            <Input
+                                label="Full Name"
+                                value={fullName}
+                                required={true}
+                                disabled={loading}
+                                placeholder="Enter your full name"
+                                autoComplete="name"
+                                onChange={(event) =>
+                                    setFullName(
+                                        event.target.value
+                                    )
+                                }
+                            />
 
-                    <div
-                        style={{
-                            marginBottom: "16px",
-                        }}
-                    >
-                        <label
-                            htmlFor="email"
-                        >
-                            Email Address
-                        </label>
+                            <Input
+                                label="Contact Number"
+                                type="tel"
+                                value={contactNo}
+                                required={true}
+                                disabled={loading}
+                                placeholder="9876543210"
+                                autoComplete="tel"
+                                onChange={(event) =>
+                                    setContactNo(
+                                        event.target.value.replace(
+                                            /\D/g,
+                                            ""
+                                        ).slice(0, 10)
+                                    )
+                                }
+                            />
 
-                        <input
-                            id="email"
-                            type="email"
-                            value={email}
-                            onChange={(event) => {
-                                setEmail(
-                                    event.target.value
-                                );
-                            }}
-                            placeholder="name@example.com"
-                            autoComplete="email"
-                            disabled={loading}
-                            required
-                            style={{
-                                width: "100%",
-                                marginTop: "6px",
-                                padding: "12px",
-                                boxSizing: "border-box",
-                            }}
-                        />
-                    </div>
+                            <Input
+                                label="Email Address"
+                                type="email"
+                                value={email}
+                                required={true}
+                                disabled={loading}
+                                placeholder="name@example.com"
+                                autoComplete="email"
+                                onChange={(event) =>
+                                    setEmail(
+                                        event.target.value
+                                    )
+                                }
+                            />
 
-                    <div
-                        style={{
-                            marginBottom: "16px",
-                        }}
-                    >
-                        <label htmlFor="contactNo">
-                            Contact Number
-                        </label>
+                            <Input
+                                label="Password"
+                                type="password"
+                                value={password}
+                                required={true}
+                                disabled={loading}
+                                placeholder="Minimum 6 characters"
+                                autoComplete="new-password"
+                                onChange={(event) =>
+                                    setPassword(event.target.value)
+                                }
+                            />
 
-                        <input
-                            id="contactNo"
-                            type="tel"
-                            value={contactNo}
-                            onChange={(event) => {
-                                const numbersOnly =
-                                    event.target.value.replace(
-                                        /\D/g,
-                                        ""
-                                    );
+                            <p className="password-strength">
 
-                                setContactNo(
-                                    numbersOnly.slice(0, 10)
-                                );
-                            }}
-                            placeholder="Enter 10-digit mobile number"
-                            autoComplete="tel"
-                            inputMode="numeric"
-                            maxLength={10}
-                            disabled={loading}
-                            required
-                            style={{
-                                width: "100%",
-                                marginTop: "6px",
-                                padding: "12px",
-                                boxSizing: "border-box",
-                            }}
-                        />
-                    </div>
+                                Password Strength :
 
-                    <div
-                        style={{
-                            marginBottom: "16px",
-                        }}
-                    >
-                        <label
-                            htmlFor="password"
-                        >
-                            Password
-                        </label>
+                                <span>
 
-                        <input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(event) => {
-                                setPassword(
-                                    event.target.value
-                                );
-                            }}
-                            placeholder="Minimum 6 characters"
-                            autoComplete="new-password"
-                            disabled={loading}
-                            required
-                            minLength={6}
-                            style={{
-                                width: "100%",
-                                marginTop: "6px",
-                                padding: "12px",
-                                boxSizing: "border-box",
-                            }}
-                        />
-                    </div>
+                                    {passwordStrength === "Weak" && "🔴"}
 
-                    <div
-                        style={{
-                            marginBottom: "20px",
-                        }}
-                    >
-                        <label
-                            htmlFor="confirmPassword"
-                        >
-                            Confirm Password
-                        </label>
+                                    {passwordStrength === "Medium" && "🟡"}
 
-                        <input
-                            id="confirmPassword"
-                            type="password"
-                            value={confirmPassword}
-                            onChange={(event) => {
-                                setConfirmPassword(
-                                    event.target.value
-                                );
-                            }}
-                            placeholder="Enter the password again"
-                            autoComplete="new-password"
-                            disabled={loading}
-                            required
-                            minLength={6}
-                            style={{
-                                width: "100%",
-                                marginTop: "6px",
-                                padding: "12px",
-                                boxSizing: "border-box",
-                            }}
-                        />
-                    </div>
+                                    {passwordStrength === "Strong" && "🟢"}
 
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        style={{
-                            width: "100%",
-                            padding: "12px",
-                            cursor: loading
-                                ? "wait"
-                                : "pointer",
-                        }}
-                    >
-                        {loading
-                            ? "Creating account..."
-                            : "Create Account"}
-                    </button>
-                </form>
+                                    {" "}
 
-                <p
-                    style={{
-                        marginTop: "20px",
-                    }}
-                >
-                    Already have an account?{" "}
+                                    {passwordStrength}
 
-                    <button
-                        type="button"
-                        onClick={onShowLogin}
-                        disabled={loading}
-                    >
-                        Login
-                    </button>
-                </p>
-            </section>
+                                </span>
+
+                            </p>
+
+                            <Input
+                                label="Confirm Password"
+                                type="password"
+                                value={confirmPassword}
+                                required={true}
+                                disabled={loading}
+                                placeholder="Confirm password"
+                                autoComplete="new-password"
+                                onChange={(event) =>
+                                    setConfirmPassword(event.target.value)
+                                }
+                            />
+
+                            {
+                                confirmPassword.length > 0 && (
+
+                                    <p
+                                        className={
+                                            passwordsMatch
+                                                ? "password-match success"
+                                                : "password-match error"
+                                        }
+                                    >
+
+                                        {
+                                            passwordsMatch
+                                                ? "✓ Passwords match"
+                                                : "✗ Passwords do not match"
+                                        }
+
+                                    </p>
+
+                                )
+                            }
+
+                            <div className="signup-actions">
+
+                                <Button
+                                    type="submit"
+                                    disabled={loading}
+                                >
+                                    {loading ? (
+                                        <Loader text="Creating Account..." />
+                                    ) : (
+                                        "Create Account"
+                                    )}
+                                </Button>
+
+                            </div>
+
+                        </form>
+
+                        <div className="signup-footer">
+
+                            <p>
+                                Already have an account?
+                            </p>
+
+                            <Button
+                                variant="secondary"
+                                onClick={onShowLogin}
+                            >
+                                Login
+                            </Button>
+
+                            <div className="signup-bottom-text">
+                                © 2026 Family Cash Book
+                            </div>
+
+                        </div>
+
+                    </Card>
+
+                </section>
+
+            </div>
+
         </main>
     );
 }

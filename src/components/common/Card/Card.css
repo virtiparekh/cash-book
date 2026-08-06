@@ -1,0 +1,20 @@
+.app-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-medium);
+  padding: 24px;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
+  transition: var(--transition);
+}
+
+.app-card:hover {
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.app-card--clickable {
+  cursor: pointer;
+}
+
+.app-card--clickable:hover {
+  transform: translateY(-2px);
+}

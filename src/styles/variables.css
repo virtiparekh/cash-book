@@ -1,0 +1,48 @@
+:root {
+
+  /* Primary */
+
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+
+  /* Success */
+
+  --success-color: #16a34a;
+
+  /* Danger */
+
+  --danger-color: #dc2626;
+
+  /* Background */
+
+  --background-color: #f5f7fb;
+
+  /* Card */
+
+  --card-background: #ffffff;
+
+  /* Text */
+
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+
+  /* Border */
+
+  --border-color: #d1d5db;
+
+  /* Radius */
+
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 20px;
+
+  /* Shadow */
+
+  --shadow-card:
+    0 12px 30px rgba(0, 0, 0, 0.08);
+
+  /* Transition */
+
+  --transition:
+    0.25s ease;
+}
