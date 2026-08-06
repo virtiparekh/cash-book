@@ -1,17 +1,21 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-const supabasePublishableKey =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-if (!supabaseUrl || !supabasePublishableKey) {
+if (!supabaseUrl) {
   throw new Error(
-    "Supabase environment variables are missing. Check .env.local."
+    "Missing VITE_SUPABASE_URL. Check your .env.local file."
+  );
+}
+
+if (!supabaseAnonKey) {
+  throw new Error(
+    "Missing VITE_SUPABASE_PUBLISHABLE_KEY. Check your .env.local file."
   );
 }
 
 export const supabase = createClient(
   supabaseUrl,
-  supabasePublishableKey
+  supabaseAnonKey
 );

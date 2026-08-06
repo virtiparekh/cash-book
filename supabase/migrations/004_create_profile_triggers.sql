@@ -12,34 +12,47 @@ security definer
 set search_path = public
 as $$
 begin
-
   insert into public.profiles (
     id,
-    full_name
+    full_name,
+    avatar_url,
+    contact_no,
+    created_at,
+    updated_at
   )
   values (
     new.id,
     coalesce(
       nullif(
         trim(
-          new.raw_user_meta_data
-            ->> 'full_name'
+          new.raw_user_meta_data ->> 'full_name'
         ),
         ''
       ),
       split_part(
-        new.email,
+        coalesce(new.email, ''),
         '@',
         1
       )
-    )
+    ),
+    null,
+    nullif(
+      trim(
+        new.raw_user_meta_data ->> 'contact_no'
+      ),
+      ''
+    ),
+    now(),
+    now()
   );
 
   return new;
-
 end;
 $$;
 
+
+drop trigger if exists on_auth_user_created
+on auth.users;
 
 create trigger on_auth_user_created
 after insert

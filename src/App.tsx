@@ -1,26 +1,114 @@
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import { useAuth } from "./contexts/AuthContext";
+
+import DashboardPage from "./pages/DashboardPage";
+import CashBookSetupPage from "./pages/CashBookSetupPage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+
 function App() {
+  const {
+    user,
+    loading,
+    signOut,
+  } = useAuth();
+
+  const [authPage, setAuthPage] =
+    useState<"login" | "signup">(
+      "login"
+    );
+
+  const [groupId, setGroupId] =
+    useState<string | null>(
+      null
+    );
+
+  useEffect(() => {
+    if (!user) {
+      setGroupId(null);
+    }
+  }, [user]);
+
+  if (loading) {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          display: "grid",
+          placeItems: "center",
+        }}
+      >
+        <p>
+          Loading Family Cash Book...
+        </p>
+      </main>
+    );
+  }
+
+  if (!user) {
+    if (
+      authPage === "signup"
+    ) {
+      return (
+        <SignupPage
+          onShowLogin={() => {
+            setAuthPage(
+              "login"
+            );
+          }}
+        />
+      );
+    }
+
+    return (
+      <LoginPage
+        onShowSignup={() => {
+          setAuthPage(
+            "signup"
+          );
+        }}
+      />
+    );
+  }
+
+  if (!groupId) {
+    const defaultOwnerName =
+      typeof user.user_metadata
+        ?.full_name === "string"
+        ? user.user_metadata
+            .full_name
+        : "";
+
+    return (
+      <CashBookSetupPage
+        defaultOwnerName={
+          defaultOwnerName
+        }
+        onGroupCreated={(
+          createdGroupId
+        ) => {
+          setGroupId(
+            createdGroupId
+          );
+        }}
+      />
+    );
+  }
+
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-10">
-      <section className="mx-auto max-w-4xl rounded-2xl bg-white p-8 shadow-lg">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-blue-600">
-          Family Finance
-        </p>
-
-        <h1 className="text-3xl font-bold text-slate-900">
-          Family Cash Book
-        </h1>
-
-        <p className="mt-4 text-slate-600">
-          Track family income, expenses, and shared balances in one place.
-        </p>
-
-        <div className="mt-8 rounded-xl bg-blue-50 p-5">
-          <p className="font-semibold text-blue-900">
-            Phase 1 frontend setup is working.
-          </p>
-        </div>
-      </section>
-    </main>
+    <DashboardPage
+      groupId={groupId}
+      userEmail={
+        user.email ?? ""
+      }
+      onLogout={() => {
+        void signOut();
+      }}
+    />
   );
 }
 
