@@ -1,7 +1,8 @@
 import "./TransactionTable.css";
 
-import type { Transaction }
-  from "../../../types/transaction";
+import type {
+  Transaction,
+} from "../../../types/transaction";
 
 import Loader
   from "../../common/Loader/Loader";
@@ -28,7 +29,9 @@ function TransactionTable({
 
       <section className="transaction-section">
 
-        <Loader text="Loading transactions..." />
+        <Loader
+          text="Loading transactions..."
+        />
 
       </section>
 
@@ -72,12 +75,14 @@ function TransactionTable({
 
               <th>Payment</th>
 
+              <th>Remarks</th>
+
               <th className="amount-column">
                 Amount
               </th>
 
               <th className="amount-column">
-                Balance
+                Current Balance
               </th>
 
             </tr>
@@ -126,49 +131,68 @@ function TransactionTable({
                   >
 
                     <td>
+
                       {formatDate(
-                        transaction.transaction_date
+                        transaction.transaction_at
                       )}
+
                     </td>
 
                     <td>
-                      {transaction.created_by_name}
+
+                      {transaction.member_name}
+
                     </td>
 
                     <td>
+
                       {transaction.category_name}
+
                     </td>
 
                     <td>
+
                       {transaction.payment_mode_name}
+
+                    </td>
+
+                    <td>
+                      {transaction.notes &&
+                        transaction.notes.trim().length > 0
+                        ? transaction.notes
+                        : "-"}
                     </td>
 
                     <td
                       className={
-                        transaction.entry_type === "cash_in"
+                        transaction.entry_type ===
+                          "cash_in"
                           ? "amount-positive"
                           : "amount-negative"
                       }
                     >
-                      {transaction.entry_type === "cash_in"
+
+                      {transaction.entry_type ===
+                        "cash_in"
                         ? "+"
                         : "-"}
+
                       {formatCurrency(
                         transaction.amount
                       )}
+
                     </td>
 
                     <td className="amount-column">
-
                       {formatCurrency(
                         transaction.balance_after
                       )}
-
                     </td>
 
                   </tr>
 
                 )
+
               )
 
             )}
@@ -211,8 +235,7 @@ function formatDate(
 
   return new Date(date)
     .toLocaleDateString(
-      "en-IN"
-    );
+      "en-IN");
 
 }
 

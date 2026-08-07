@@ -6,20 +6,36 @@ import {
   type ReactNode,
 } from "react";
 
-import type { CashBookGroup } from "../types/cashBook";
+import type {
+  CashBookGroup,
+} from "../types/cashBook";
 
+import type {
+  GroupMember,
+} from "../types/member";
 
 type CashBookContextType = {
-  selectedCashBook: CashBookGroup | null;
+
+  selectedCashBook:
+    CashBookGroup | null;
+
   setSelectedCashBook: (
     group: CashBookGroup | null
   ) => void;
+
+  currentMember:
+    GroupMember | null;
+
+  setCurrentMember: (
+    member: GroupMember | null
+  ) => void;
+
 };
 
 const CashBookContext =
-  createContext<CashBookContextType | undefined>(
-    undefined
-  );
+  createContext<
+    CashBookContextType | undefined
+  >(undefined);
 
 type CashBookProviderProps = {
   children: ReactNode;
@@ -28,38 +44,65 @@ type CashBookProviderProps = {
 export function CashBookProvider({
   children,
 }: CashBookProviderProps) {
+
   const [
     selectedCashBook,
     setSelectedCashBook,
-  ] = useState<CashBookGroup | null>(
-    null
-  );
+  ] =
+    useState<CashBookGroup | null>(
+      null
+    );
 
-  //   Without useMemo, React recreates the context value on every render, causing unnecessary re-renders of all components using the context. Using useMemo makes the provider more efficient.
+  const [
+    currentMember,
+    setCurrentMember,
+  ] =
+    useState<GroupMember | null>(
+      null
+    );
+
   const value = useMemo(
     () => ({
       selectedCashBook,
       setSelectedCashBook,
+      currentMember,
+      setCurrentMember,
     }),
-    [selectedCashBook]
+    [
+      selectedCashBook,
+      currentMember,
+    ]
   );
 
   return (
-    <CashBookContext.Provider value={value}>
+
+    <CashBookContext.Provider
+      value={value}
+    >
+
       {children}
+
     </CashBookContext.Provider>
+
   );
+
 }
 
 export function useCashBookContext() {
+
   const context =
-    useContext(CashBookContext);
+    useContext(
+      CashBookContext
+    );
 
   if (!context) {
+
     throw new Error(
       "useCashBookContext must be used within CashBookProvider."
     );
+
   }
 
   return context;
+
 }

@@ -1,4 +1,5 @@
 import {
+    useCallback,
     useEffect,
     useState,
 } from "react";
@@ -31,26 +32,69 @@ export function useTransactions(
     ] =
         useState<string | null>(null);
 
-    useEffect(() => {
+    const reloadTransactions =
+        useCallback(async () => {
 
-        if (!groupId) {
-            return;
-        }
+            if (!groupId) {
 
-        const currentGroupId = groupId;
-        async function fetchData() {
+                setTransactions([]);
+
+                return;
+
+            }
 
             try {
 
                 setLoading(true);
 
+                setError(null);
+
                 const result =
                     await loadTransactions(
-                        currentGroupId
+                        groupId
                     );
-                setTransactions(result);
 
-            } catch (error) {
+                let runningBalance = 0;
+
+                const transactionsWithBalance =
+                    [...result]
+                        .reverse()
+                        .map((transaction) => {
+
+                            if (
+                                transaction.entry_type ===
+                                "cash_in"
+                            ) {
+
+                                runningBalance +=
+                                    transaction.amount;
+
+                            } else {
+
+                                runningBalance -=
+                                    transaction.amount;
+
+                            }
+
+                            return {
+
+                                ...transaction,
+
+                                balance_after:
+                                    runningBalance,
+
+                            };
+
+                        })
+                        .reverse();
+
+                setTransactions(
+                    transactionsWithBalance
+                );
+
+            }
+
+            catch (error) {
 
                 const message =
                     error instanceof Error
@@ -59,17 +103,21 @@ export function useTransactions(
 
                 setError(message);
 
-            } finally {
+            }
+
+            finally {
 
                 setLoading(false);
 
             }
 
-        }
+        }, [groupId]);
 
-        void fetchData();
+    useEffect(() => {
 
-    }, [groupId]);
+        void reloadTransactions();
+
+    }, [reloadTransactions]);
 
     return {
 
@@ -78,6 +126,8 @@ export function useTransactions(
         loading,
 
         error,
+
+        reloadTransactions,
 
     };
 

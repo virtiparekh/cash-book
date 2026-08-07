@@ -1,60 +1,202 @@
 import { supabase } from "../lib/supabase";
-import type { Transaction } from "../types/transaction";
+
+import type {
+  Transaction,
+} from "../types/transaction";
+
+type TransactionRow = {
+  id: string;
+  transaction_at: string;
+  amount: number;
+  notes: string | null;
+  entry_type: "cash_in" | "cash_out";
+  categories:
+  | {
+    name: string;
+  }
+  | null;
+
+  payment_modes:
+  | {
+    name: string;
+  }
+  | null;
+
+  group_members:
+  | {
+    member_name: string;
+  }
+  | null;
+
+
+};
 
 export async function loadTransactions(
   groupId: string
 ): Promise<Transaction[]> {
 
-  const { data, error } =
-    await supabase
-      .from("transactions")
-      .select(`
-        id,
-        transaction_date,
-        amount,
-        balance_after,
-        remarks,
-        entry_type,
-        categories(name),
-        payment_modes(name),
-        profiles(full_name)
-      `)
-      .eq("cash_book_group_id", groupId)
-      .order(
-        "transaction_date",
-        { ascending: false }
-      );
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("transactions")
+    .select(`
+      id,
+      transaction_at,
+      amount,
+      notes,
+      entry_type,
+      categories!transactions_category_id_fkey(name),
+      payment_modes!transactions_payment_mode_id_fkey(name),
+      group_members!transactions_member_id_fkey(member_name)
+    `)
+    .eq(
+      "group_id",
+      groupId
+    )
+    .is(
+      "deleted_at",
+      null
+    )
+    .order(
+      "transaction_at",
+      {
+        ascending: false,
+      }
+    );
 
   if (error) {
     throw error;
   }
+  // console.log("Transactions from Supabase:", data);
+  const rows: TransactionRow[] =
+    Array.isArray(data)
+      ? (data as unknown as TransactionRow[])
+      : [];
 
-  return (data ?? []).map((item: any) => ({
-    id: item.id,
+  return rows.map<Transaction>((row) => {
 
-    transaction_date:
-      item.transaction_date,
+    const category =
+      row.categories;
 
-    amount:
-      item.amount,
+    const paymentMode =
+      row.payment_modes;
 
-    balance_after:
-      item.balance_after,
+    const member =
+      row.group_members;
 
-    remarks:
-      item.remarks,
+    return {
 
-    entry_type:
-      item.entry_type,
+      id: row.id,
 
-    category_name:
-      item.categories?.name ?? "",
+      transaction_at: row.transaction_at,
 
-    payment_mode_name:
-      item.payment_modes?.name ?? "",
+      amount: row.amount,
 
-    created_by_name:
-      item.profiles?.full_name ?? "",
-  }));
+      balance_after: 0,
+
+      notes: row.notes,
+
+      entry_type: row.entry_type,
+
+      category_name:
+        category?.name ?? "",
+
+      payment_mode_name:
+        paymentMode?.name ?? "",
+
+      member_name:
+        member?.member_name ?? "",
+
+    };
+
+  });
+}
+
+type SaveTransactionInput = {
+
+  groupId: string;
+
+  memberId: string;
+
+  createdBy: string | null;
+
+  entryType:
+  | "cash_in"
+  | "cash_out";
+
+  amount: number;
+
+  transactionDate: string;
+
+  categoryId: string;
+
+  paymentModeId: string;
+
+  remarks: string;
+
+};
+
+export async function saveTransaction({
+
+  groupId,
+
+  memberId,
+
+  createdBy,
+
+  entryType,
+
+  amount,
+
+  transactionDate,
+
+  categoryId,
+
+  paymentModeId,
+
+  remarks,
+
+}: SaveTransactionInput): Promise<void> {
+
+  const {
+    error,
+  } = await supabase
+    .from("transactions")
+    .insert({
+
+      group_id:
+        groupId,
+
+      member_id:
+        memberId,
+
+      created_by:
+        createdBy,
+
+      entry_type:
+        entryType,
+
+      amount,
+
+      transaction_at:
+        transactionDate,
+
+      category_id:
+        categoryId,
+
+      payment_mode_id:
+        paymentModeId,
+
+      notes:
+        remarks,
+
+    });
+
+  if (error) {
+
+    throw error;
+
+  }
 
 }

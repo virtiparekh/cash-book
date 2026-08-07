@@ -1,13 +1,14 @@
 export type Transaction = {
+
   id: string;
 
-  transaction_date: string;
+  transaction_at: string;
 
   amount: number;
 
   balance_after: number;
 
-  remarks: string | null;
+  notes: string | null;
 
   entry_type: "cash_in" | "cash_out";
 
@@ -15,5 +16,6 @@ export type Transaction = {
 
   payment_mode_name: string;
 
-  created_by_name: string;
+  member_name: string;
+
 };

@@ -11,7 +11,7 @@ import TransactionDrawer
   from "../components/dashboard/TransactionDrawer/TransactionDrawer";
 import SearchBar
   from "../components/dashboard/SearchBar/SearchBar";
-
+import { useFinancialSummary } from "../hooks/useFinancialSummary";
 import TransactionTable
   from "../components/dashboard/TransactionTable/TransactionTable";
 
@@ -30,12 +30,17 @@ function DashboardPage({
   } = useCashBook();
 
   const {
-
     transactions,
-
     loading: transactionsLoading,
-
+    reloadTransactions,
   } = useTransactions(
+    selectedCashBook?.id
+  );
+
+  const {
+    summary,
+    refreshSummary,
+  } = useFinancialSummary(
     selectedCashBook?.id
   );
 
@@ -89,9 +94,16 @@ function DashboardPage({
           onCashOut={handleCashOut} />
 
         <SearchBar />
-        <FinancialSummary totalCashIn={0}
-          totalCashOut={0}
-          netBalance={0}
+        <FinancialSummary
+          totalCashIn={
+            summary.totalCashIn
+          }
+          totalCashOut={
+            summary.totalCashOut
+          }
+          netBalance={
+            summary.netBalance
+          }
         />
 
         <TransactionTable
@@ -111,6 +123,13 @@ function DashboardPage({
         onClose={() =>
           setDrawerOpen(false)
         }
+        onTransactionSaved={async () => {
+
+          await reloadTransactions();
+
+          await refreshSummary();
+
+        }}
       />
     </AppLayout>
   );

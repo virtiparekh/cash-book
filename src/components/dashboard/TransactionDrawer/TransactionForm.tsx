@@ -18,6 +18,7 @@ type Props = {
   paymentModeId: string;
   remarks: string;
   error: string;
+  saving: boolean;
 
   categoryOptions: Option[];
   paymentModeOptions: Option[];
@@ -42,6 +43,7 @@ function TransactionForm({
   paymentModeId,
   remarks,
   error,
+  saving,
   categoryOptions,
   paymentModeOptions,
   onAmountChange,
@@ -118,13 +120,19 @@ function TransactionForm({
         <Button
           type="button"
           variant="secondary"
+          disabled={saving}
           onClick={onCancel}
         >
           Cancel
         </Button>
 
-        <Button>
-          Save
+        <Button
+          type="submit"
+          disabled={saving}
+        >
+          {saving
+            ? "Saving..."
+            : "Save"}
         </Button>
 
       </div>

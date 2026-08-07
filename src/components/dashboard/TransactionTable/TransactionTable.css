@@ -50,17 +50,15 @@
 
     font-size:14px;
 
-    color:#374151;
-
     border-top:1px solid #f1f5f9;
 
 }
 
-.amount-column{
+/* .amount-column{
 
     text-align:right;
 
-}
+} */
 
 .empty-row{
 
@@ -176,7 +174,7 @@
 
     font-weight:600;
 
-    text-align:right;
+    /* text-align:right; */
 
 }
 
@@ -186,6 +184,6 @@
 
     font-weight:600;
 
-    text-align:right;
+    /* text-align:right; */
 
 }
