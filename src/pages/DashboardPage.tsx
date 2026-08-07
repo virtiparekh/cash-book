@@ -1,4 +1,19 @@
+import "./../styles/DashboardPage.css";
+import FinancialSummary from "../components/dashboard/FinancialSummary/FinancialSummary";
 import { useCashBook } from "../hooks/useCashBook";
+import DashboardHeader from "../components/dashboard/DashboardHeader/DashboardHeader";
+import AppLayout from "../components/layout/AppLayout/AppLayout";
+import CashBookToolbar
+  from "../components/dashboard/CashBookToolbar/CashBookToolbar";
+import { useState } from "react";
+import { useTransactions } from "../hooks/useTransactions";
+import TransactionDrawer
+  from "../components/dashboard/TransactionDrawer/TransactionDrawer";
+import SearchBar
+  from "../components/dashboard/SearchBar/SearchBar";
+
+import TransactionTable
+  from "../components/dashboard/TransactionTable/TransactionTable";
 
 type DashboardPageProps = {
   userEmail: string;
@@ -13,88 +28,91 @@ function DashboardPage({
   const {
     selectedCashBook,
   } = useCashBook();
+
+  const {
+
+    transactions,
+
+    loading: transactionsLoading,
+
+  } = useTransactions(
+    selectedCashBook?.id
+  );
+
+  const [drawerOpen, setDrawerOpen] =
+    useState(false);
+
+  const [transactionType,
+    setTransactionType] =
+    useState<"cash-in" | "cash-out">(
+      "cash-in"
+    );
+
+  const handleCashIn = () => {
+
+    setTransactionType(
+      "cash-in"
+    );
+
+    setDrawerOpen(true);
+
+  };
+
+  const handleCashOut = () => {
+
+    setTransactionType(
+      "cash-out"
+    );
+
+    setDrawerOpen(true);
+
+  };
+
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        padding: "24px",
-      }}
-    >
-      <section
-        style={{
-          width: "100%",
-          maxWidth: "700px",
-          padding: "32px",
-          border:
-            "1px solid #d1d5db",
-          borderRadius: "16px",
-          textAlign: "center",
-        }}
-      >
-        <h1>
-          Family Cash Book
-        </h1>
+    <AppLayout
+      userName={userEmail}
+      cashBookName={selectedCashBook?.name ?? ""}
+      onLogout={onLogout}>
 
-        <h2>
-          Cash Book Created Successfully
-        </h2>
+      <div className="dashboard-container">
 
-        <p>
-          Logged in as:
-        </p>
+        <DashboardHeader
+          title={
+            selectedCashBook?.name ??
+            "Cash Book"
+          }
+          subtitle={`Welcome ${userEmail}`}
+        />
 
-        <strong>
-          {userEmail}
-        </strong>
+        <CashBookToolbar
+          onCashIn={handleCashIn}
+          onCashOut={handleCashOut} />
 
-        <p
-          style={{
-            marginTop: "24px",
-          }}
-        >
-          Current Cash Book
-        </p>
+        <SearchBar />
+        <FinancialSummary totalCashIn={0}
+          totalCashOut={0}
+          netBalance={0}
+        />
 
-        <code>
-          {selectedCashBook?.name}
-        </code>
+        <TransactionTable
+          transactions={transactions}
+          loading={transactionsLoading}
+        />
 
-        <br />
+        {/* Summary cards will come here */}
 
-        <code>
-          {selectedCashBook?.id}
-        </code>
+        {/* Quick Actions */}
 
-        <br />
-
-        <code>
-          {selectedCashBook?.role}
-        </code>
-
-        <p
-          style={{
-            marginTop:
-              "24px",
-            lineHeight:
-              "1.6",
-          }}
-        >
-          Your cash book is ready.
-          Default categories and
-          payment modes were created
-          automatically.
-        </p>
-
-        <button
-          type="button"
-          onClick={onLogout}
-        >
-          Logout
-        </button>
-      </section>
-    </main>
+        {/* Recent Transactions */}
+      </div>
+      <TransactionDrawer
+        open={drawerOpen}
+        type={transactionType}
+        onClose={() =>
+          setDrawerOpen(false)
+        }
+      />
+    </AppLayout>
   );
 }
 

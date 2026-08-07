@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  padding: 48px 24px;
   background: #f8fafc;
 }
 
@@ -31,6 +31,7 @@
 
 .signup-card {
   width: 100%;
+  max-width: 640px;
 }
 
 .signup-card h2 {
@@ -62,7 +63,8 @@
 }
 
 .signup-actions {
-  margin-top: 10px;
+  display: flex;
+  margin-top: 28px;
 }
 
 .signup-actions button {

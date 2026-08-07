@@ -1,0 +1,191 @@
+.transaction-table {
+
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    overflow: hidden;
+
+}
+
+.transaction-table tbody tr:hover{
+
+    background:#f8fafc;
+
+}
+
+.transaction-table table{
+
+    width:100%;
+
+    border-collapse:collapse;
+
+}
+
+.transaction-table thead{
+
+    background:#f8fafc;
+
+}
+
+.transaction-table th{
+
+    text-align:left;
+
+    font-size:14px;
+
+    font-weight:600;
+
+    color:#374151;
+
+    padding:16px 20px;
+
+}
+
+.transaction-table td{
+
+    padding:18px 20px;
+
+    font-size:14px;
+
+    color:#374151;
+
+    border-top:1px solid #f1f5f9;
+
+}
+
+.amount-column{
+
+    text-align:right;
+
+}
+
+.empty-row{
+
+    text-align:center;
+
+    color:#94a3b8;
+
+    padding:70px 20px !important;
+
+}
+
+.transaction-section{
+
+    margin-top:32px;
+
+}
+
+.transaction-toolbar{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:18px;
+
+}
+
+.transaction-toolbar h3{
+
+    margin:0;
+
+    font-size:20px;
+
+    font-weight:600;
+
+    color:#111827;
+
+}
+
+.transaction-toolbar p{
+
+    margin-top:6px;
+
+    color:#6b7280;
+
+    font-size:14px;
+
+}
+
+.empty-state{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    justify-content:center;
+
+    gap:10px;
+
+}
+
+.empty-icon{
+
+    font-size:42px;
+
+}
+
+.empty-state h4{
+
+    margin:0;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    color:#374151;
+
+}
+
+.empty-state p{
+
+    margin:0;
+
+    color:#94a3b8;
+
+    font-size:14px;
+
+}
+
+@media (max-width:768px){
+
+    .transaction-table{
+
+        overflow-x:auto;
+
+    }
+
+    .transaction-table table{
+
+        min-width:700px;
+
+    }
+
+}
+
+.amount-positive{
+
+    color:#16a34a;
+
+    font-weight:600;
+
+    text-align:right;
+
+}
+
+.amount-negative{
+
+    color:#dc2626;
+
+    font-weight:600;
+
+    text-align:right;
+
+}

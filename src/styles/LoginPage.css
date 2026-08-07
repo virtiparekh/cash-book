@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 48px 24px;
   background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
 }
 
@@ -48,7 +48,7 @@
 
 .login-card {
   width: 100%;
-  max-width: 480px;
+  max-width: 460px;
 }
 
 .login-card h2 {
@@ -183,7 +183,8 @@
 }
 
 .login-actions {
-  margin-top: 24px;
+  display: flex;
+  margin-top: 28px;
 }
 
 .login-footer {

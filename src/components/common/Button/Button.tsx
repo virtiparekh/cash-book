@@ -2,14 +2,17 @@ import "./Button.css";
 
 type ButtonVariant =
   | "primary"
-  | "secondary";
+  | "secondary"
+  | "danger"
+  | "success";
 
 type ButtonProps = {
   children: React.ReactNode;
-  type?: "button" | "submit";
+  type?: "button" | "submit" | "reset";
   variant?: ButtonVariant;
   disabled?: boolean;
-  onClick?: () => void;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  className?: string;
 };
 
 function Button({
@@ -18,17 +21,14 @@ function Button({
   variant = "primary",
   disabled = false,
   onClick,
+  className = "",
 }: ButtonProps) {
-  const className =
-    variant === "primary"
-      ? "primary-button"
-      : "secondary-button";
 
   return (
     <button
       type={type}
       disabled={disabled}
-      className={className}
+      className={`app-button app-button--${variant} ${className}`}
       onClick={onClick}
     >
       {children}

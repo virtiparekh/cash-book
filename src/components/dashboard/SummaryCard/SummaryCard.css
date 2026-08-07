@@ -1,0 +1,40 @@
+.summary-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 14px rgba(0,0,0,.06);
+  transition: .25s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(0,0,0,.08);
+}
+
+.summary-card-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.summary-card-title {
+  margin: 0;
+  color: #6b7280;
+  font-size: .9rem;
+}
+
+.summary-card-value {
+  margin-top: .35rem;
+  margin-bottom: 0;
+  font-size: 1.6rem;
+  color: #111827;
+}

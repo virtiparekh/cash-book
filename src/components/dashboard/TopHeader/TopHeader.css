@@ -1,0 +1,161 @@
+.top-header {
+
+  height: 64px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0 28px;
+
+  background: #ffffff;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+}
+
+.top-header__left {
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+}
+
+.top-header__logo {
+
+  width: 38px;
+  height: 38px;
+
+  border-radius: 10px;
+
+  background: #2563eb;
+
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 18px;
+  font-weight: 700;
+
+}
+
+.top-header__brand {
+
+  font-size: 18px;
+  font-weight: 600;
+
+  color: #111827;
+
+}
+
+.top-header__center {
+
+  flex: 1;
+
+  display: flex;
+  justify-content: center;
+
+}
+
+.top-header__select {
+
+  width: 280px;
+  height: 42px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+
+  padding: 0 14px;
+
+  background: #ffffff;
+
+  font-size: 14px;
+
+  color: #374151;
+
+  outline: none;
+
+}
+
+.top-header__select:focus {
+
+  border-color: #2563eb;
+
+}
+
+.top-header__right {
+
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+}
+
+.top-header__user {
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  color: #374151;
+
+  font-size: 14px;
+  font-weight: 500;
+
+}
+
+.top-header__avatar {
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 50%;
+
+  background: #eef2ff;
+
+  color: #2563eb;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: 600;
+
+}
+
+.top-header__logout {
+
+  height: 40px;
+
+  padding: 0 18px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #374151;
+
+  font-size: 14px;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+}
+
+.top-header__logout:hover {
+
+  background: #f9fafb;
+
+  border-color: #9ca3af;
+
+}

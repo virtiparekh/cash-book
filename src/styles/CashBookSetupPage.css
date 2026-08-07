@@ -4,7 +4,7 @@
   justify-content: center;
   align-items: center;
   background: #f8fafc;
-  padding: 32px;
+  padding: 48px 24px;
 }
 
 .cashbook-setup-container {
@@ -14,10 +14,12 @@
 
 .cashbook-card {
   width: 100%;
+  max-width: 640px;
 }
 
 .cashbook-actions {
-  margin-top: 24px;
+  display: flex;
+  margin-top: 28px;
 }
 
 .cashbook-actions button {

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./styles/typography.css";
 
 html,
 body,
@@ -8,5 +9,50 @@ body,
 
 body {
   margin: 0;
-  background-color: #f8fafc;
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  line-height: var(--line-height);
+  color: #1f2937;
+  background: #f7f8fa;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+  color: #111827;
+}
+
+h1 {
+  font-size: var(--font-size-2xl);
+}
+
+h2 {
+  font-size: var(--font-size-xl);
+}
+
+h3 {
+  font-size: var(--font-size-lg);
+}
+
+p {
+  margin: 0;
+  color: #6b7280;
+  line-height: 1.6;
+}
+
+.app-input-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: #374151;
+}
+
+.app-input::placeholder {
+  color: #9ca3af;
 }
