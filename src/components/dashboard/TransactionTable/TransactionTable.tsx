@@ -7,13 +7,23 @@ import type {
 import Loader
   from "../../common/Loader/Loader";
 
+
 type TransactionTableProps = {
 
   transactions: Transaction[];
 
   loading: boolean;
 
+  onEdit: (
+    transaction: Transaction
+  ) => void;
+
+  onDelete: (
+    transaction: Transaction
+  ) => void;
+
 };
+
 
 function TransactionTable({
 
@@ -21,13 +31,20 @@ function TransactionTable({
 
   loading,
 
+  onEdit,
+
+  onDelete,
+
 }: TransactionTableProps) {
+
 
   if (loading) {
 
     return (
 
-      <section className="transaction-section">
+      <section
+        className="transaction-section"
+      >
 
         <Loader
           text="Loading transactions..."
@@ -39,11 +56,17 @@ function TransactionTable({
 
   }
 
+
   return (
 
-    <section className="transaction-section">
+    <section
+      className="transaction-section"
+    >
 
-      <div className="transaction-toolbar">
+
+      <div
+        className="transaction-toolbar"
+      >
 
         <div>
 
@@ -59,23 +82,37 @@ function TransactionTable({
 
       </div>
 
-      <div className="transaction-table">
+
+      <div
+        className="transaction-table"
+      >
 
         <table>
+
 
           <thead>
 
             <tr>
 
-              <th>Date</th>
+              <th>
+                Date
+              </th>
 
-              <th>Member</th>
+              <th>
+                Member
+              </th>
 
-              <th>Category</th>
+              <th>
+                Category
+              </th>
 
-              <th>Payment</th>
+              <th>
+                Payment
+              </th>
 
-              <th>Remarks</th>
+              <th>
+                Remarks
+              </th>
 
               <th className="amount-column">
                 Amount
@@ -85,24 +122,34 @@ function TransactionTable({
                 Current Balance
               </th>
 
+              <th>
+                Actions
+              </th>
+
             </tr>
 
           </thead>
 
+
           <tbody>
+
 
             {transactions.length === 0 ? (
 
               <tr>
 
                 <td
-                  colSpan={6}
+                  colSpan={8}
                   className="empty-row"
                 >
 
-                  <div className="empty-state">
+                  <div
+                    className="empty-state"
+                  >
 
-                    <div className="empty-icon">
+                    <div
+                      className="empty-icon"
+                    >
                       💰
                     </div>
 
@@ -111,8 +158,9 @@ function TransactionTable({
                     </h4>
 
                     <p>
-                      Your first Cash In or Cash Out
-                      entry will appear here.
+                      Your first Cash In or
+                      Cash Out entry will
+                      appear here.
                     </p>
 
                   </div>
@@ -127,8 +175,11 @@ function TransactionTable({
                 (transaction) => (
 
                   <tr
-                    key={transaction.id}
+                    key={
+                      transaction.id
+                    }
                   >
+
 
                     <td>
 
@@ -138,64 +189,176 @@ function TransactionTable({
 
                     </td>
 
-                    <td>
-
-                      {transaction.member_name}
-
-                    </td>
 
                     <td>
 
-                      {transaction.category_name}
+                      {
+                        transaction.member_name
+                      }
 
                     </td>
+
 
                     <td>
 
-                      {transaction.payment_mode_name}
+                      {
+                        transaction.category_name
+                      }
 
                     </td>
+
 
                     <td>
-                      {transaction.notes &&
-                        transaction.notes.trim().length > 0
-                        ? transaction.notes
-                        : "-"}
+
+                      {
+                        transaction.payment_mode_name
+                      }
+
                     </td>
+
+
+                    <td>
+
+                      {
+                        transaction.notes &&
+                        transaction.notes
+                          .trim()
+                          .length > 0
+                          ? transaction.notes
+                          : "-"
+                      }
+
+                    </td>
+
 
                     <td
                       className={
                         transaction.entry_type ===
-                          "cash_in"
+                        "cash_in"
                           ? "amount-positive"
                           : "amount-negative"
                       }
                     >
 
-                      {transaction.entry_type ===
+                      {
+                        transaction.entry_type ===
                         "cash_in"
-                        ? "+"
-                        : "-"}
+                          ? "+"
+                          : "-"
+                      }
 
-                      {formatCurrency(
-                        transaction.amount
-                      )}
+                      {
+                        formatCurrency(
+                          transaction.amount
+                        )
+                      }
 
                     </td>
 
-                    <td className="amount-column">
-                      {formatCurrency(
-                        transaction.balance_after
-                      )}
+
+                    <td
+                      className="amount-column"
+                    >
+
+                      {
+                        formatCurrency(
+                          transaction.balance_after
+                        )
+                      }
+
                     </td>
+
+
+                    <td>
+
+                      <div className="transaction-actions">
+
+  <button
+    type="button"
+    className="transaction-icon-button transaction-icon-button--edit"
+    onClick={() => onEdit(transaction)}
+    title="Edit transaction"
+    aria-label="Edit transaction"
+  >
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 20h9"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+    </svg>
+  </button>
+
+  <button
+    type="button"
+    className="transaction-icon-button transaction-icon-button--delete"
+    onClick={() => onDelete(transaction)}
+    title="Delete transaction"
+    aria-label="Delete transaction"
+  >
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
+      <path
+        d="M3 6h18"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M8 6V4h8v2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+
+      <path
+        d="M19 6l-1 14H6L5 6"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+
+      <path
+        d="M10 11v5M14 11v5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  </button>
+
+</div>
+
+                    </td>
+
 
                   </tr>
 
                 )
-
               )
 
             )}
+
 
           </tbody>
 
@@ -208,6 +371,7 @@ function TransactionTable({
   );
 
 }
+
 
 function formatCurrency(
   amount: number
@@ -224,10 +388,10 @@ function formatCurrency(
       maximumFractionDigits: 2,
 
     }
-
   ).format(amount);
 
 }
+
 
 function formatDate(
   date: string
@@ -235,8 +399,10 @@ function formatDate(
 
   return new Date(date)
     .toLocaleDateString(
-      "en-IN");
+      "en-IN"
+    );
 
 }
+
 
 export default TransactionTable;

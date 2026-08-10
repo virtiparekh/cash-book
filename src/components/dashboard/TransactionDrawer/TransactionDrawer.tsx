@@ -1,38 +1,66 @@
-import { useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
 import "./TransactionDrawer.css";
 
 import TransactionForm from "./TransactionForm";
-import { saveTransaction }
-  from "../../../services/transactionService";
 
-import { useCashBook }
-  from "../../../hooks/useCashBook";
+import {
+  saveTransaction,
+} from "../../../services/transactionService";
 
-import { useCurrentMember }
-  from "../../../hooks/useCurrentMember";
+import {
+  useCashBook,
+} from "../../../hooks/useCashBook";
 
-import { useMasterData }
-  from "../../../hooks/useMasterData";
+import {
+  useCurrentMember,
+} from "../../../hooks/useCurrentMember";
+
+import {
+  useMasterData,
+} from "../../../hooks/useMasterData";
+
+import type {
+  Transaction,
+} from "../../../types/transaction";
 
 type Props = {
   open: boolean;
-  type: "cash-in" | "cash-out";
+
+  type:
+    | "cash-in"
+    | "cash-out";
+
+  transaction:
+    | Transaction
+    | null;
+
   onClose: () => void;
-  onTransactionSaved: () => Promise<void>;
+
+  onTransactionSaved:
+    () => Promise<void>;
 };
 
 function TransactionDrawer({
   open,
   type,
+  transaction,
   onClose,
   onTransactionSaved,
 }: Props) {
 
-  const [amount, setAmount] =
-    useState("");
-  const [saving, setSaving] =
-    useState(false);
+  const [
+    amount,
+    setAmount,
+  ] = useState("");
+
+  const [
+    saving,
+    setSaving,
+  ] = useState(false);
 
   const [
     transactionDate,
@@ -53,11 +81,15 @@ function TransactionDrawer({
     setPaymentModeId,
   ] = useState("");
 
-  const [remarks, setRemarks] =
-    useState("");
+  const [
+    remarks,
+    setRemarks,
+  ] = useState("");
 
-  const [error, setError] =
-    useState("");
+  const [
+    error,
+    setError,
+  ] = useState("");
 
   const {
     categoryOptions,
@@ -71,9 +103,55 @@ function TransactionDrawer({
   const currentMember =
     useCurrentMember();
 
-  if (!open) {
-    return null;
-  }
+
+  /*
+   * Populate form when editing.
+   *
+   * When transaction is null,
+   * the drawer is being used
+   * for a new transaction.
+   */
+  useEffect(() => {
+
+    if (!open) {
+      return;
+    }
+
+    if (!transaction) {
+
+      resetForm();
+
+      return;
+    }
+
+    setAmount(
+      String(transaction.amount)
+    );
+
+    setTransactionDate(
+      transaction.transaction_at
+        .split("T")[0]
+    );
+
+    setCategoryId(
+      transaction.category_id
+    );
+
+    setPaymentModeId(
+      transaction.payment_mode_id
+    );
+
+    setRemarks(
+      transaction.notes ?? ""
+    );
+
+    setError("");
+
+  }, [
+    open,
+    transaction,
+  ]);
+
 
   function resetForm() {
 
@@ -91,22 +169,31 @@ function TransactionDrawer({
         .split("T")[0]
     );
 
+    setError("");
   }
+
 
   async function handleSubmit(
     event: React.FormEvent
   ) {
+
+    event.preventDefault();
+
     setError("");
 
-    if (!amount || Number(amount) <= 0) {
+
+    if (
+      !amount ||
+      Number(amount) <= 0
+    ) {
 
       setError(
         "Please enter a valid amount."
       );
 
       return;
-
     }
+
 
     if (!categoryId) {
 
@@ -115,8 +202,8 @@ function TransactionDrawer({
       );
 
       return;
-
     }
+
 
     if (!paymentModeId) {
 
@@ -125,21 +212,18 @@ function TransactionDrawer({
       );
 
       return;
-
     }
-    event.preventDefault();
 
-    setError("");
 
-    if (!amount || Number(amount) <= 0) {
+    if (!selectedCashBook) {
 
       setError(
         "Cash Book not selected."
       );
 
       return;
-
     }
+
 
     if (!currentMember) {
 
@@ -148,12 +232,24 @@ function TransactionDrawer({
       );
 
       return;
-
     }
 
+
     try {
-      // console.log("Before");
+
       setSaving(true);
+
+
+      /*
+       * Current session:
+       *
+       * New transactions are saved
+       * through INSERT.
+       *
+       * Edit UPDATE will be implemented
+       * in the next step.
+       */
+
       await saveTransaction({
 
         groupId:
@@ -182,27 +278,29 @@ function TransactionDrawer({
         remarks,
 
       });
-      // console.log("save")
+
 
       await onTransactionSaved();
-      // console.log("reload")
+
+
       resetForm();
 
       onClose();
-
-      // console.log("close")
 
     }
 
     catch (error) {
 
       setError(
+
         error instanceof Error
           ? error.message
           : "Unable to save transaction."
+
       );
 
     }
+
     finally {
 
       setSaving(false);
@@ -211,61 +309,126 @@ function TransactionDrawer({
 
   }
 
+
+  /*
+   * IMPORTANT:
+   *
+   * Do not render the drawer when
+   * open === false.
+   *
+   * This fixes the drawer appearing
+   * automatically after page refresh.
+   */
+  if (!open) {
+    return null;
+  }
+
+
   return (
     <>
 
       <div
         className="drawer-overlay"
-        onClick={onClose}
+        onClick={
+          saving
+            ? undefined
+            : onClose
+        }
       />
 
-      <aside className="transaction-drawer">
 
-        <div className="drawer-header">
+      <aside
+        className="transaction-drawer"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="transaction-drawer-title"
+      >
 
-          <h2>
-            {type === "cash-in"
-              ? "Cash In"
-              : "Cash Out"}
+
+        <div
+          className="drawer-header"
+        >
+
+          <h2
+            id="transaction-drawer-title"
+          >
+
+            {transaction
+              ? "Edit Transaction"
+              : type === "cash-in"
+                ? "Cash In"
+                : "Cash Out"}
+
           </h2>
+
 
           <button
             type="button"
             className="drawer-close"
             onClick={onClose}
+            disabled={saving}
+            aria-label="Close"
           >
+
             ✕
+
           </button>
 
         </div>
 
+
         <TransactionForm
+
           type={type}
+
           amount={amount}
-          transactionDate={transactionDate}
+
+          transactionDate={
+            transactionDate
+          }
+
           categoryId={categoryId}
-          paymentModeId={paymentModeId}
+
+          paymentModeId={
+            paymentModeId
+          }
+
           remarks={remarks}
+
           error={error}
+
           saving={saving}
 
+
           categoryOptions={[
+
             {
               value: "",
-              label: "Select Category",
+              label:
+                "Select Category",
             },
+
             ...categoryOptions,
+
           ]}
+
 
           paymentModeOptions={[
+
             {
               value: "",
-              label: "Select Payment Mode",
+              label:
+                "Select Payment Mode",
             },
+
             ...paymentModeOptions,
+
           ]}
 
-          onAmountChange={setAmount}
+
+          onAmountChange={
+            setAmount
+          }
 
           onDateChange={
             setTransactionDate
@@ -283,9 +446,13 @@ function TransactionDrawer({
             setRemarks
           }
 
-          onCancel={onClose}
+          onCancel={
+            onClose
+          }
 
-          onSubmit={handleSubmit}
+          onSubmit={
+            handleSubmit
+          }
 
         />
 
@@ -293,7 +460,6 @@ function TransactionDrawer({
 
     </>
   );
-
 }
 
 export default TransactionDrawer;
