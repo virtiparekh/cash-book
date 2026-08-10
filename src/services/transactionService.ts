@@ -12,7 +12,7 @@ type TransactionRow = {
   transaction_at: string;
 
   amount: number;
-
+  updated_at: string;
   notes: string | null;
 
   entry_type:
@@ -59,6 +59,7 @@ export async function loadTransactions(
       id,
       transaction_at,
       amount,
+      updated_at,
       notes,
       entry_type,
       category_id,
@@ -124,6 +125,9 @@ export async function loadTransactions(
 
         amount:
           Number(row.amount),
+        
+        updated_at:
+          row.updated_at,
 
         notes:
           row.notes,
@@ -286,6 +290,7 @@ export async function updateTransaction({
       category_id: categoryId,
       payment_mode_id: paymentModeId,
       notes: remarks,
+      updated_at: new Date().toISOString(),
     })
     .eq(
       "id",

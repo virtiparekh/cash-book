@@ -7,9 +7,7 @@ import type {
 import Loader
   from "../../common/Loader/Loader";
 
-
 type TransactionTableProps = {
-
   transactions: Transaction[];
 
   loading: boolean;
@@ -22,47 +20,41 @@ type TransactionTableProps = {
     transaction: Transaction
   ) => void;
 
+  deletingTransactionId?: string | null;
+
+  onViewDetails: (
+    transaction: Transaction
+  ) => void;
 };
 
-
 function TransactionTable({
-
   transactions,
-
   loading,
-
   onEdit,
-
   onDelete,
-
+  deletingTransactionId,
+  onViewDetails,
 }: TransactionTableProps) {
-
 
   if (loading) {
 
     return (
-
       <section
         className="transaction-section"
       >
-
         <Loader
           text="Loading transactions..."
         />
-
       </section>
-
     );
 
   }
-
 
   return (
 
     <section
       className="transaction-section"
     >
-
 
       <div
         className="transaction-toolbar"
@@ -88,7 +80,6 @@ function TransactionTable({
       >
 
         <table>
-
 
           <thead>
 
@@ -132,7 +123,6 @@ function TransactionTable({
 
 
           <tbody>
-
 
             {transactions.length === 0 ? (
 
@@ -180,61 +170,102 @@ function TransactionTable({
                     }
                   >
 
+                    {/* DATE + TIME */}
+
+                    <td>
+                      <div className="transaction-date">
+                        {formatDate(transaction.transaction_at)}
+                      </div>
+
+                      {/* <div className="transaction-time">
+                        {formatTime(transaction.transaction_at)}
+                      </div>
+
+                      {isUpdated(transaction) && (
+                        <div className="transaction-time">
+                          Updated {formatTime(transaction.updated_at)}
+                        </div>
+                      )} */}
+
+                      {isUpdated(transaction) ? (
+                        <div className="transaction-time">
+                          {formatTime(transaction.updated_at)}
+                        </div>) : (
+                        
+                        <div className="transaction-time">
+                          {formatTime(transaction.transaction_at)}
+                        </div>)
+                      }
+                    </td>
+
+                    {/* MEMBER */}
+
+                    <td>
+                      {
+                        transaction.member_name
+                      }
+                    </td>
+
+
+                    {/* CATEGORY */}
+
+                    <td>
+                      {
+                        transaction.category_name
+                      }
+                    </td>
+
+
+                    {/* PAYMENT */}
+
+                    <td>
+                      {
+                        transaction.payment_mode_name
+                      }
+                    </td>
+
+
+                    {/* REMARKS */}
 
                     <td>
 
-                      {formatDate(
-                        transaction.transaction_at
+                      {transaction.notes &&
+                        transaction.notes.trim().length > 0 ? (
+
+                        <button
+                          type="button"
+                          className="transaction-remark-button"
+                          onClick={() =>
+                            onViewDetails(
+                              transaction
+                            )
+                          }
+                          title="View transaction details"
+                        >
+                          {
+                            formatRemark(
+                              transaction.notes
+                            )
+                          }
+                        </button>
+
+                      ) : (
+
+                        <span className="remark-empty">
+                          -
+                        </span>
+
                       )}
 
                     </td>
 
 
-                    <td>
-
-                      {
-                        transaction.member_name
-                      }
-
-                    </td>
-
-
-                    <td>
-
-                      {
-                        transaction.category_name
-                      }
-
-                    </td>
-
-
-                    <td>
-
-                      {
-                        transaction.payment_mode_name
-                      }
-
-                    </td>
-
-
-                    <td>
-
-                      {
-                        transaction.notes &&
-                        transaction.notes
-                          .trim()
-                          .length > 0
-                          ? transaction.notes
-                          : "-"
-                      }
-
-                    </td>
-
+                    {/* AMOUNT */}
 
                     <td
                       className={
                         transaction.entry_type ===
-                        "cash_in"
+                          "cash_in"
                           ? "amount-positive"
                           : "amount-negative"
                       }
@@ -242,7 +273,7 @@ function TransactionTable({
 
                       {
                         transaction.entry_type ===
-                        "cash_in"
+                          "cash_in"
                           ? "+"
                           : "-"
                       }
@@ -255,6 +286,8 @@ function TransactionTable({
 
                     </td>
 
+
+                    {/* BALANCE */}
 
                     <td
                       className="amount-column"
@@ -269,88 +302,120 @@ function TransactionTable({
                     </td>
 
 
+                    {/* ACTIONS */}
+
                     <td>
 
-                      <div className="transaction-actions">
+                      <div
+                        className="transaction-actions"
+                      >
 
-  <button
-    type="button"
-    className="transaction-icon-button transaction-icon-button--edit"
-    onClick={() => onEdit(transaction)}
-    title="Edit transaction"
-    aria-label="Edit transaction"
-  >
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        d="M12 20h9"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+                        {/* EDIT */}
 
-      <path
-        d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
-    </svg>
-  </button>
+                        <button
+                          type="button"
+                          className="transaction-icon-button transaction-icon-button--edit"
+                          onClick={() =>
+                            onEdit(
+                              transaction
+                            )
+                          }
+                          disabled={
+                            deletingTransactionId ===
+                            transaction.id
+                          }
+                          title="Edit transaction"
+                          aria-label="Edit transaction"
+                        >
 
-  <button
-    type="button"
-    className="transaction-icon-button transaction-icon-button--delete"
-    onClick={() => onDelete(transaction)}
-    title="Delete transaction"
-    aria-label="Delete transaction"
-  >
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path
-        d="M3 6h18"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+                          <svg
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
 
-      <path
-        d="M8 6V4h8v2"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
+                            <path
+                              d="M12 20h9"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
 
-      <path
-        d="M19 6l-1 14H6L5 6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinejoin="round"
-      />
+                            <path
+                              d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinejoin="round"
+                            />
 
-      <path
-        d="M10 11v5M14 11v5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-    </svg>
-  </button>
+                          </svg>
 
-</div>
+                        </button>
+
+
+                        {/* DELETE */}
+
+                        <button
+                          type="button"
+                          className="transaction-icon-button transaction-icon-button--delete"
+                          onClick={() =>
+                            onDelete(
+                              transaction
+                            )
+                          }
+                          disabled={
+                            deletingTransactionId ===
+                            transaction.id
+                          }
+                          title="Delete transaction"
+                          aria-label="Delete transaction"
+                        >
+
+                          <svg
+                            viewBox="0 0 24 24"
+                            aria-hidden="true"
+                          >
+
+                            <path
+                              d="M3 6h18"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+
+                            <path
+                              d="M8 6V4h8v2"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+
+                            <path
+                              d="M19 6l-1 14H6L5 6"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinejoin="round"
+                            />
+
+                            <path
+                              d="M10 11v5M14 11v5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+
+                          </svg>
+
+                        </button>
+
+                      </div>
 
                     </td>
-
 
                   </tr>
 
@@ -358,7 +423,6 @@ function TransactionTable({
               )
 
             )}
-
 
           </tbody>
 
@@ -369,9 +433,12 @@ function TransactionTable({
     </section>
 
   );
-
 }
 
+
+/* -------------------------------------------------
+   Currency
+------------------------------------------------- */
 
 function formatCurrency(
   amount: number
@@ -380,28 +447,119 @@ function formatCurrency(
   return new Intl.NumberFormat(
     "en-IN",
     {
-
       style: "currency",
-
       currency: "INR",
-
       maximumFractionDigits: 2,
-
     }
   ).format(amount);
 
 }
 
 
+/* -------------------------------------------------
+   Date
+   Example:
+   10 Oct, 2026
+------------------------------------------------- */
+
 function formatDate(
   date: string
 ) {
 
-  return new Date(date)
-    .toLocaleDateString(
-      "en-IN"
+  return new Intl.DateTimeFormat(
+    "en-IN",
+    {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }
+  )
+    .format(
+      new Date(date)
+    )
+    .replace(
+      /(\d{2})\s([A-Za-z]{3})\s(\d{4})/,
+      "$2 $1, $3"
     );
 
+}
+
+
+/* -------------------------------------------------
+   Time
+   Example:
+   03:12 PM
+------------------------------------------------- */
+
+function formatTime(
+  date: string
+) {
+
+  return new Intl.DateTimeFormat(
+    "en-IN",
+    {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    }
+  ).format(
+    new Date(date)
+  );
+
+}
+
+
+/* -------------------------------------------------
+   Remark preview
+------------------------------------------------- */
+
+function formatRemark(
+  remark: string
+) {
+
+  const cleanRemark =
+    remark.trim();
+
+  const maximumLength = 32;
+
+  if (
+    cleanRemark.length <=
+    maximumLength
+  ) {
+    return cleanRemark;
+  }
+
+  return (
+    cleanRemark.substring(
+      0,
+      maximumLength
+    ).trimEnd() +
+    "..."
+  );
+
+}
+
+function isUpdated(
+  transaction: Transaction
+) {
+  if (!transaction.updated_at) {
+    return false;
+  }
+
+  const transactionTime =
+    new Date(
+      transaction.transaction_at
+    ).getTime();
+
+  const updatedTime =
+    new Date(
+      transaction.updated_at
+    ).getTime();
+
+  return (
+    updatedTime >
+    transactionTime + 1000
+  );
 }
 
 

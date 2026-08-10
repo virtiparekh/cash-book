@@ -5,10 +5,12 @@ import {
 
 import "./TransactionDrawer.css";
 
-import TransactionForm from "./TransactionForm";
+import TransactionForm
+  from "./TransactionForm";
 
 import {
   saveTransaction,
+  updateTransaction,
 } from "../../../services/transactionService";
 
 import {
@@ -66,9 +68,7 @@ function TransactionDrawer({
     transactionDate,
     setTransactionDate,
   ] = useState(
-    new Date()
-      .toISOString()
-      .split("T")[0]
+    getTodayDate()
   );
 
   const [
@@ -103,13 +103,11 @@ function TransactionDrawer({
   const currentMember =
     useCurrentMember();
 
-
   /*
-   * Populate form when editing.
+   * Populate drawer when editing.
    *
-   * When transaction is null,
-   * the drawer is being used
-   * for a new transaction.
+   * If there is no transaction,
+   * the drawer is in CREATE mode.
    */
   useEffect(() => {
 
@@ -117,6 +115,9 @@ function TransactionDrawer({
       return;
     }
 
+    /*
+     * CREATE MODE
+     */
     if (!transaction) {
 
       resetForm();
@@ -124,10 +125,22 @@ function TransactionDrawer({
       return;
     }
 
+    /*
+     * EDIT MODE
+     */
     setAmount(
-      String(transaction.amount)
+      String(
+        transaction.amount
+      )
     );
 
+    /*
+     * Only the date is shown in
+     * the date input.
+     *
+     * The original timestamp remains
+     * untouched until the user saves.
+     */
     setTransactionDate(
       transaction.transaction_at
         .split("T")[0]
@@ -152,7 +165,9 @@ function TransactionDrawer({
     transaction,
   ]);
 
-
+  /*
+   * Reset form for a new transaction.
+   */
   function resetForm() {
 
     setAmount("");
@@ -164,14 +179,96 @@ function TransactionDrawer({
     setRemarks("");
 
     setTransactionDate(
-      new Date()
-        .toISOString()
-        .split("T")[0]
+      getTodayDate()
     );
 
     setError("");
   }
 
+  /*
+   * Combine the selected date
+   * with the CURRENT local time.
+   *
+   * Example:
+   *
+   * Selected date:
+   * 2026-08-10
+   *
+   * Current time:
+   * 15:12:35
+   *
+   * Result:
+   * 2026-08-10T15:12:35+05:30
+   *
+   * This prevents Supabase from storing
+   * the transaction at midnight.
+   */
+  function getTransactionTimestamp(
+    selectedDate: string
+  ): string {
+
+    const now =
+      new Date();
+
+    const hours =
+      String(
+        now.getHours()
+      ).padStart(2, "0");
+
+    const minutes =
+      String(
+        now.getMinutes()
+      ).padStart(2, "0");
+
+    const seconds =
+      String(
+        now.getSeconds()
+      ).padStart(2, "0");
+
+    const milliseconds =
+      String(
+        now.getMilliseconds()
+      ).padStart(3, "0");
+
+    /*
+     * Browser timezone offset.
+     *
+     * For India this becomes:
+     * +05:30
+     */
+    const timezoneOffset =
+      -now.getTimezoneOffset();
+
+    const offsetSign =
+      timezoneOffset >= 0
+        ? "+"
+        : "-";
+
+    const absoluteOffset =
+      Math.abs(
+        timezoneOffset
+      );
+
+    const offsetHours =
+      String(
+        Math.floor(
+          absoluteOffset / 60
+        )
+      ).padStart(2, "0");
+
+    const offsetMinutes =
+      String(
+        absoluteOffset % 60
+      ).padStart(2, "0");
+
+    return (
+      `${selectedDate}` +
+      `T${hours}:${minutes}:${seconds}` +
+      `.${milliseconds}` +
+      `${offsetSign}` +
+      `${offsetHours}:${offsetMinutes}`
+    );
+  }
 
   async function handleSubmit(
     event: React.FormEvent
@@ -181,7 +278,9 @@ function TransactionDrawer({
 
     setError("");
 
-
+    /*
+     * Validate amount
+     */
     if (
       !amount ||
       Number(amount) <= 0
@@ -194,7 +293,9 @@ function TransactionDrawer({
       return;
     }
 
-
+    /*
+     * Validate category
+     */
     if (!categoryId) {
 
       setError(
@@ -204,7 +305,9 @@ function TransactionDrawer({
       return;
     }
 
-
+    /*
+     * Validate payment mode
+     */
     if (!paymentModeId) {
 
       setError(
@@ -214,7 +317,9 @@ function TransactionDrawer({
       return;
     }
 
-
+    /*
+     * Validate Cash Book
+     */
     if (!selectedCashBook) {
 
       setError(
@@ -224,7 +329,9 @@ function TransactionDrawer({
       return;
     }
 
-
+    /*
+     * Validate current member
+     */
     if (!currentMember) {
 
       setError(
@@ -234,57 +341,131 @@ function TransactionDrawer({
       return;
     }
 
-
     try {
 
       setSaving(true);
 
+      /*
+       * ==================================================
+       * EDIT MODE
+       * ==================================================
+       *
+       * Existing transaction:
+       * UPDATE the existing row.
+       *
+       * IMPORTANT:
+       * We preserve the existing transaction time
+       * when editing.
+       *
+       * Only the selected date is changed.
+       */
+      if (transaction) {
+
+        const existingTime =
+          transaction.transaction_at
+            .split("T")[1]
+            ?.split("+")[0]
+            ?.split("Z")[0];
+
+        const timePart =
+          existingTime &&
+          existingTime.length >= 8
+            ? existingTime
+            : getCurrentTime();
+
+        const updatedTimestamp =
+          `${transactionDate}T${timePart}`;
+
+        await updateTransaction({
+
+          transactionId:
+            transaction.id,
+
+          entryType:
+            type === "cash-in"
+              ? "cash_in"
+              : "cash_out",
+
+          amount:
+            Number(amount),
+
+          transactionDate:
+            updatedTimestamp,
+
+          categoryId,
+
+          paymentModeId,
+
+          remarks,
+
+        });
+
+      }
 
       /*
-       * Current session:
+       * ==================================================
+       * CREATE MODE
+       * ==================================================
        *
-       * New transactions are saved
-       * through INSERT.
+       * New transaction:
+       * INSERT a new row.
        *
-       * Edit UPDATE will be implemented
-       * in the next step.
+       * The selected date is combined
+       * with the current time.
        */
+      else {
 
-      await saveTransaction({
+        const transactionTimestamp =
+          getTransactionTimestamp(
+            transactionDate
+          );
 
-        groupId:
-          selectedCashBook.id,
+        await saveTransaction({
 
-        memberId:
-          currentMember.memberId,
+          groupId:
+            selectedCashBook.id,
 
-        createdBy:
-          currentMember.profileId,
+          memberId:
+            currentMember.memberId,
 
-        entryType:
-          type === "cash-in"
-            ? "cash_in"
-            : "cash_out",
+          createdBy:
+            currentMember.profileId,
 
-        amount:
-          Number(amount),
+          entryType:
+            type === "cash-in"
+              ? "cash_in"
+              : "cash_out",
 
-        transactionDate,
+          amount:
+            Number(amount),
 
-        categoryId,
+          transactionDate:
+            transactionTimestamp,
 
-        paymentModeId,
+          categoryId,
 
-        remarks,
+          paymentModeId,
 
-      });
+          remarks,
 
+        });
 
+      }
+
+      /*
+       * Refresh transaction table
+       * and financial summary.
+       */
       await onTransactionSaved();
 
-
+      /*
+       * Reset form after success.
+       */
       resetForm();
 
+      /*
+       * Close drawer.
+       */
       onClose();
 
     }
@@ -309,22 +490,16 @@ function TransactionDrawer({
 
   }
 
-
   /*
-   * IMPORTANT:
-   *
-   * Do not render the drawer when
-   * open === false.
-   *
-   * This fixes the drawer appearing
-   * automatically after page refresh.
+   * Don't render anything when drawer
+   * is closed.
    */
   if (!open) {
     return null;
   }
 
-
   return (
+
     <>
 
       <div
@@ -336,38 +511,35 @@ function TransactionDrawer({
         }
       />
 
-
       <aside
         className="transaction-drawer"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="transaction-drawer-title"
       >
-
 
         <div
           className="drawer-header"
         >
 
-          <h2
-            id="transaction-drawer-title"
-          >
+          <h2>
 
             {transaction
+
               ? "Edit Transaction"
+
               : type === "cash-in"
                 ? "Cash In"
                 : "Cash Out"}
 
           </h2>
 
-
           <button
             type="button"
             className="drawer-close"
-            onClick={onClose}
-            disabled={saving}
-            aria-label="Close"
+            onClick={
+              onClose
+            }
+            disabled={
+              saving
+            }
           >
 
             ✕
@@ -376,29 +548,39 @@ function TransactionDrawer({
 
         </div>
 
-
         <TransactionForm
 
-          type={type}
+          type={
+            type
+          }
 
-          amount={amount}
+          amount={
+            amount
+          }
 
           transactionDate={
             transactionDate
           }
 
-          categoryId={categoryId}
+          categoryId={
+            categoryId
+          }
 
           paymentModeId={
             paymentModeId
           }
 
-          remarks={remarks}
+          remarks={
+            remarks
+          }
 
-          error={error}
+          error={
+            error
+          }
 
-          saving={saving}
-
+          saving={
+            saving
+          }
 
           categoryOptions={[
 
@@ -412,7 +594,6 @@ function TransactionDrawer({
 
           ]}
 
-
           paymentModeOptions={[
 
             {
@@ -424,7 +605,6 @@ function TransactionDrawer({
             ...paymentModeOptions,
 
           ]}
-
 
           onAmountChange={
             setAmount
@@ -459,6 +639,73 @@ function TransactionDrawer({
       </aside>
 
     </>
+
+  );
+}
+
+/*
+ * Returns today's date in:
+ *
+ * YYYY-MM-DD
+ *
+ * using the user's local timezone.
+ *
+ * We do NOT use:
+ * new Date().toISOString()
+ *
+ * because that is UTC and can shift
+ * the date for users in India.
+ */
+function getTodayDate(): string {
+
+  const now =
+    new Date();
+
+  const year =
+    now.getFullYear();
+
+  const month =
+    String(
+      now.getMonth() + 1
+    ).padStart(2, "0");
+
+  const day =
+    String(
+      now.getDate()
+    ).padStart(2, "0");
+
+  return (
+    `${year}-${month}-${day}`
+  );
+}
+
+/*
+ * Returns current local time:
+ *
+ * HH:mm:ss
+ */
+function getCurrentTime(): string {
+
+  const now =
+    new Date();
+
+  const hours =
+    String(
+      now.getHours()
+    ).padStart(2, "0");
+
+  const minutes =
+    String(
+      now.getMinutes()
+    ).padStart(2, "0");
+
+  const seconds =
+    String(
+      now.getSeconds()
+    ).padStart(2, "0");
+
+  return (
+    `${hours}:${minutes}:${seconds}`
   );
 }
 

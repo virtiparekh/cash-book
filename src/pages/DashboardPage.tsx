@@ -1,40 +1,47 @@
 import "./../styles/DashboardPage.css";
 
 import FinancialSummary
-  from "../components/dashboard/FinancialSummary/FinancialSummary";
+from "../components/dashboard/FinancialSummary/FinancialSummary";
 
 import { useCashBook }
-  from "../hooks/useCashBook";
+from "../hooks/useCashBook";
 
 import DashboardHeader
-  from "../components/dashboard/DashboardHeader/DashboardHeader";
+from "../components/dashboard/DashboardHeader/DashboardHeader";
 
 import AppLayout
-  from "../components/layout/AppLayout/AppLayout";
+from "../components/layout/AppLayout/AppLayout";
 
 import CashBookToolbar
-  from "../components/dashboard/CashBookToolbar/CashBookToolbar";
+from "../components/dashboard/CashBookToolbar/CashBookToolbar";
 
 import { useState } from "react";
 
 import { useTransactions }
-  from "../hooks/useTransactions";
+from "../hooks/useTransactions";
 
 import TransactionDrawer
-  from "../components/dashboard/TransactionDrawer/TransactionDrawer";
+from "../components/dashboard/TransactionDrawer/TransactionDrawer";
+
+import TransactionDetailsDrawer
+from "../components/dashboard/TransactionDetailsDrawer/TransactionDetailsDrawer";
 
 import SearchBar
-  from "../components/dashboard/SearchBar/SearchBar";
+from "../components/dashboard/SearchBar/SearchBar";
 
 import { useFinancialSummary }
-  from "../hooks/useFinancialSummary";
+from "../hooks/useFinancialSummary";
 
 import TransactionTable
-  from "../components/dashboard/TransactionTable/TransactionTable";
+from "../components/dashboard/TransactionTable/TransactionTable";
 
 import type {
   Transaction,
 } from "../types/transaction";
+
+import {
+  deleteTransaction,
+} from "../services/transactionService";
 
 
 type DashboardPageProps = {
@@ -108,69 +115,216 @@ function DashboardPage({
   >(null);
 
 
+  const [
+    detailsTransaction,
+    setDetailsTransaction,
+  ] = useState<
+    Transaction | null
+  >(null);
+
+
+  const [
+    deletingTransactionId,
+    setDeletingTransactionId,
+  ] = useState<
+    string | null
+  >(null);
+
+
+  /* -----------------------------------------------
+     Cash In
+  ------------------------------------------------ */
+
   const handleCashIn = () => {
 
-    setEditingTransaction(null);
+    setEditingTransaction(
+      null
+    );
 
     setTransactionType(
       "cash-in"
     );
 
-    setDrawerOpen(true);
+    setDrawerOpen(
+      true
+    );
 
   };
 
 
+  /* -----------------------------------------------
+     Cash Out
+  ------------------------------------------------ */
+
   const handleCashOut = () => {
 
-    setEditingTransaction(null);
+    setEditingTransaction(
+      null
+    );
 
     setTransactionType(
       "cash-out"
     );
 
-    setDrawerOpen(true);
+    setDrawerOpen(
+      true
+    );
 
   };
 
 
+  /* -----------------------------------------------
+     Edit
+  ------------------------------------------------ */
+
   const handleEditTransaction = (
     transaction: Transaction
   ) => {
+
+    setDetailsTransaction(
+      null
+    );
 
     setEditingTransaction(
       transaction
     );
 
     setTransactionType(
+
       transaction.entry_type ===
-        "cash_in"
+      "cash_in"
+
         ? "cash-in"
+
         : "cash-out"
+
     );
 
-    setDrawerOpen(true);
+    setDrawerOpen(
+      true
+    );
 
   };
 
 
-  const handleDeleteTransaction = (
+  /* -----------------------------------------------
+     View Details
+  ------------------------------------------------ */
+
+  const handleViewTransactionDetails = (
     transaction: Transaction
   ) => {
 
-    console.log(
-      "Delete transaction:",
+    setDetailsTransaction(
       transaction
     );
 
   };
 
 
+  /* -----------------------------------------------
+     Delete
+  ------------------------------------------------ */
+
+  const handleDeleteTransaction = async (
+    transaction: Transaction
+  ) => {
+
+    if (!selectedCashBook) {
+      return;
+    }
+
+
+    const confirmed =
+      window.confirm(
+        "Are you sure you want to delete this transaction?"
+      );
+
+
+    if (!confirmed) {
+      return;
+    }
+
+
+    try {
+
+      setDeletingTransactionId(
+        transaction.id
+      );
+
+
+      await deleteTransaction(
+
+        transaction.id,
+
+      );
+
+
+      await reloadTransactions();
+
+
+      await refreshSummary();
+
+
+    }
+
+    catch (error) {
+
+      console.error(
+        "Unable to delete transaction.",
+        error
+      );
+
+
+      window.alert(
+
+        error instanceof Error
+
+          ? error.message
+
+          : "Unable to delete transaction."
+
+      );
+
+    }
+
+    finally {
+
+      setDeletingTransactionId(
+        null
+      );
+
+    }
+
+  };
+
+
+  /* -----------------------------------------------
+     Close Edit Drawer
+  ------------------------------------------------ */
+
   const handleDrawerClose = () => {
 
-    setDrawerOpen(false);
+    setDrawerOpen(
+      false
+    );
 
-    setEditingTransaction(null);
+    setEditingTransaction(
+      null
+    );
+
+  };
+
+
+  /* -----------------------------------------------
+     Close Details Drawer
+  ------------------------------------------------ */
+
+  const handleDetailsClose = () => {
+
+    setDetailsTransaction(
+      null
+    );
 
   };
 
@@ -179,16 +333,23 @@ function DashboardPage({
 
     <AppLayout
 
-      userName={userEmail}
+      userName={
+        userEmail
+      }
 
       cashBookName={
         selectedCashBook?.name ?? ""
       }
 
-      onLogout={onLogout}
+      onLogout={
+        onLogout
+      }
+
     >
 
-      <div className="dashboard-container">
+      <div
+        className="dashboard-container"
+      >
 
 
         <DashboardHeader
@@ -256,11 +417,22 @@ function DashboardPage({
             handleDeleteTransaction
           }
 
-        />
+          deletingTransactionId={
+            deletingTransactionId
+          }
 
+          onViewDetails={
+            handleViewTransactionDetails
+          }
+
+        />
 
       </div>
 
+
+      {/* -----------------------------------------
+          Create / Edit Drawer
+      ------------------------------------------ */}
 
       <TransactionDrawer
 
@@ -276,10 +448,9 @@ function DashboardPage({
           editingTransaction
         }
 
-        onClose={() => {
-    setDrawerOpen(false);
-    setEditingTransaction(null);
-  }}
+        onClose={
+          handleDrawerClose
+        }
 
         onTransactionSaved={
           async () => {
@@ -289,6 +460,31 @@ function DashboardPage({
             await refreshSummary();
 
           }
+        }
+
+      />
+
+
+      {/* -----------------------------------------
+          Read-only Transaction Details Drawer
+      ------------------------------------------ */}
+
+      <TransactionDetailsDrawer
+
+        transaction={
+          detailsTransaction
+        }
+
+        onClose={
+          handleDetailsClose
+        }
+
+        onEdit={
+          handleEditTransaction
+        }
+
+        onDelete={
+          handleDeleteTransaction
         }
 
       />

@@ -5,6 +5,8 @@ export type Transaction = {
 
   amount: number;
 
+  updated_at:string;
+
   balance_after: number;
 
   notes: string | null;
