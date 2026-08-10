@@ -1,39 +1,39 @@
 import "./../styles/DashboardPage.css";
 
 import FinancialSummary
-from "../components/dashboard/FinancialSummary/FinancialSummary";
+  from "../components/dashboard/FinancialSummary/FinancialSummary";
 
 import { useCashBook }
-from "../hooks/useCashBook";
+  from "../hooks/useCashBook";
 
 import DashboardHeader
-from "../components/dashboard/DashboardHeader/DashboardHeader";
+  from "../components/dashboard/DashboardHeader/DashboardHeader";
 
 import AppLayout
-from "../components/layout/AppLayout/AppLayout";
+  from "../components/layout/AppLayout/AppLayout";
 
 import CashBookToolbar
-from "../components/dashboard/CashBookToolbar/CashBookToolbar";
+  from "../components/dashboard/CashBookToolbar/CashBookToolbar";
 
 import { useState } from "react";
 
 import { useTransactions }
-from "../hooks/useTransactions";
+  from "../hooks/useTransactions";
 
 import TransactionDrawer
-from "../components/dashboard/TransactionDrawer/TransactionDrawer";
+  from "../components/dashboard/TransactionDrawer/TransactionDrawer";
 
 import TransactionDetailsDrawer
-from "../components/dashboard/TransactionDetailsDrawer/TransactionDetailsDrawer";
+  from "../components/dashboard/TransactionDetailsDrawer/TransactionDetailsDrawer";
 
 import SearchBar
-from "../components/dashboard/SearchBar/SearchBar";
+  from "../components/dashboard/SearchBar/SearchBar";
 
 import { useFinancialSummary }
-from "../hooks/useFinancialSummary";
+  from "../hooks/useFinancialSummary";
 
 import TransactionTable
-from "../components/dashboard/TransactionTable/TransactionTable";
+  from "../components/dashboard/TransactionTable/TransactionTable";
 
 import type {
   Transaction,
@@ -42,6 +42,10 @@ import type {
 import {
   deleteTransaction,
 } from "../services/transactionService";
+
+import {
+  useEffect
+} from "react";
 
 
 type DashboardPageProps = {
@@ -61,6 +65,10 @@ function DashboardPage({
 
 }: DashboardPageProps) {
 
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const [pageSize, setPageSize] = useState(10);
+
 
   const {
     selectedCashBook,
@@ -72,7 +80,7 @@ function DashboardPage({
     transactions,
 
     loading:
-      transactionsLoading,
+    transactionsLoading,
 
     reloadTransactions,
 
@@ -130,10 +138,353 @@ function DashboardPage({
     string | null
   >(null);
 
+  const [
+    searchTerm,
+    setSearchTerm,
+  ] = useState("");
+
+  const [
+    filters,
+    setFilters,
+  ] = useState({
+    duration: "All Time",
+    member: "All Members",
+    category: "All Categories",
+    paymentMode: "All Modes",
+    fromDate: "",
+    toDate: "",
+  });
+
+  const members = Array.from(
+    new Set(
+      transactions
+        .map(
+          (transaction) =>
+            transaction.member_name
+        )
+        .filter(Boolean)
+    )
+  );
+
+  const categories = Array.from(
+    new Set(
+      transactions
+        .map(
+          (transaction) =>
+            transaction.category_name
+        )
+        .filter(Boolean)
+    )
+  );
+
+  const paymentModes = Array.from(
+    new Set(
+      transactions
+        .map(
+          (transaction) =>
+            transaction.payment_mode_name
+        )
+        .filter(Boolean)
+    )
+  );
+
+  const filteredTransactions =
+    transactions.filter((transaction) => {
+
+      /*
+       * -----------------------------------------
+       * SEARCH
+       * -----------------------------------------
+       */
+
+      const search =
+        searchTerm
+          .trim()
+          .toLowerCase();
+
+      const amount =
+        String(transaction.amount);
+
+      const remarks =
+        transaction.notes
+          ?.toLowerCase() ?? "";
+
+      const matchesSearch =
+        !search ||
+        amount.includes(search) ||
+        remarks.includes(search);
+
+
+      /*
+       * -----------------------------------------
+       * MEMBER
+       * -----------------------------------------
+       */
+
+      const matchesMember =
+        filters.member ===
+        "All Members" ||
+        transaction.member_name ===
+        filters.member;
+
+
+      /*
+       * -----------------------------------------
+       * CATEGORY
+       * -----------------------------------------
+       */
+
+      const matchesCategory =
+        filters.category ===
+        "All Categories" ||
+        transaction.category_name ===
+        filters.category;
+
+
+      /*
+       * -----------------------------------------
+       * PAYMENT MODE
+       * -----------------------------------------
+       */
+
+      const matchesPaymentMode =
+        filters.paymentMode ===
+        "All Modes" ||
+        transaction.payment_mode_name ===
+        filters.paymentMode;
+
+
+      /*
+       * -----------------------------------------
+       * DURATION
+       * -----------------------------------------
+       */
+
+      const transactionDate =
+        new Date(
+          transaction.transaction_at
+        );
+
+      const now = new Date();
+
+      let matchesDuration = true;
+
+
+      if (
+        filters.duration ===
+        "Today"
+      ) {
+
+        matchesDuration =
+          transactionDate.getFullYear() ===
+          now.getFullYear() &&
+          transactionDate.getMonth() ===
+          now.getMonth() &&
+          transactionDate.getDate() ===
+          now.getDate();
+
+      }
+
+
+      if (
+        filters.duration ===
+        "This Week"
+      ) {
+
+        const startOfWeek =
+          new Date(now);
+
+        const day =
+          startOfWeek.getDay();
+
+        const difference =
+          day === 0
+            ? 6
+            : day - 1;
+
+        startOfWeek.setDate(
+          startOfWeek.getDate() -
+          difference
+        );
+
+        startOfWeek.setHours(
+          0,
+          0,
+          0,
+          0
+        );
+
+        matchesDuration =
+          transactionDate >=
+          startOfWeek;
+
+      }
+
+
+      if (
+        filters.duration ===
+        "This Month"
+      ) {
+
+        matchesDuration =
+          transactionDate.getFullYear() ===
+          now.getFullYear() &&
+          transactionDate.getMonth() ===
+          now.getMonth();
+
+      }
+
+
+      if (
+        filters.duration ===
+        "This Year"
+      ) {
+
+        matchesDuration =
+          transactionDate.getFullYear() ===
+          now.getFullYear();
+
+      }
+
+      /*
+ * -----------------------------------------
+ * CUSTOM DATE RANGE
+ * -----------------------------------------
+ */
+
+      if (
+        filters.duration ===
+        "Custom Range"
+      ) {
+
+        const transactionDay =
+          new Date(transactionDate);
+
+        transactionDay.setHours(
+          0,
+          0,
+          0,
+          0
+        );
+
+
+        if (filters.fromDate) {
+
+          const from =
+            new Date(
+              `${filters.fromDate}T00:00:00`
+            );
+
+          matchesDuration =
+            transactionDay >= from;
+
+        }
+
+
+        if (
+          filters.toDate &&
+          matchesDuration
+        ) {
+
+          const to =
+            new Date(
+              `${filters.toDate}T23:59:59`
+            );
+
+          matchesDuration =
+            transactionDay <= to;
+
+        }
+
+      }
+
+
+      /*
+       * -----------------------------------------
+       * FINAL RESULT
+       * -----------------------------------------
+       */
+
+      return (
+        matchesSearch &&
+        matchesMember &&
+        matchesCategory &&
+        matchesPaymentMode &&
+        matchesDuration
+      );
+
+    });
+
+  const totalFilteredTransactions =
+    filteredTransactions.length;
+
+  const totalPages =
+    Math.max(
+      1,
+      Math.ceil(
+        totalFilteredTransactions /
+        pageSize
+      )
+    );
+
+  const paginatedTransactions =
+    filteredTransactions.slice(
+      (currentPage - 1) * pageSize,
+      currentPage * pageSize
+    );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    searchTerm,
+    filters.duration,
+    filters.member,
+    filters.category,
+    filters.paymentMode,
+    filters.fromDate,
+    filters.toDate
+  ]);
+
+  const hasActiveFilters =
+  searchTerm.trim() !== "" ||
+  filters.duration !== "All Time" ||
+  filters.member !== "All Members" ||
+  filters.category !== "All Categories" ||
+  filters.paymentMode !== "All Modes" ||
+  filters.fromDate !== "" ||
+  filters.toDate !== "";
 
   /* -----------------------------------------------
      Cash In
   ------------------------------------------------ */
+
+  const filteredTotalCashIn =
+    filteredTransactions
+      .filter(
+        (transaction) =>
+          transaction.entry_type === "cash_in"
+      )
+      .reduce(
+        (total, transaction) =>
+          total + Number(transaction.amount),
+        0
+      );
+
+  const filteredTotalCashOut =
+    filteredTransactions
+      .filter(
+        (transaction) =>
+          transaction.entry_type === "cash_out"
+      )
+      .reduce(
+        (total, transaction) =>
+          total + Number(transaction.amount),
+        0
+      );
+
+  const filteredNetBalance =
+    filteredTotalCashIn -
+    filteredTotalCashOut;
 
   const handleCashIn = () => {
 
@@ -192,7 +543,7 @@ function DashboardPage({
     setTransactionType(
 
       transaction.entry_type ===
-      "cash_in"
+        "cash_in"
 
         ? "cash-in"
 
@@ -376,37 +727,62 @@ function DashboardPage({
             handleCashOut
           }
 
+          members={
+            members
+          }
+
+          categories={
+            categories
+          }
+
+          paymentModes={
+            paymentModes
+          }
+
+          onFiltersChange={
+            setFilters
+          }
+
         />
 
 
-        <SearchBar />
+        <SearchBar
+          value={searchTerm}
+          onChange={setSearchTerm}
+        />
 
 
         <FinancialSummary
-
           totalCashIn={
-            summary.totalCashIn
+            filteredTotalCashIn
           }
 
           totalCashOut={
-            summary.totalCashOut
+            filteredTotalCashOut
           }
 
           netBalance={
-            summary.netBalance
+            filteredNetBalance
           }
-
         />
 
 
         <TransactionTable
 
           transactions={
-            transactions
+            paginatedTransactions
           }
 
           loading={
             transactionsLoading
+          }
+
+          totalTransactions={
+            totalFilteredTransactions
+          }
+
+          hasActiveFilters={
+            hasActiveFilters
           }
 
           onEdit={
@@ -424,6 +800,33 @@ function DashboardPage({
           onViewDetails={
             handleViewTransactionDetails
           }
+
+          onClearFilters={() => {
+
+            setSearchTerm("");
+
+            setFilters({
+              duration: "All Time",
+              member: "All Members",
+              category: "All Categories",
+              paymentMode: "All Modes",
+              fromDate: "",
+              toDate: ""
+            });
+
+          }}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          pageSize={pageSize}
+
+          onPageChange={
+            setCurrentPage
+          }
+
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          }}
 
         />
 
@@ -474,26 +877,17 @@ function DashboardPage({
         transaction={
           detailsTransaction
         }
-
         onClose={
           handleDetailsClose
         }
-
         onEdit={
           handleEditTransaction
         }
-
         onDelete={
           handleDeleteTransaction
         }
-
       />
-
     </AppLayout>
-
   );
-
 }
-
-
 export default DashboardPage;

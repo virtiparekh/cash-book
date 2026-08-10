@@ -25,6 +25,14 @@ type TransactionTableProps = {
   onViewDetails: (
     transaction: Transaction
   ) => void;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
+  totalTransactions: number;
+  hasActiveFilters: boolean;
+  onClearFilters: () => void;
 };
 
 function TransactionTable({
@@ -34,6 +42,14 @@ function TransactionTable({
   onDelete,
   deletingTransactionId,
   onViewDetails,
+  currentPage,
+  totalPages,
+  pageSize,
+  onPageChange,
+  onPageSizeChange,
+  totalTransactions,
+  hasActiveFilters,
+  onClearFilters
 }: TransactionTableProps) {
 
   if (loading) {
@@ -56,25 +72,179 @@ function TransactionTable({
       className="transaction-section"
     >
 
-      <div
-        className="transaction-toolbar"
-      >
+      {/*<div
+        className="transaction-toolbar">
 
-        <div>
+         <div>
+          <div className="transaction-title-row">
 
-          <h3>
-            Transactions
-          </h3>
+            <h3>
+              Transactions
+            </h3>
+
+            {hasActiveFilters && (
+              <span className="filtered-badge">
+                Filtered
+              </span>
+            )}
+
+          </div>
 
           <p>
-            Track every income and expense.
+            {hasActiveFilters
+              ? `Showing ${transactions.length} of ${totalTransactions} transactions`
+              : `Showing ${transactions.length} transactions`
+            }
           </p>
+        </div> 
+
+      </div> */}
+
+          {/* -----------------------------------------
+          Pagination
+      ------------------------------------------ */}
+
+      {totalTransactions > 0 && (
+        <div className="transaction-pagination">
+
+          <div className="pagination-info">
+
+            Showing{" "}
+
+            {Math.min(
+              (currentPage - 1) * pageSize + 1,
+              totalTransactions
+            )}
+
+            {" - "}
+
+            {Math.min(
+              currentPage * pageSize,
+              totalTransactions
+            )}
+
+            {" of "}
+
+            {totalTransactions}
+
+            {" transactions"}
+
+            {hasActiveFilters && (
+              <span className="filtered-badge">
+                Filtered
+              </span>
+            )}
+
+          </div>
+
+
+          <div className="pagination-controls">
+
+            {/* Previous */}
+
+            <button
+              type="button"
+              className="pagination-button"
+              disabled={currentPage === 1}
+              onClick={() =>
+                onPageChange(
+                  currentPage - 1
+                )
+              }
+              aria-label="Previous page"
+            >
+              ‹
+            </button>
+
+
+            {/* Page Numbers */}
+
+            {Array.from(
+              { length: totalPages },
+              (_, index) => index + 1
+            ).map((page) => (
+
+              <button
+                key={page}
+                type="button"
+                className={
+                  page === currentPage
+                    ? "pagination-button pagination-button--active"
+                    : "pagination-button"
+                }
+                onClick={() =>
+                  onPageChange(page)
+                }
+              >
+                {page}
+              </button>
+
+            ))}
+
+
+            {/* Next */}
+
+            <button
+              type="button"
+              className="pagination-button"
+              disabled={
+                currentPage === totalPages
+              }
+              onClick={() =>
+                onPageChange(
+                  currentPage + 1
+                )
+              }
+              aria-label="Next page"
+            >
+              ›
+            </button>
+
+          </div>
+
+
+          {/* Page Size */}
+
+          <div className="pagination-size">
+
+            <label htmlFor="page-size">
+              Rows per page
+            </label>
+
+            <select
+              id="page-size"
+              value={pageSize}
+              onChange={(event) =>
+                onPageSizeChange(
+                  Number(
+                    event.target.value
+                  )
+                )
+              }
+            >
+
+              <option value={10}>
+                10
+              </option>
+
+              <option value={25}>
+                25
+              </option>
+
+              <option value={50}>
+                50
+              </option>
+
+              <option value={100}>
+                100
+              </option>
+
+            </select>
+
+          </div>
 
         </div>
-
-      </div>
-
-
+      )}
       <div
         className="transaction-table"
       >
@@ -133,25 +303,43 @@ function TransactionTable({
                   className="empty-row"
                 >
 
-                  <div
-                    className="empty-state"
-                  >
+                  <div className="empty-state">
 
-                    <div
-                      className="empty-icon"
-                    >
-                      💰
+                    <div className="empty-icon">
+                      🔍
                     </div>
 
-                    <h4>
-                      No Transactions Yet
-                    </h4>
+                    {hasActiveFilters ? (
+                      <>
+                        <h4>
+                          No Matching Transactions
+                        </h4>
 
-                    <p>
-                      Your first Cash In or
-                      Cash Out entry will
-                      appear here.
-                    </p>
+                        <p>
+                          No transactions match your
+                          current search or filters.
+                        </p>
+
+                        <button
+                          type="button"
+                          className="clear-results-button"
+                          onClick={onClearFilters}
+                        >
+                          Clear Filters
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <h4>
+                          No Transactions Yet
+                        </h4>
+
+                        <p>
+                          Your first Cash In or Cash Out
+                          entry will appear here.
+                        </p>
+                      </>
+                    )}
 
                   </div>
 
@@ -191,7 +379,7 @@ function TransactionTable({
                         <div className="transaction-time">
                           {formatTime(transaction.updated_at)}
                         </div>) : (
-                        
+
                         <div className="transaction-time">
                           {formatTime(transaction.transaction_at)}
                         </div>)
