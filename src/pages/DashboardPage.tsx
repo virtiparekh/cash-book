@@ -47,6 +47,13 @@ import {
   useEffect
 } from "react";
 
+import TransactionsPage from "./TransactionPage";
+
+import MembersPage from "./MembersPage";
+
+import ReportsPage from "./ReportsPage";
+
+import SettingsPage from "./SettingsPage";
 
 type DashboardPageProps = {
 
@@ -68,7 +75,30 @@ function DashboardPage({
   const [currentPage, setCurrentPage] = useState(1);
 
   const [pageSize, setPageSize] = useState(10);
+  const [activeItem, setActiveItem] =
+    useState("Dashboard");
 
+  const renderActivePage = () => {
+
+    switch (activeItem) {
+
+      case "Transactions":
+        return <TransactionsPage />;
+
+      case "Members":
+        return <MembersPage />;
+
+      case "Reports":
+        return <ReportsPage />;
+
+      case "Settings":
+        return <SettingsPage />;
+
+      case "Dashboard":
+      default:
+        return null;
+    }
+  };
 
   const {
     selectedCashBook,
@@ -91,7 +121,7 @@ function DashboardPage({
 
   const {
 
-    summary,
+    // summary,
 
     refreshSummary,
 
@@ -446,13 +476,13 @@ function DashboardPage({
   ]);
 
   const hasActiveFilters =
-  searchTerm.trim() !== "" ||
-  filters.duration !== "All Time" ||
-  filters.member !== "All Members" ||
-  filters.category !== "All Categories" ||
-  filters.paymentMode !== "All Modes" ||
-  filters.fromDate !== "" ||
-  filters.toDate !== "";
+    searchTerm.trim() !== "" ||
+    filters.duration !== "All Time" ||
+    filters.member !== "All Members" ||
+    filters.category !== "All Categories" ||
+    filters.paymentMode !== "All Modes" ||
+    filters.fromDate !== "" ||
+    filters.toDate !== "";
 
   /* -----------------------------------------------
      Cash In
@@ -683,210 +713,160 @@ function DashboardPage({
   return (
 
     <AppLayout
-
-      userName={
-        userEmail
-      }
-
+      userName={userEmail}
       cashBookName={
         selectedCashBook?.name ?? ""
       }
+      onLogout={onLogout}
+      activeItem={activeItem}
+      onNavigate={(item) => {
+        console.log(
+          "Sidebar navigation:",
+          item
+        );
 
-      onLogout={
-        onLogout
-      }
-
+        setActiveItem(item);
+      }}
     >
 
-      <div
-        className="dashboard-container"
-      >
+      {activeItem === "Dashboard" ? (
+
+        <>
+          <div className="dashboard-container">
+
+            {/* YOUR EXISTING DASHBOARD CONTENT */}
+
+            <DashboardHeader
+              title={
+                selectedCashBook?.name ??
+                "Cash Book"
+              }
+              subtitle={
+                `Welcome ${userEmail}`
+              }
+            />
+
+            <CashBookToolbar
+              onCashIn={handleCashIn}
+              onCashOut={handleCashOut}
+              members={members}
+              categories={categories}
+              paymentModes={paymentModes}
+              onFiltersChange={setFilters}
+            />
+
+            <SearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+            />
+
+            <FinancialSummary
+              totalCashIn={
+                filteredTotalCashIn
+              }
+              totalCashOut={
+                filteredTotalCashOut
+              }
+              netBalance={
+                filteredNetBalance
+              }
+            />
+
+            <TransactionTable
+              transactions={
+                paginatedTransactions
+              }
+              loading={
+                transactionsLoading
+              }
+              totalTransactions={
+                totalFilteredTransactions
+              }
+              hasActiveFilters={
+                hasActiveFilters
+              }
+              onEdit={
+                handleEditTransaction
+              }
+              onDelete={
+                handleDeleteTransaction
+              }
+              deletingTransactionId={
+                deletingTransactionId
+              }
+              onViewDetails={
+                handleViewTransactionDetails
+              }
+              onClearFilters={() => {
+
+                setSearchTerm("");
+
+                setFilters({
+                  duration: "All Time",
+                  member: "All Members",
+                  category: "All Categories",
+                  paymentMode: "All Modes",
+                  fromDate: "",
+                  toDate: "",
+                });
+
+              }}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              pageSize={pageSize}
+              onPageChange={
+                setCurrentPage
+              }
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              }}
+            />
+
+          </div>
 
 
-        <DashboardHeader
-
-          title={
-            selectedCashBook?.name ??
-            "Cash Book"
-          }
-
-          subtitle={
-            `Welcome ${userEmail}`
-          }
-
-        />
-
-
-        <CashBookToolbar
-
-          onCashIn={
-            handleCashIn
-          }
-
-          onCashOut={
-            handleCashOut
-          }
-
-          members={
-            members
-          }
-
-          categories={
-            categories
-          }
-
-          paymentModes={
-            paymentModes
-          }
-
-          onFiltersChange={
-            setFilters
-          }
-
-        />
+          <TransactionDrawer
+            open={drawerOpen}
+            type={transactionType}
+            transaction={
+              editingTransaction
+            }
+            onClose={
+              handleDrawerClose
+            }
+            onTransactionSaved={
+              async () => {
+                await reloadTransactions();
+                await refreshSummary();
+              }
+            }
+          />
 
 
-        <SearchBar
-          value={searchTerm}
-          onChange={setSearchTerm}
-        />
+          <TransactionDetailsDrawer
+            transaction={
+              detailsTransaction
+            }
+            onClose={
+              handleDetailsClose
+            }
+            onEdit={
+              handleEditTransaction
+            }
+            onDelete={
+              handleDeleteTransaction
+            }
+          />
 
+        </>
 
-        <FinancialSummary
-          totalCashIn={
-            filteredTotalCashIn
-          }
+      ) : (
 
-          totalCashOut={
-            filteredTotalCashOut
-          }
+        renderActivePage()
 
-          netBalance={
-            filteredNetBalance
-          }
-        />
+      )}
 
-
-        <TransactionTable
-
-          transactions={
-            paginatedTransactions
-          }
-
-          loading={
-            transactionsLoading
-          }
-
-          totalTransactions={
-            totalFilteredTransactions
-          }
-
-          hasActiveFilters={
-            hasActiveFilters
-          }
-
-          onEdit={
-            handleEditTransaction
-          }
-
-          onDelete={
-            handleDeleteTransaction
-          }
-
-          deletingTransactionId={
-            deletingTransactionId
-          }
-
-          onViewDetails={
-            handleViewTransactionDetails
-          }
-
-          onClearFilters={() => {
-
-            setSearchTerm("");
-
-            setFilters({
-              duration: "All Time",
-              member: "All Members",
-              category: "All Categories",
-              paymentMode: "All Modes",
-              fromDate: "",
-              toDate: ""
-            });
-
-          }}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          pageSize={pageSize}
-
-          onPageChange={
-            setCurrentPage
-          }
-
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setCurrentPage(1);
-          }}
-
-        />
-
-      </div>
-
-
-      {/* -----------------------------------------
-          Create / Edit Drawer
-      ------------------------------------------ */}
-
-      <TransactionDrawer
-
-        open={
-          drawerOpen
-        }
-
-        type={
-          transactionType
-        }
-
-        transaction={
-          editingTransaction
-        }
-
-        onClose={
-          handleDrawerClose
-        }
-
-        onTransactionSaved={
-          async () => {
-
-            await reloadTransactions();
-
-            await refreshSummary();
-
-          }
-        }
-
-      />
-
-
-      {/* -----------------------------------------
-          Read-only Transaction Details Drawer
-      ------------------------------------------ */}
-
-      <TransactionDetailsDrawer
-
-        transaction={
-          detailsTransaction
-        }
-        onClose={
-          handleDetailsClose
-        }
-        onEdit={
-          handleEditTransaction
-        }
-        onDelete={
-          handleDeleteTransaction
-        }
-      />
     </AppLayout>
   );
 }

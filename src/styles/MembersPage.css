@@ -1,0 +1,1195 @@
+.members-page {
+  width: 100%;
+}
+
+.members-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.members-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 650;
+  color: #111827;
+}
+
+.members-header p {
+  margin: 6px 0 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.add-member-button {
+  height: 42px;
+  padding: 0 18px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #2563eb;
+  color: white;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.add-member-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.members-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  min-height: 76px;
+  padding: 14px 20px;
+
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.member-row:last-child {
+  border-bottom: none;
+}
+
+.member-avatar {
+  width: 42px;
+  height: 42px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #eff6ff;
+  color: #2563eb;
+
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.member-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.member-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.member-status {
+  margin-top: 4px;
+
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.member-role {
+  min-width: 72px;
+
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  text-align: center;
+
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.member-role--owner {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.member-role--admin {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.member-role--member {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.members-loading {
+  padding: 60px 20px;
+
+  text-align: center;
+
+  color: #64748b;
+}
+
+.members-error {
+  padding: 20px;
+
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+
+  background: #fef2f2;
+  color: #b91c1c;
+
+  font-size: 14px;
+}
+
+.members-empty {
+  padding: 70px 20px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.members-empty-icon {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.members-empty h3 {
+  margin: 0;
+
+  font-size: 18px;
+  font-weight: 600;
+
+  color: #374151;
+}
+
+.members-empty p {
+  margin: 8px 0 0;
+
+  color: #94a3b8;
+
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+
+  .members-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .add-member-button {
+    width: 100%;
+  }
+
+  .member-row {
+    padding: 14px;
+  }
+
+  .member-role {
+    min-width: 62px;
+  }
+}
+
+/* -----------------------------------------------
+   Add Member Modal
+------------------------------------------------ */
+
+.member-modal-overlay {
+  position: fixed;
+  inset: 0;
+
+  background: rgba(15, 23, 42, 0.45);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  z-index: 1000;
+}
+
+.member-modal {
+  width: 100%;
+  max-width: 460px;
+
+  background: #ffffff;
+
+  border-radius: 14px;
+
+  box-shadow:
+    0 20px 50px rgba(15, 23, 42, 0.18);
+
+  overflow: hidden;
+}
+
+.member-modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  padding: 22px 24px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.member-modal-header h2 {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 600;
+
+  color: #111827;
+}
+
+.member-modal-header p {
+  margin: 6px 0 0;
+
+  font-size: 14px;
+
+  color: #6b7280;
+}
+
+.member-modal-close {
+  width: 34px;
+  height: 34px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: #64748b;
+
+  font-size: 24px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.member-modal-close:hover {
+  background: #f1f5f9;
+  color: #111827;
+}
+
+.member-modal-body {
+  padding: 24px;
+}
+
+.member-modal-label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  color: #374151;
+}
+
+.member-modal-body input {
+  width: 100%;
+  height: 44px;
+
+  box-sizing: border-box;
+
+  padding: 0 12px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 14px;
+
+  outline: none;
+}
+
+.member-modal-body input:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.member-modal-error {
+  margin-top: 10px;
+
+  padding: 10px 12px;
+
+  border-radius: 8px;
+
+  background: #fef2f2;
+
+  color: #dc2626;
+
+  font-size: 13px;
+}
+
+.member-modal-footer {
+  display: flex;
+
+  justify-content: flex-end;
+
+  gap: 10px;
+
+  padding: 16px 24px;
+
+  border-top: 1px solid #e5e7eb;
+
+  background: #f8fafc;
+}
+
+.member-modal-cancel,
+.member-modal-submit {
+  height: 40px;
+
+  padding: 0 16px;
+
+  border-radius: 8px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+.member-modal-cancel {
+  border: 1px solid #d1d5db;
+
+  background: #ffffff;
+
+  color: #374151;
+}
+
+.member-modal-cancel:hover {
+  background: #f9fafb;
+}
+
+.member-modal-submit {
+  border: 1px solid #2563eb;
+
+  background: #2563eb;
+
+  color: #ffffff;
+}
+
+.member-modal-submit:hover {
+  background: #1d4ed8;
+}
+
+.member-modal-submit:disabled,
+.member-modal-cancel:disabled,
+.member-modal-close:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+
+/* -----------------------------------------------
+   Mobile
+------------------------------------------------ */
+
+@media (max-width: 640px) {
+
+  .member-modal-overlay {
+    align-items: flex-end;
+
+    padding: 0;
+  }
+
+  .member-modal {
+    max-width: none;
+
+    border-radius: 16px 16px 0 0;
+  }
+
+  .member-modal-header,
+  .member-modal-body {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .member-modal-footer {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .member-modal-cancel,
+  .member-modal-submit {
+    flex: 1;
+  }
+
+}
+
+.member-edit-button {
+  margin-left: auto;
+
+  height: 34px;
+
+  padding: 0 12px;
+
+  border: 1px solid #dbe2ea;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #2563eb;
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+
+.member-edit-button:hover {
+  background: #eff6ff;
+
+  border-color: #93c5fd;
+}
+
+.member-status-badge {
+  min-width: 70px;
+  text-align: center;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.member-action-button {
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.member-action-button--deactivate {
+  border: 1px solid #fecaca;
+  background: #ffffff;
+  color: #dc2626;
+}
+
+.member-action-button--deactivate:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.member-action-button--activate {
+  border: 1px solid #bbf7d0;
+  background: #ffffff;
+  color: #16a34a;
+}
+
+.member-action-button--activate:hover {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.member-edit-button svg{
+    width: 17px;
+  height: 17px;
+}
+
+.member-action-button--promote {
+  border: 1px solid #bfdbfe;
+  background: #ffffff;
+  color: #2563eb;
+}
+
+.member-action-button--promote:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.member-action-button--demote {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #475569;
+}
+
+.member-action-button--demote:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+/* -----------------------------------------------
+   Invitations
+------------------------------------------------ */
+
+.invitations-section {
+  margin-top: 28px;
+}
+
+
+.invitations-header {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 14px;
+}
+
+
+.invitations-header h2 {
+  margin: 0;
+
+  font-size: 18px;
+
+  font-weight: 600;
+
+  color: #111827;
+}
+
+
+.invitations-header p {
+  margin: 5px 0 0;
+
+  font-size: 14px;
+
+  color: #6b7280;
+}
+
+
+.invitation-count {
+  min-width: 28px;
+
+  height: 28px;
+
+  padding: 0 8px;
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 999px;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  font-size: 13px;
+
+  font-weight: 600;
+}
+
+
+.invitations-card {
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 14px;
+
+  overflow: hidden;
+}
+
+
+.invitations-list {
+  display: flex;
+
+  flex-direction: column;
+}
+
+
+.invitation-row {
+  display: flex;
+
+  align-items: center;
+
+  gap: 14px;
+
+  padding: 16px 20px;
+
+  border-bottom: 1px solid #f1f5f9;
+}
+
+
+.invitation-row:last-child {
+  border-bottom: none;
+}
+
+
+.invitation-avatar {
+  width: 40px;
+
+  height: 40px;
+
+  flex-shrink: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #eef2ff;
+
+  color: #2563eb;
+
+  font-weight: 600;
+}
+
+
+.invitation-info {
+  flex: 1;
+
+  min-width: 150px;
+}
+
+
+.invitation-name {
+  font-size: 14px;
+
+  font-weight: 600;
+
+  color: #1f2937;
+}
+
+
+.invitation-email {
+  margin-top: 3px;
+
+  font-size: 13px;
+
+  color: #6b7280;
+}
+
+
+.invitation-status {
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  background: #fff7ed;
+
+  color: #c2410c;
+
+  font-size: 12px;
+
+  font-weight: 600;
+}
+
+
+.invitation-expiry {
+  font-size: 12px;
+
+  color: #94a3b8;
+
+  white-space: nowrap;
+}
+
+
+.cancel-invitation-button {
+  height: 34px;
+
+  padding: 0 12px;
+
+  border: 1px solid #fecaca;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #dc2626;
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+
+.cancel-invitation-button:hover {
+  background: #fef2f2;
+
+  border-color: #fca5a5;
+}
+
+
+.cancel-invitation-button:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+
+.invitations-loading,
+.invitations-empty {
+  padding: 45px 20px;
+
+  text-align: center;
+}
+
+
+.invitations-empty-icon {
+  font-size: 34px;
+
+  margin-bottom: 8px;
+}
+
+
+.invitations-empty h3 {
+  margin: 0;
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+  color: #374151;
+}
+
+
+.invitations-empty p {
+  margin: 6px 0 0;
+
+  font-size: 14px;
+
+  color: #94a3b8;
+}
+
+
+.invitations-loading {
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+/* -----------------------------------------------
+   Mobile
+------------------------------------------------ */
+
+@media (max-width: 768px) {
+
+  .invitation-row {
+    flex-wrap: wrap;
+
+    padding: 14px 16px;
+  }
+
+
+  .invitation-info {
+    min-width: 0;
+
+    flex: 1;
+  }
+
+
+  .invitation-status {
+    order: 3;
+  }
+
+
+  .invitation-expiry {
+    order: 4;
+
+    flex: 1;
+  }
+
+
+  .cancel-invitation-button {
+    order: 5;
+  }
+
+}
+
+/* -----------------------------------------------
+   Existing Invitation - Copy Link
+------------------------------------------------ */
+
+.copy-existing-invitation-button {
+    height: 36px;
+
+    padding: 0 14px;
+
+    border: 1px solid #bfdbfe;
+
+    border-radius: 8px;
+
+    background: #eff6ff;
+
+    color: #2563eb;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.copy-existing-invitation-button:hover {
+    background: #dbeafe;
+
+    border-color: #93c5fd;
+
+    transform: translateY(-1px);
+}
+
+.copy-existing-invitation-button:active {
+    transform: translateY(0);
+}
+
+/* -----------------------------------------------
+   Invitation Link Modal
+------------------------------------------------ */
+
+.invitation-link-modal-overlay {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1000;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(15, 23, 42, 0.45);
+}
+
+.invitation-link-modal {
+    width: min(560px, 100%);
+
+    background: #ffffff;
+
+    border-radius: 16px;
+
+    border: 1px solid #e5e7eb;
+
+    box-shadow:
+        0 20px 50px rgba(15, 23, 42, 0.18);
+
+    overflow: hidden;
+}
+
+.invitation-link-modal-header {
+    display: flex;
+
+    align-items: flex-start;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 22px 24px;
+
+    border-bottom: 1px solid #eef2f7;
+}
+
+.invitation-link-modal-header h2 {
+    margin: 0;
+
+    font-size: 20px;
+
+    font-weight: 600;
+
+    color: #111827;
+}
+
+.invitation-link-modal-header p {
+    margin: 6px 0 0;
+
+    font-size: 14px;
+
+    color: #6b7280;
+
+    line-height: 1.5;
+}
+
+.invitation-link-close {
+    width: 34px;
+
+    height: 34px;
+
+    flex-shrink: 0;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    color: #64748b;
+
+    font-size: 22px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.invitation-link-close:hover {
+    background: #f8fafc;
+
+    color: #111827;
+}
+
+.invitation-link-modal-body {
+    padding: 24px;
+}
+
+.invitation-link-label {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    color: #374151;
+}
+
+.invitation-link-row {
+    display: flex;
+
+    gap: 10px;
+}
+
+.invitation-link-row input {
+    flex: 1;
+
+    min-width: 0;
+
+    height: 42px;
+
+    padding: 0 12px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 9px;
+
+    background: #f8fafc;
+
+    color: #374151;
+
+    font-size: 13px;
+
+    outline: none;
+}
+
+.invitation-link-row input:focus {
+    border-color: #93c5fd;
+}
+
+.invitation-copy-button {
+    height: 42px;
+
+    padding: 0 16px;
+
+    border: 1px solid #2563eb;
+
+    border-radius: 9px;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        background-color 0.15s ease,
+        transform 0.15s ease;
+}
+
+.invitation-copy-button:hover {
+    background: #1d4ed8;
+
+    transform: translateY(-1px);
+}
+
+.invitation-link-help {
+    margin: 12px 0 0;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+
+    color: #94a3b8;
+}
+
+.invitation-link-modal-footer {
+    display: flex;
+
+    justify-content: flex-end;
+
+    padding: 16px 24px;
+
+    border-top: 1px solid #eef2f7;
+
+    background: #f8fafc;
+}
+
+.invitation-link-done-button {
+    height: 38px;
+
+    padding: 0 18px;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 8px;
+
+    background: #ffffff;
+
+    color: #374151;
+
+    font-size: 14px;
+
+    font-weight: 500;
+
+    cursor: pointer;
+}
+
+.invitation-link-done-button:hover {
+    background: #f1f5f9;
+}
+
+@media (max-width: 640px) {
+
+    .invitation-link-modal-overlay {
+        align-items: flex-end;
+
+        padding: 12px;
+    }
+
+    .invitation-link-modal {
+        border-radius: 16px;
+    }
+
+    .invitation-link-row {
+        flex-direction: column;
+    }
+
+    .invitation-copy-button {
+        width: 100%;
+    }
+
+    .invitation-link-modal-header {
+        padding: 18px;
+    }
+
+    .invitation-link-modal-body {
+        padding: 18px;
+    }
+
+    .invitation-link-modal-footer {
+        padding: 14px 18px;
+    }
+
+}
+
+.invite-method-section {
+  margin-top: 16px;
+}
+
+
+.invite-method-section > label {
+  display: block;
+
+  margin-bottom: 8px;
+
+  font-size: 14px;
+
+  font-weight: 500;
+
+  color: #374151;
+}
+
+
+.invite-method-options {
+  display: flex;
+
+  gap: 20px;
+
+  margin-bottom: 16px;
+}
+
+
+.invite-method-option {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  font-size: 14px;
+
+  color: #374151;
+
+  cursor: pointer;
+}
+
+
+.invite-method-option input {
+  margin: 0;
+
+  cursor: pointer;
+}

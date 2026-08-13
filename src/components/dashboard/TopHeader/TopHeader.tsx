@@ -4,17 +4,35 @@ type TopHeaderProps = {
   userName: string;
   cashBookName: string;
   onLogout: () => void;
+
+  onMenuClick: () => void;
+  // sidebarOpen: boolean;
 };
 
 function TopHeader({
   userName,
   cashBookName,
   onLogout,
+  onMenuClick,
+  // sidebarOpen,
 }: TopHeaderProps) {
   return (
     <header className="top-header">
 
+      {/* -----------------------------------------
+          Left
+      ------------------------------------------ */}
+
       <div className="top-header__left">
+
+        <button
+          type="button"
+          className="top-header__menu"
+          onClick={onMenuClick}
+          aria-label="Open navigation"
+        >
+          ☰
+        </button>
 
         <div className="top-header__logo">
           ₹
@@ -25,6 +43,11 @@ function TopHeader({
         </div>
 
       </div>
+
+
+      {/* -----------------------------------------
+          Center
+      ------------------------------------------ */}
 
       <div className="top-header__center">
 
@@ -38,6 +61,11 @@ function TopHeader({
         </select>
 
       </div>
+
+
+      {/* -----------------------------------------
+          Right
+      ------------------------------------------ */}
 
       <div className="top-header__right">
 

@@ -49,3 +49,11 @@
   font-size: 13px;
   color: #6b7280;
 }
+
+.cashbook-setup-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}

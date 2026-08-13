@@ -1,18 +1,91 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 
-import { useAuth } from "./contexts/AuthContext";
-import { useCashBookGroups } from "./hooks/useCashBookGroups";
-import { useCashBook } from "./hooks/useCashBook";
+import {
+  useAuth,
+} from "./contexts/AuthContext";
 
-import { loadCurrentMember }
-  from "./services/memberService";
+import {
+  useCashBookGroups,
+} from "./hooks/useCashBookGroups";
 
-import DashboardPage from "./pages/DashboardPage";
-import CashBookSetupPage from "./pages/CashBookSetupPage";
-import LoginPage from "./pages/LoginPage";
-import SignupPage from "./pages/SignupPage";
+import {
+  useCashBook,
+} from "./hooks/useCashBook";
+
+import {
+  loadCurrentMember,
+} from "./services/memberService";
+
+import DashboardPage
+  from "./pages/DashboardPage";
+
+import CashBookSetupPage
+  from "./pages/CashBookSetupPage";
+
+import LoginPage
+  from "./pages/LoginPage";
+
+import SignupPage
+  from "./pages/SignupPage";
+
+import AcceptInvitationPage
+  from "./pages/AcceptInvitationPage";
+
 
 function App() {
+
+  /*
+   * -------------------------------------------------
+   * Current route
+   * -------------------------------------------------
+   */
+
+  const currentPath =
+    window.location.pathname;
+
+
+  const currentSearch =
+    window.location.search;
+
+
+  /*
+   * -------------------------------------------------
+   * Invitation route
+   * -------------------------------------------------
+   */
+
+  const isInvitationPage =
+    currentPath === "/invite";
+
+
+  /*
+   * -------------------------------------------------
+   * Login route
+   * -------------------------------------------------
+   */
+
+  const isLoginPage =
+    currentPath === "/login";
+
+
+  /*
+   * -------------------------------------------------
+   * Signup route
+   * -------------------------------------------------
+   */
+
+  const isSignupPage =
+    currentPath === "/signup";
+
+
+  /*
+   * -------------------------------------------------
+   * Authentication
+   * -------------------------------------------------
+   */
 
   const {
     user,
@@ -20,11 +93,25 @@ function App() {
     signOut,
   } = useAuth();
 
+
+  /*
+   * -------------------------------------------------
+   * Cash Book groups
+   * -------------------------------------------------
+   */
+
   const {
     groups,
     loading: groupsLoading,
     error,
   } = useCashBookGroups();
+
+
+  /*
+   * -------------------------------------------------
+   * Cash Book context
+   * -------------------------------------------------
+   */
 
   const {
     selectedCashBook,
@@ -32,12 +119,203 @@ function App() {
     setCurrentMember,
   } = useCashBook();
 
+
+  /*
+   * -------------------------------------------------
+   * Auth page
+   * -------------------------------------------------
+   */
+
   const [
     authPage,
     setAuthPage,
-  ] = useState<"login" | "signup">(
-    "login"
+  ] =
+    useState<
+      "login" | "signup"
+    >(
+      isSignupPage
+        ? "signup"
+        : "login"
+    );
+
+
+  /*
+   * -------------------------------------------------
+   * Return URL
+   * -------------------------------------------------
+   *
+   * Normal example:
+   *
+   * /login?returnTo=/dashboard
+   *
+   * Invitation example:
+   *
+   * /login?returnTo=%2Finvite%3Ftoken%3DXXX
+   *
+   * IMPORTANT:
+   *
+   * If the user is coming directly from
+   * /invite?token=XXX, we automatically create
+   * the returnTo value.
+   * -------------------------------------------------
+   */
+
+  const [
+    returnTo,
+    setReturnTo,
+  ] = useState<string | null>(
+    () => {
+
+      const params =
+        new URLSearchParams(
+          window.location.search
+        );
+
+
+      const existingReturnTo =
+        params.get(
+          "returnTo"
+        );
+
+
+      if (existingReturnTo) {
+
+        return existingReturnTo;
+
+      }
+
+
+      /*
+       * Direct invitation URL
+       */
+
+      if (
+        currentPath === "/invite"
+      ) {
+
+        const token =
+          params.get(
+            "token"
+          );
+
+
+        if (token) {
+
+          return (
+            `${currentPath}${currentSearch}`
+          );
+
+        }
+
+      }
+
+
+      return null;
+
+    }
   );
+
+
+  /*
+   * -------------------------------------------------
+   * Invitation token
+   * -------------------------------------------------
+   */
+
+  const invitationToken =
+    new URLSearchParams(
+      currentSearch
+    ).get(
+      "token"
+    );
+
+
+  /*
+   * -------------------------------------------------
+   * Redirect unauthenticated invitation user
+   * -------------------------------------------------
+   *
+   * User opens:
+   *
+   * /invite?token=XXX
+   *
+   * but is not logged in.
+   *
+   * We send them to:
+   *
+   * /login?returnTo=%2Finvite%3Ftoken%3DXXX
+   *
+   * This preserves the invitation.
+   * -------------------------------------------------
+   */
+
+  useEffect(() => {
+
+    if (
+      authLoading
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      !isInvitationPage
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      user
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      !invitationToken
+    ) {
+
+      return;
+
+    }
+
+
+    const invitationUrl =
+      `${currentPath}${currentSearch}`;
+
+
+    const loginUrl =
+      `/login?returnTo=${encodeURIComponent(
+        invitationUrl
+      )}`;
+
+
+    window.location.replace(
+      loginUrl
+    );
+
+  }, [
+    authLoading,
+    user,
+    isInvitationPage,
+    invitationToken,
+    currentPath,
+    currentSearch,
+  ]);
+
+
+  /*
+   * -------------------------------------------------
+   * Select first Cash Book
+   * -------------------------------------------------
+   */
 
   useEffect(() => {
 
@@ -58,13 +336,26 @@ function App() {
     setSelectedCashBook,
   ]);
 
+
+  /*
+   * -------------------------------------------------
+   * Load current member
+   * -------------------------------------------------
+   */
+
   useEffect(() => {
 
-    async function initialiseCurrentMember() {
+    async function
+    initialiseCurrentMember() {
 
-      if (!selectedCashBook) {
+      if (
+        !selectedCashBook
+      ) {
+
         return;
+
       }
+
 
       try {
 
@@ -73,11 +364,13 @@ function App() {
             selectedCashBook.id
           );
 
-        setCurrentMember(member);
 
-      }
+        setCurrentMember(
+          member
+        );
 
-      catch (error) {
+
+      } catch (error) {
 
         console.error(
           "Unable to load current member.",
@@ -88,6 +381,7 @@ function App() {
 
     }
 
+
     void initialiseCurrentMember();
 
   }, [
@@ -95,8 +389,16 @@ function App() {
     setCurrentMember,
   ]);
 
-  // Authentication loading
-  if (authLoading) {
+
+  /*
+   * -------------------------------------------------
+   * Authentication loading
+   * -------------------------------------------------
+   */
+
+  if (
+    authLoading
+  ) {
 
     return (
 
@@ -118,43 +420,449 @@ function App() {
 
   }
 
-  // Login / Signup
-  if (!user) {
+
+  /*
+   * -------------------------------------------------
+   * LOGIN / SIGNUP ROUTES
+   * -------------------------------------------------
+   */
+
+  if (
+    isLoginPage ||
+    isSignupPage
+  ) {
+
+
+    /*
+     * -------------------------------------------------
+     * Already authenticated
+     *
+     * If returnTo exists, go back to it.
+     * -------------------------------------------------
+     */
 
     if (
-      authPage === "signup"
+      user &&
+      returnTo
+    ) {
+
+      const destination =
+        returnTo;
+
+
+      setReturnTo(
+        null
+      );
+
+
+      window.location.href =
+        destination;
+
+
+      return (
+
+        <main
+          style={{
+            minHeight: "100vh",
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
+
+          <p>
+            Returning...
+          </p>
+
+        </main>
+
+      );
+
+    }
+
+
+    /*
+     * -------------------------------------------------
+     * LOGIN
+     * -------------------------------------------------
+     */
+
+    if (
+      isLoginPage &&
+      authPage !== "signup"
     ) {
 
       return (
 
-        <SignupPage
-          onShowLogin={() =>
+        <LoginPage
+
+          onShowSignup={() => {
+
             setAuthPage(
-              "login"
-            )
-          }
+              "signup"
+            );
+
+
+            const currentReturnTo =
+              returnTo;
+
+
+            if (
+              currentReturnTo
+            ) {
+
+              window.history.pushState(
+                {},
+                "",
+                `/signup?returnTo=${encodeURIComponent(
+                  currentReturnTo
+                )}`
+              );
+
+            } else {
+
+              window.history.pushState(
+                {},
+                "",
+                "/signup"
+              );
+
+            }
+
+          }}
+
+
+          onLoginSuccess={() => {
+
+            /*
+             * If this login came from an invitation,
+             * return to the invitation.
+             */
+
+            if (
+              returnTo
+            ) {
+
+              window.location.href =
+                returnTo;
+
+              return;
+
+            }
+
+
+            /*
+             * Normal login.
+             */
+
+            window.location.href =
+              "/dashboard";
+
+          }}
+
         />
 
       );
 
     }
 
+
+    /*
+     * -------------------------------------------------
+     * SIGNUP
+     * -------------------------------------------------
+     */
+
+    if (
+      isSignupPage ||
+      authPage === "signup"
+    ) {
+
+      return (
+
+        <SignupPage
+
+          onShowLogin={() => {
+
+            setAuthPage(
+              "login"
+            );
+
+
+            const currentReturnTo =
+              returnTo;
+
+
+            if (
+              currentReturnTo
+            ) {
+
+              window.history.pushState(
+                {},
+                "",
+                `/login?returnTo=${encodeURIComponent(
+                  currentReturnTo
+                )}`
+              );
+
+            } else {
+
+              window.history.pushState(
+                {},
+                "",
+                "/login"
+              );
+
+            }
+
+          }}
+
+
+          onSignupSuccess={() => {
+
+            /*
+             * Signup does not automatically
+             * accept the invitation.
+             *
+             * User must login first.
+             */
+
+            if (
+              returnTo
+            ) {
+
+              window.location.href =
+                `/login?returnTo=${encodeURIComponent(
+                  returnTo
+                )}`;
+
+              return;
+
+            }
+
+
+            /*
+             * Normal signup.
+             */
+
+            window.location.href =
+              "/login";
+
+          }}
+
+        />
+
+      );
+
+    }
+
+  }
+
+
+  /*
+   * -------------------------------------------------
+   * INVITATION PAGE
+   * -------------------------------------------------
+   *
+   * At this point:
+   *
+   * 1. Authentication loading is complete.
+   *
+   * 2. If user was not logged in, the effect above
+   *    redirected them to Login.
+   *
+   * 3. If user is logged in, we can safely show
+   *    AcceptInvitationPage.
+   * -------------------------------------------------
+   */
+
+  if (
+    isInvitationPage
+  ) {
+
+    /*
+     * Invalid invitation URL
+     */
+
+    if (
+      !invitationToken
+    ) {
+
+      return (
+
+        <section
+          style={{
+            minHeight: "100vh",
+            display: "grid",
+            placeItems: "center",
+            padding: "2rem",
+          }}
+        >
+
+          <div>
+
+            <h2>
+              Invalid Invitation
+            </h2>
+
+            <p>
+              This invitation link is missing
+              a valid invitation token.
+            </p>
+
+          </div>
+
+        </section>
+
+      );
+
+    }
+
+
+    /*
+     * Still waiting for redirect of
+     * unauthenticated user.
+     */
+
+    if (
+      !user
+    ) {
+
+      return (
+
+        <main
+          style={{
+            minHeight: "100vh",
+            display: "grid",
+            placeItems: "center",
+          }}
+        >
+
+          <p>
+            Redirecting to login...
+          </p>
+
+        </main>
+
+      );
+
+    }
+
+
+    /*
+     * Authenticated user
+     */
+
+    return (
+      <AcceptInvitationPage />
+    );
+
+  }
+
+
+  /*
+   * -------------------------------------------------
+   * ROOT ROUTE
+   * -------------------------------------------------
+   */
+
+  if (
+    currentPath === "/"
+  ) {
+
+    window.location.href =
+      "/login";
+
+
+    return null;
+
+  }
+
+
+  /*
+   * -------------------------------------------------
+   * USER NOT LOGGED IN
+   * -------------------------------------------------
+   */
+
+ if (!user) {
+
+  /*
+   * User is not authenticated.
+   *
+   * If the current route is not an authentication
+   * route, redirect the browser to /login.
+   */
+
+  if (
+    currentPath !== "/login" &&
+    currentPath !== "/signup"
+  ) {
+
+    window.location.href =
+      "/login";
+
+    return null;
+
+  }
+
+
+  /*
+   * Normal login
+   */
+
+  if (
+    currentPath === "/login"
+  ) {
+
     return (
 
       <LoginPage
-        onShowSignup={() =>
-          setAuthPage(
-            "signup"
-          )
-        }
+
+        onShowSignup={() => {
+
+          window.location.href =
+            "/signup";
+
+        }}
+
       />
 
     );
 
   }
 
-  // Cash Book loading
-  if (groupsLoading) {
+
+  /*
+   * Normal signup
+   */
+
+  return (
+
+    <SignupPage
+
+      onShowLogin={() => {
+
+        window.location.href =
+          "/login";
+
+      }}
+
+    />
+
+  );
+
+}
+
+
+  /*
+   * -------------------------------------------------
+   * CASH BOOK LOADING
+   * -------------------------------------------------
+   */
+
+  if (
+    groupsLoading
+  ) {
 
     return (
 
@@ -176,8 +884,16 @@ function App() {
 
   }
 
-  // Error
-  if (error) {
+
+  /*
+   * -------------------------------------------------
+   * CASH BOOK ERROR
+   * -------------------------------------------------
+   */
+
+  if (
+    error
+  ) {
 
     return (
 
@@ -208,7 +924,13 @@ function App() {
 
   }
 
-  // First Login
+
+  /*
+   * -------------------------------------------------
+   * FIRST LOGIN / SETUP
+   * -------------------------------------------------
+   */
+
   if (
     groups.length === 0
   ) {
@@ -219,22 +941,37 @@ function App() {
         ? user.user_metadata.full_name
         : "";
 
+
     return (
 
       <CashBookSetupPage
+
         defaultOwnerName={
           defaultOwnerName
         }
+
         onGroupCreated={() => {
-          // Future refresh
+          /*
+           * Future refresh.
+           */
         }}
+
       />
 
     );
 
   }
 
-  if (!selectedCashBook) {
+
+  /*
+   * -------------------------------------------------
+   * NO SELECTED CASH BOOK
+   * -------------------------------------------------
+   */
+
+  if (
+    !selectedCashBook
+  ) {
 
     return (
 
@@ -256,19 +993,30 @@ function App() {
 
   }
 
+
+  /*
+   * -------------------------------------------------
+   * DASHBOARD
+   * -------------------------------------------------
+   */
+
   return (
 
     <DashboardPage
+
       userEmail={
         user.email ?? ""
       }
+
       onLogout={() => {
         void signOut();
       }}
+
     />
 
   );
 
 }
+
 
 export default App;

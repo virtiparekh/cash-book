@@ -10,21 +10,27 @@ import type {
   CashBookGroup,
 } from "../types/cashBook";
 
+import {
+  loadCurrentMember,
+} from "../services/memberService";
+
 import type {
   GroupMember,
 } from "../types/member";
 
+import { useEffect } from "react";
+
 type CashBookContextType = {
 
   selectedCashBook:
-    CashBookGroup | null;
+  CashBookGroup | null;
 
   setSelectedCashBook: (
     group: CashBookGroup | null
   ) => void;
 
   currentMember:
-    GroupMember | null;
+  GroupMember | null;
 
   setCurrentMember: (
     member: GroupMember | null
@@ -73,6 +79,65 @@ export function CashBookProvider({
       currentMember,
     ]
   );
+
+  useEffect(() => {
+
+    let cancelled = false;
+
+    const loadMember = async () => {
+
+      if (!selectedCashBook?.id) {
+
+        setCurrentMember(null);
+
+        return;
+      }
+
+      try {
+
+        const member =
+          await loadCurrentMember(
+            selectedCashBook.id
+          );
+
+        if (!cancelled) {
+
+          setCurrentMember(
+            member
+          );
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Unable to load current member.",
+          error
+        );
+
+        if (!cancelled) {
+
+          setCurrentMember(
+            null
+          );
+
+        }
+
+      }
+
+    };
+
+    void loadMember();
+
+    return () => {
+
+      cancelled = true;
+
+    };
+
+  }, [
+    selectedCashBook?.id,
+  ]);
 
   return (
 

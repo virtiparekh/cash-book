@@ -1,83 +1,267 @@
 import { useState } from "react";
 import "./../styles/LoginPage.css";
+
 import Logo from "../components/common/Logo/Logo";
 import { supabase } from "../lib/supabase";
+
 import Button from "../components/common/Button/Button";
 import Input from "../components/common/Input/Input";
 import Card from "../components/common/Card/Card";
 import Alert from "../components/common/Alert/Alert";
 import Loader from "../components/common/Loader/Loader";
 
+
 type LoginPageProps = {
   onShowSignup: () => void;
+  onLoginSuccess?: () => void;
 };
+
 
 function LoginPage({
   onShowSignup,
+  onLoginSuccess,
 }: LoginPageProps) {
-  const [email, setEmail] =
-    useState("");
 
-  const [password, setPassword] =
-    useState("");
+  const [
+    loginId,
+    setLoginId,
+  ] = useState("");
 
-  const [loading, setLoading] =
-    useState(false);
 
-  const [errorMessage, setErrorMessage] =
-    useState("");
+  const [
+    password,
+    setPassword,
+  ] = useState("");
+
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+
+  const [
+    errorMessage,
+    setErrorMessage,
+  ] = useState("");
+
+
+  /*
+   * -------------------------------------------------
+   * Login
+   * -------------------------------------------------
+   *
+   * User can login using:
+   *
+   * Email + Password
+   *
+   * OR
+   *
+   * Phone Number + Password
+   *
+   * -------------------------------------------------
+   */
 
   const handleLogin = async (
     event: React.FormEvent<HTMLFormElement>
   ): Promise<void> => {
+
     event.preventDefault();
 
     setErrorMessage("");
 
-    const trimmedEmail = email.trim();
 
-    if (!trimmedEmail) {
+    const trimmedLoginId =
+      loginId.trim();
+
+
+    /*
+     * -------------------------------------------------
+     * Basic validation
+     * -------------------------------------------------
+     */
+
+    if (!trimmedLoginId) {
+
       setErrorMessage(
-        "Please enter your email address."
+        "Please enter your email address or phone number."
       );
+
       return;
+
     }
 
+
     if (!password) {
+
       setErrorMessage(
         "Please enter your password."
       );
+
       return;
+
     }
 
+
+    /*
+     * -------------------------------------------------
+     * Determine whether login ID is email or phone
+     * -------------------------------------------------
+     */
+
+    const isPhone =
+      /^[0-9]{10}$/.test(
+        trimmedLoginId
+      );
+
+
+    const isEmail =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        trimmedLoginId
+      );
+
+
+    if (
+      !isPhone &&
+      !isEmail
+    ) {
+
+      setErrorMessage(
+        "Please enter a valid email address or 10-digit phone number."
+      );
+
+      return;
+
+    }
+
+
+    /*
+     * -------------------------------------------------
+     * Login
+     * -------------------------------------------------
+     */
+
     try {
+
       setLoading(true);
 
-      const { error } =
-        await supabase.auth.signInWithPassword({
-          email: trimmedEmail,
-          password,
-        });
 
-      if (error) {
-        throw error;
+      if (isPhone) {
+
+        /*
+         * Phone login
+         *
+         * Supabase expects an international
+         * phone number format.
+         *
+         * For India:
+         *
+         * 9876543210
+         *
+         * becomes:
+         *
+         * +919876543210
+         */
+
+        const phone =
+          `+91${trimmedLoginId}`;
+
+
+        const {
+          error,
+        } =
+          await supabase.auth.signInWithPassword({
+            phone,
+            password,
+          });
+
+
+        if (error) {
+
+          throw error;
+
+        }
+
+      } else {
+
+        /*
+         * Email login
+         */
+
+        const {
+          error,
+        } =
+          await supabase.auth.signInWithPassword({
+            email: trimmedLoginId.toLowerCase(),
+            password,
+          });
+
+
+        if (error) {
+
+          throw error;
+
+        }
+
       }
+
+
+      /*
+       * Authentication succeeded.
+       *
+       * App.tsx will handle any returnTo
+       * invitation URL.
+       */
+
+      const invitationReturnUrl =
+        sessionStorage.getItem(
+          "invitation_return_url"
+        );
+
+      if (invitationReturnUrl) {
+
+        sessionStorage.removeItem(
+          "invitation_return_url"
+        );
+
+        window.location.href =
+          invitationReturnUrl;
+
+        return;
+
+      }
+
+      onLoginSuccess?.();
+
+
     } catch (error: unknown) {
+
       const message =
         error instanceof Error
           ? error.message
           : "Unable to login.";
 
-      setErrorMessage(message);
+
+      setErrorMessage(
+        message
+      );
+
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
+
   return (
+
     <main className="login-page">
 
       <div className="login-container">
+
 
         <section className="login-brand">
 
@@ -92,38 +276,50 @@ function LoginPage({
 
         </section>
 
+
         <section>
+
           <Card className="login-card">
+
             <h2>
               Welcome Back
             </h2>
+
 
             <p>
               Login to continue
             </p>
 
+
             {errorMessage && (
+
               <Alert variant="error">
                 {errorMessage}
               </Alert>
+
             )}
+
 
             <form
               onSubmit={handleLogin}
             >
 
+
               <Input
-                label="Email Address"
-                type="email"
-                value={email}
-                placeholder="name@example.com"
+                label="Email or Phone Number"
+                type="text"
+                value={loginId}
+                placeholder="Email or 10-digit phone number"
                 disabled={loading}
                 required={true}
-                autoComplete="email"
+                autoComplete="username"
                 onChange={(event) =>
-                  setEmail(event.target.value)
+                  setLoginId(
+                    event.target.value
+                  )
                 }
               />
+
 
               <Input
                 label="Password"
@@ -134,9 +330,12 @@ function LoginPage({
                 required={true}
                 autoComplete="current-password"
                 onChange={(event) =>
-                  setPassword(event.target.value)
+                  setPassword(
+                    event.target.value
+                  )
                 }
               />
+
 
               <div className="login-options">
 
@@ -153,33 +352,40 @@ function LoginPage({
 
               </div>
 
+
               <div className="login-actions">
 
                 <Button
                   type="submit"
                   disabled={loading}
                 >
+
                   {loading ? (
-                    <Loader text="Logging In..." />
+
+                    <Loader
+                      text="Logging In..."
+                    />
+
                   ) : (
+
                     "Login"
+
                   )}
+
                 </Button>
 
               </div>
 
+
             </form>
+
 
             <div className="login-footer">
 
               <p>
-
                 Don't have an account?
+              </p>
 
-              </p>
-              <p>
-                Secure login powered by Supabase Authentication.
-              </p>
 
               <Button
                 variant="secondary"
@@ -188,19 +394,31 @@ function LoginPage({
                 Create Account
               </Button>
 
+
+              <p>
+                Login using your registered
+                email address or phone number.
+              </p>
+
+
               <div className="login-bottom-text">
                 © 2026 Family Cash Book
               </div>
 
             </div>
+
+
           </Card>
 
         </section>
 
+
       </div>
 
     </main>
+
   );
+
 }
 
 export default LoginPage;

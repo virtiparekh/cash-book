@@ -1,13 +1,20 @@
 import "./AppLayout.css";
 
-import TopHeader from "../../dashboard/TopHeader/TopHeader";
-import Sidebar from "../../common/Sidebar/Sidebar";
+import { useState } from "react";
+
+import TopHeader
+  from "../../dashboard/TopHeader/TopHeader";
+
+import Sidebar
+  from "../../common/Sidebar/Sidebar";
 
 type Props = {
   children: React.ReactNode;
   userName: string;
   cashBookName: string;
   onLogout: () => void;
+  activeItem?: string;
+  onNavigate?: (item: string) => void;
 };
 
 function AppLayout({
@@ -15,27 +22,52 @@ function AppLayout({
   userName,
   cashBookName,
   onLogout,
+  activeItem = "Dashboard",
+  onNavigate,
 }: Props) {
-  return (
-    <div className="app-layout">
 
+  const [sidebarOpen, setSidebarOpen] =
+    useState(false);
+
+  const handleNavigate = (
+    item: string
+  ) => {
+
+    setSidebarOpen(false);
+
+    if (onNavigate) {
+      onNavigate(item);
+    }
+  };
+
+  return (
+    <>
       <TopHeader
         userName={userName}
         cashBookName={cashBookName}
         onLogout={onLogout}
+        onMenuClick={() =>
+          setSidebarOpen(!sidebarOpen)
+        }
       />
 
       <div className="layout-body">
 
-        <Sidebar />
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={() =>
+            setSidebarOpen(false)
+          }
+          activeItem={activeItem}
+          onNavigate={handleNavigate}
+        />
 
         <main className="layout-content">
           {children}
         </main>
 
       </div>
-
-    </div>
+    </>
   );
 }
 

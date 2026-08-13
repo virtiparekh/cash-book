@@ -26,6 +26,8 @@ import { validateCashBook }
 import { useCashBook }
   from "../hooks/useCashBook";
 
+import { useAuth } from "../contexts/AuthContext";
+
 
 type CashBookSetupPageProps = {
   defaultOwnerName: string;
@@ -65,6 +67,10 @@ function CashBookSetupPage({
   const {
     setSelectedCashBook,
   } = useCashBook();
+
+  const {
+    signOut,
+  } = useAuth();
 
   const handleSubmit = async (
     event: React.FormEvent<HTMLFormElement>
@@ -154,10 +160,25 @@ function CashBookSetupPage({
 
         <Card className="cashbook-card">
 
-          <PageHeader
-            title="Create Your Family Cash Book"
-            subtitle="Track income, expenses and balances together with your family."
-          />
+          <div className="cashbook-setup-header">
+
+            <PageHeader
+              title="Create Your Family Cash Book"
+              subtitle="Track income, expenses and balances together with your family."
+            />
+
+            <Button
+              variant="secondary"
+              type="button"
+              disabled={loading}
+              onClick={() => {
+                void signOut();
+              }}
+            >
+              Logout
+            </Button>
+
+          </div>
 
           {errorMessage && (
             <Alert variant="error">
