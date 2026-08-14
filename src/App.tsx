@@ -206,7 +206,7 @@ function App() {
 
         if (token) {
 
-          return (
+          return appPath(
             `${currentPath}${currentSearch}`
           );
 
