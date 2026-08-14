@@ -20,7 +20,6 @@ export default function AppRoutes() {
   } = useAuth();
 
   const {
-    groups,
     loading: groupsLoading,
   } = useCashBookGroups();
 

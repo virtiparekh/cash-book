@@ -107,7 +107,6 @@ function DashboardPage({
 
   const {
     selectedCashBook,
-    currentMember,
   } = useCashBook();
 
   // const isAdmin = currentMember?.role === "admin";

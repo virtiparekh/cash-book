@@ -907,13 +907,13 @@ function AcceptInvitationPage() {
                         </p>
 
 
-                        {currentUserEmail && (
+                        {(currentUserEmail || currentUserPhone) && (
 
                             <p>
                                 Current account:
                                 <strong>
                                     {" "}
-                                    {currentUserEmail}
+                                    {currentUserEmail || currentUserPhone}
                                 </strong>
                             </p>
 

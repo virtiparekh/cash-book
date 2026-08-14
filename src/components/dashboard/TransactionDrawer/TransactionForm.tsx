@@ -68,8 +68,6 @@ type Props = {
 
 function TransactionForm({
 
-  type,
-
   amount,
 
   transactionDate,
