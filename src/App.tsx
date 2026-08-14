@@ -43,8 +43,13 @@ function App() {
    * -------------------------------------------------
    */
 
-  const currentPath =
+  const rawPath =
     window.location.pathname;
+
+  const currentPath =
+    rawPath.startsWith("/cash-book")
+      ? rawPath.slice("/cash-book".length) || "/"
+      : rawPath;
 
 
   const currentSearch =
@@ -292,9 +297,9 @@ function App() {
 
 
     const loginUrl =
-      `/login?returnTo=${encodeURIComponent(
+      appPath(`/login?returnTo=${encodeURIComponent(
         invitationUrl
-      )}`;
+      )}`);
 
 
     window.location.replace(
@@ -513,9 +518,9 @@ function App() {
               window.history.pushState(
                 {},
                 "",
-                `/signup?returnTo=${encodeURIComponent(
+                appPath(`/signup?returnTo=${encodeURIComponent(
                   currentReturnTo
-                )}`
+                )}`)
               );
 
             } else {
@@ -523,7 +528,7 @@ function App() {
               window.history.pushState(
                 {},
                 "",
-                "/signup"
+                appPath("/signup")
               );
 
             }
@@ -599,9 +604,9 @@ function App() {
               window.history.pushState(
                 {},
                 "",
-                `/login?returnTo=${encodeURIComponent(
+                appPath(`/login?returnTo=${encodeURIComponent(
                   currentReturnTo
-                )}`
+                )}`)
               );
 
             } else {
@@ -609,7 +614,7 @@ function App() {
               window.history.pushState(
                 {},
                 "",
-                "/login"
+                appPath("/login")
               );
 
             }
