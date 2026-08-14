@@ -86,7 +86,12 @@ function DashboardPage({
         return <TransactionsPage />;
 
       case "Members":
-        return <MembersPage />;
+
+      // if (!isAdmin) {
+      //   return null;
+      // }
+
+      return <MembersPage />;
 
       case "Reports":
         return <ReportsPage />;
@@ -102,7 +107,10 @@ function DashboardPage({
 
   const {
     selectedCashBook,
+    currentMember,
   } = useCashBook();
+
+  const isAdmin = currentMember?.role === "admin";
 
 
   const {
@@ -719,6 +727,7 @@ function DashboardPage({
       }
       onLogout={onLogout}
       activeItem={activeItem}
+      // isAdmin={isAdmin}
       onNavigate={(item) => {
         console.log(
           "Sidebar navigation:",

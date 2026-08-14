@@ -5,6 +5,7 @@ type SidebarProps = {
   onClose: () => void;
   activeItem?: string;
   onNavigate: (item: string) => void;
+  // isAdmin?:boolean
 };
 
 function Sidebar({
@@ -12,6 +13,7 @@ function Sidebar({
   onClose,
   activeItem,
   onNavigate,
+  // isAdmin=false,
 }: SidebarProps) {
 
   const handleNavigation = (
@@ -76,25 +78,27 @@ function Sidebar({
         </button>
 
 
-        <button
-          type="button"
-          className={`sidebar-item ${
-            activeItem === "Members"
-              ? "active"
-              : ""
-          }`}
-          onClick={() =>
-            handleNavigation("Members")
-          }
-        >
-          <span className="sidebar-icon">
-            👥
-          </span>
+        {/* {isAdmin && ( */}
+          <button
+            type="button"
+            className={`sidebar-item ${
+              activeItem === "Members"
+                ? "active"
+                : ""
+            }`}
+            onClick={() =>
+              handleNavigation("Members")
+            }
+          >
+            <span className="sidebar-icon">
+              👥
+            </span>
 
-          <span>
-            Members
-          </span>
-        </button>
+            <span>
+              Members
+            </span>
+          </button>
+        {/* // )} */}
 
 
         <button

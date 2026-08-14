@@ -51,7 +51,10 @@ function MembersPage() {
 
     const {
         selectedCashBook,
+        currentMember
     } = useCashBook();
+
+    const isAdmin = currentMember?.role === "admin";
 
     const [
         members,
@@ -557,7 +560,7 @@ function MembersPage() {
 
     const refreshInvitations = async () => {
 
-        if (!selectedCashBook?.id) {
+        if (!selectedCashBook?.id || currentMember?.role !== "admin") {
 
             setInvitations([]);
 
@@ -753,6 +756,28 @@ function MembersPage() {
 
     }
 
+    // if (currentMember && currentMember.role !== "admin") 
+    // {
+    //     return (
+    //         <section className="members-page">
+
+    //         <div className="members-error">
+
+    //             <h2>
+    //             Access Denied
+    //             </h2>
+
+    //             <p>
+    //             Only Cash Book administrators can access
+    //             the Members page.
+    //             </p>
+
+    //         </div>
+
+    //         </section>
+    //     );
+
+    // }
     if (loading) {
 
         return (
@@ -818,15 +843,17 @@ function MembersPage() {
                     </p>
                 </div>
 
-                <button
-                    type="button"
-                    className="add-member-button"
-                    onClick={() =>
-                        setInviteModalOpen(true)
-                    }
-                >
-                    + Invite Member
-                </button>
+                {isAdmin && (
+                    <button
+                        type="button"
+                        className="add-member-button"
+                        onClick={() =>
+                            setInviteModalOpen(true)
+                        }
+                    >
+                        + Invite Member
+                    </button>
+                )}
 
             </div>
 
@@ -877,13 +904,13 @@ function MembersPage() {
                                             {member.member_name}
                                         </div>
 
-                                        <div className="member-status">
-
-                                            {member.user_id
-                                                ? "Registered user"
-                                                : "Not linked to an account"}
-
-                                        </div>
+                                        {isAdmin && (
+                                            <div className="member-status">
+                                                {member.user_id
+                                                    ? "Registered user"
+                                                    : "Not linked to an account"}
+                                            </div>
+                                        )}
 
                                     </div>
 
@@ -894,85 +921,90 @@ function MembersPage() {
                                         {member.role}
                                     </div>
 
-                                    {member.role === "admin" ? (
-                                        <button
-                                            type="button"
-                                            className="member-action-button member-action-button--demote"
-                                            onClick={() =>
-                                                handleToggleMemberRole(member)
-                                            }
-                                        >
-                                            Make Member
-                                        </button>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            className="member-action-button member-action-button--promote"
-                                            onClick={() =>
-                                                handleToggleMemberRole(member)
-                                            }
-                                        >
-                                            Make Admin
-                                        </button>
+                                    {isAdmin && (
+                                        member.role === "admin" ? (
+                                            <button
+                                                type="button"
+                                                className="member-action-button member-action-button--demote"
+                                                onClick={() =>
+                                                    handleToggleMemberRole(member)
+                                                }
+                                            >
+                                                Make Member
+                                            </button>
+                                        ) : (
+                                            <button
+                                                type="button"
+                                                className="member-action-button member-action-button--promote"
+                                                onClick={() =>
+                                                    handleToggleMemberRole(member)
+                                                }
+                                            >
+                                                Make Admin
+                                            </button>
+                                        )
                                     )}
 
-                                    <div className="member-status-badge">
-                                        {member.is_active
-                                            ? "Active"
-                                            : "Inactive"}
-                                    </div>
-
-                                    {member.role === "member" && (
-                                        <button
-                                            type="button"
-                                            className={
-                                                member.is_active
-                                                    ? "member-action-button member-action-button--deactivate"
-                                                    : "member-action-button member-action-button--activate"
-                                            }
-                                            onClick={() =>
-                                                handleToggleMemberStatus(member)
-                                            }
-                                        >
+                                    {isAdmin && (
+                                        <div className="member-status-badge">
                                             {member.is_active
-                                                ? "Deactivate"
-                                                : "Activate"}
-                                        </button>
+                                                ? "Active"
+                                                : "Inactive"}
+                                        </div>
                                     )}
 
-                                    <button
-                                        type="button"
-                                        className="member-edit-button"
-                                        onClick={() =>
-                                            handleEditMember(member)
-                                        }
-                                        title={`Edit ${member.member_name}`}
-                                    >
-                                        <svg
-                                            viewBox="0 0 24 24"
-                                            aria-hidden="true"
+                                    {isAdmin &&
+                                        member.role === "member" && (
+                                            <button
+                                                type="button"
+                                                className={
+                                                    member.is_active
+                                                        ? "member-action-button member-action-button--deactivate"
+                                                        : "member-action-button member-action-button--activate"
+                                                }
+                                                onClick={() =>
+                                                    handleToggleMemberStatus(member)
+                                                }
+                                            >
+                                                {member.is_active
+                                                    ? "Deactivate"
+                                                    : "Activate"}
+                                            </button>
+                                        )}
+                                    {isAdmin && (
+                                        <button
+                                            type="button"
+                                            className="member-edit-button"
+                                            onClick={() =>
+                                                handleEditMember(member)
+                                            }
+                                            title={`Edit ${member.member_name}`}
                                         >
+                                            <svg
+                                                viewBox="0 0 24 24"
+                                                aria-hidden="true"
+                                            >
 
-                                            <path
-                                                d="M12 20h9"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                            />
+                                                <path
+                                                    d="M12 20h9"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                />
 
-                                            <path
-                                                d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinejoin="round"
-                                            />
+                                                <path
+                                                    d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinejoin="round"
+                                                />
 
-                                        </svg>
+                                            </svg>
 
-                                    </button>
-
+                                        </button>
+                                    )}
                                 </div>
 
                             )
@@ -983,181 +1015,182 @@ function MembersPage() {
                 )}
 
             </div>
+            {isAdmin && (
+                <div className="invitations-section">
 
-            <div className="invitations-section">
+                    <div className="invitations-header">
 
-                <div className="invitations-header">
+                        <div>
 
-                    <div>
-
-                        <h2>
-                            Pending Invitations
-                        </h2>
-
-                        <p>
-                            Invitations that are waiting to be accepted.
-                        </p>
-
-                    </div>
-
-                    {pendingInvitations.length > 0 && (
-
-                        <span className="invitation-count">
-                            {pendingInvitations.length}
-                        </span>
-
-                    )}
-
-                </div>
-
-
-                <div className="invitations-card">
-
-                    {invitationsLoading ? (
-
-                        <div className="invitations-loading">
-                            Loading invitations...
-                        </div>
-
-                    ) : pendingInvitations.length === 0 ? (
-
-                        <div className="invitations-empty">
-
-                            <div className="invitations-empty-icon">
-                                ✉
-                            </div>
-
-                            <h3>
-                                No Pending Invitations
-                            </h3>
+                            <h2>
+                                Pending Invitations
+                            </h2>
 
                             <p>
-                                Invitations you create will appear here.
+                                Invitations that are waiting to be accepted.
                             </p>
 
                         </div>
 
-                    ) : (
+                        {pendingInvitations.length > 0 && (
 
-                        <div className="invitations-list">
+                            <span className="invitation-count">
+                                {pendingInvitations.length}
+                            </span>
 
-                            {pendingInvitations.map(
-                                (invitation) => (
+                        )}
 
-                                    <div
-                                        className="invitation-row"
-                                        key={invitation.id}
-                                    >
-
-                                        <div className="invitation-avatar">
-                                            {invitation.member_name
-                                                .charAt(0)
-                                                .toUpperCase()}
-                                        </div>
+                    </div>
 
 
-                                        <div className="invitation-info">
+                    <div className="invitations-card">
 
-                                            <div className="invitation-name">
-                                                {invitation.member_name}
+                        {invitationsLoading ? (
+
+                            <div className="invitations-loading">
+                                Loading invitations...
+                            </div>
+
+                        ) : pendingInvitations.length === 0 ? (
+
+                            <div className="invitations-empty">
+
+                                <div className="invitations-empty-icon">
+                                    ✉
+                                </div>
+
+                                <h3>
+                                    No Pending Invitations
+                                </h3>
+
+                                <p>
+                                    Invitations you create will appear here.
+                                </p>
+
+                            </div>
+
+                        ) : (
+
+                            <div className="invitations-list">
+
+                                {pendingInvitations.map(
+                                    (invitation) => (
+
+                                        <div
+                                            className="invitation-row"
+                                            key={invitation.id}
+                                        >
+
+                                            <div className="invitation-avatar">
+                                                {invitation.member_name
+                                                    .charAt(0)
+                                                    .toUpperCase()}
                                             </div>
 
-                                            <div className="invitation-email">
-                                                {invitation.email}
+
+                                            <div className="invitation-info">
+
+                                                <div className="invitation-name">
+                                                    {invitation.member_name}
+                                                </div>
+
+                                                <div className="invitation-email">
+                                                    {invitation.email}
+                                                </div>
+
                                             </div>
 
-                                        </div>
 
+                                            <div className="invitation-status">
+                                                Pending
+                                            </div>
 
-                                        <div className="invitation-status">
-                                            Pending
-                                        </div>
+                                            <div className="invitation-expiry">
+                                                Expires{" "}
+                                                {formatInvitationDate(
+                                                    invitation.expires_at
+                                                )}
+                                            </div>
 
-                                        <div className="invitation-expiry">
-                                            Expires{" "}
-                                            {formatInvitationDate(
-                                                invitation.expires_at
-                                            )}
-                                        </div>
+                                            <button
+                                                type="button"
+                                                className="copy-existing-invitation-button"
+                                                onClick={async () => {
 
-                                        <button
-                                            type="button"
-                                            className="copy-existing-invitation-button"
-                                            onClick={async () => {
+                                                    const link =
+                                                        `${window.location.origin}/invite?token=${invitation.token}`;
 
-                                                const link =
-                                                    `${window.location.origin}/invite?token=${invitation.token}`;
+                                                    try {
 
-                                                try {
-
-                                                    await navigator.clipboard.writeText(
-                                                        link
-                                                    );
-
-                                                    setCopiedInvitationId(
-                                                        invitation.id
-                                                    );
-
-                                                    setTimeout(() => {
-
-                                                        setCopiedInvitationId(
-                                                            null
+                                                        await navigator.clipboard.writeText(
+                                                            link
                                                         );
 
-                                                    }, 2000);
+                                                        setCopiedInvitationId(
+                                                            invitation.id
+                                                        );
 
-                                                } catch (error) {
+                                                        setTimeout(() => {
 
-                                                    console.error(
-                                                        "Unable to copy invitation link.",
-                                                        error
-                                                    );
+                                                            setCopiedInvitationId(
+                                                                null
+                                                            );
 
-                                                    window.alert(
-                                                        "Unable to copy the invitation link."
-                                                    );
+                                                        }, 2000);
 
+                                                    } catch (error) {
+
+                                                        console.error(
+                                                            "Unable to copy invitation link.",
+                                                            error
+                                                        );
+
+                                                        window.alert(
+                                                            "Unable to copy the invitation link."
+                                                        );
+
+                                                    }
+
+                                                }}
+                                            >
+                                                {copiedInvitationId === invitation.id
+                                                    ? "✓ Copied"
+                                                    : "Copy Link"
                                                 }
+                                            </button>
 
-                                            }}
-                                        >
-                                            {copiedInvitationId === invitation.id
-                                                ? "✓ Copied"
-                                                : "Copy Link"
-                                            }
-                                        </button>
+                                            <button
+                                                type="button"
+                                                className="cancel-invitation-button"
+                                                onClick={() =>
+                                                    handleCancelInvitation(
+                                                        invitation
+                                                    )
+                                                }
+                                                disabled={
+                                                    cancellingInvitationId ===
+                                                    invitation.id
+                                                }
+                                            >
+                                                {cancellingInvitationId ===
+                                                    invitation.id
+                                                    ? "Cancelling..."
+                                                    : "Cancel"
+                                                }
+                                            </button>
+                                        </div>
 
-                                        <button
-                                            type="button"
-                                            className="cancel-invitation-button"
-                                            onClick={() =>
-                                                handleCancelInvitation(
-                                                    invitation
-                                                )
-                                            }
-                                            disabled={
-                                                cancellingInvitationId ===
-                                                invitation.id
-                                            }
-                                        >
-                                            {cancellingInvitationId ===
-                                                invitation.id
-                                                ? "Cancelling..."
-                                                : "Cancel"
-                                            }
-                                        </button>
-                                    </div>
+                                    )
+                                )}
 
-                                )
-                            )}
+                            </div>
 
-                        </div>
+                        )}
 
-                    )}
+                    </div>
 
                 </div>
-
-            </div>
+            )}
             {showAddMemberModal && (
                 <div className="member-modal-overlay">
 

@@ -30,11 +30,13 @@ type CashBookContextType = {
   ) => void;
 
   currentMember:
-  GroupMember | null;
+    GroupMember | null;
 
   setCurrentMember: (
     member: GroupMember | null
   ) => void;
+
+  isAdmin: boolean;
 
 };
 
@@ -67,18 +69,24 @@ export function CashBookProvider({
       null
     );
 
+  const isAdmin =
+    currentMember?.role === "admin";
+
   const value = useMemo(
     () => ({
       selectedCashBook,
       setSelectedCashBook,
       currentMember,
       setCurrentMember,
+      isAdmin,
     }),
     [
       selectedCashBook,
       currentMember,
+      isAdmin,
     ]
   );
+
 
   useEffect(() => {
 

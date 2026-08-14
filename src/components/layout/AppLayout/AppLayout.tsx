@@ -15,6 +15,7 @@ type Props = {
   onLogout: () => void;
   activeItem?: string;
   onNavigate?: (item: string) => void;
+  // isAdmin?: boolean;
 };
 
 function AppLayout({
@@ -24,6 +25,7 @@ function AppLayout({
   onLogout,
   activeItem = "Dashboard",
   onNavigate,
+  // isAdmin = false,
 }: Props) {
 
   const [sidebarOpen, setSidebarOpen] =
@@ -59,6 +61,7 @@ function AppLayout({
             setSidebarOpen(false)
           }
           activeItem={activeItem}
+          // isAdmin={isAdmin}
           onNavigate={handleNavigate}
         />
 
