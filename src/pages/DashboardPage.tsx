@@ -110,7 +110,7 @@ function DashboardPage({
     currentMember,
   } = useCashBook();
 
-  const isAdmin = currentMember?.role === "admin";
+  // const isAdmin = currentMember?.role === "admin";
 
 
   const {
