@@ -18,7 +18,7 @@ import type {
     GroupInvitation,
 } from "../services/invitationService";
 
-
+import { appPath } from "../utils/appUrl";
 function AcceptInvitationPage() {
 
     /*
@@ -494,9 +494,9 @@ function AcceptInvitationPage() {
 
 
             const returnUrl =
-                `/invite?token=${encodeURIComponent(
+                appPath(`/invite?token=${encodeURIComponent(
                     token
-                )}`;
+                )}`);
 
 
             sessionStorage.setItem(
@@ -520,7 +520,7 @@ function AcceptInvitationPage() {
 
 
             window.location.href =
-                "/login";
+                appPath("/login");
 
         };
 
@@ -538,7 +538,7 @@ function AcceptInvitationPage() {
 
 
             window.location.href =
-                "/signup";
+                appPath("/signup");
 
         };
 
@@ -659,7 +659,7 @@ function AcceptInvitationPage() {
     const handleGoToDashboard = () => {
 
         window.location.href =
-            "/dashboard";
+            appPath("/dashboard");
 
     };
     /*

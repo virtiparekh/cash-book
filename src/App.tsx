@@ -34,7 +34,7 @@ import SignupPage
 import AcceptInvitationPage
   from "./pages/AcceptInvitationPage";
 
-
+import { appPath } from "./utils/appUrl";
 function App() {
 
   /*
@@ -555,7 +555,7 @@ function App() {
              */
 
             window.location.href =
-              "/dashboard";
+              appPath("/dashboard");
 
           }}
 
@@ -631,9 +631,9 @@ function App() {
             ) {
 
               window.location.href =
-                `/login?returnTo=${encodeURIComponent(
+                appPath(`/login?returnTo=${encodeURIComponent(
                   returnTo
-                )}`;
+                )}`);
 
               return;
 
@@ -645,7 +645,7 @@ function App() {
              */
 
             window.location.href =
-              "/login";
+              appPath("/login");
 
           }}
 
@@ -770,7 +770,7 @@ function App() {
   ) {
 
     window.location.href =
-      "/login";
+      appPath("/login");
 
 
     return null;
@@ -799,7 +799,7 @@ function App() {
   ) {
 
     window.location.href =
-      "/login";
+      appPath("/login");
 
     return null;
 
@@ -821,7 +821,7 @@ function App() {
         onShowSignup={() => {
 
           window.location.href =
-            "/signup";
+            appPath("/signup");
 
         }}
 
@@ -843,7 +843,7 @@ function App() {
       onShowLogin={() => {
 
         window.location.href =
-          "/login";
+          appPath("/login");
 
       }}
 

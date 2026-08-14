@@ -1,4 +1,5 @@
 import { supabase } from "../lib/supabase";
+import { appPath } from "../utils/appUrl";
 
 export type GroupInvitation = {
   id: string;
@@ -349,7 +350,7 @@ export function getInvitationLink(
   const baseUrl =
     window.location.origin;
 
-  return `${baseUrl}/invite?token=${encodeURIComponent(token)}`;
+  return `${baseUrl}${appPath(`/invite?token=${encodeURIComponent(token)}`)}`;
 }
 
 /* -------------------------------------------------

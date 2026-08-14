@@ -31,6 +31,7 @@ import {
 } from "../services/invitationService";
 
 import type { GroupInvitation } from "../services/invitationService";
+import { appPath } from "../utils/appUrl";
 
 function MembersPage() {
 
@@ -680,7 +681,7 @@ function MembersPage() {
 
 
             const link =
-                `${window.location.origin}/invite?token=${invitation.token}`;
+                `${window.location.origin}${appPath(`/invite?token=${invitation.token}`)}`;
 
             setInvitationLink(link);
             setInvitationCopied(false);
@@ -1118,7 +1119,7 @@ function MembersPage() {
                                                 onClick={async () => {
 
                                                     const link =
-                                                        `${window.location.origin}/invite?token=${invitation.token}`;
+                                                        `${window.location.origin}${appPath(`/invite?token=$encodeURIComponent{invitation.token}`)}`;
 
                                                     try {
 
