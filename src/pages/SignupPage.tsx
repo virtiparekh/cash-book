@@ -1,7 +1,7 @@
 import {
     useState,
 } from "react";
-
+import { appPath } from "../utils/appUrl";
 import { supabase } from "../lib/supabase";
 
 import "./../styles/SignupPage.css";
@@ -278,7 +278,7 @@ function SignupPage({
                     );
 
                     window.location.href =
-                        invitationReturnUrl;
+                        appPath(invitationReturnUrl);
 
                     return;
 

@@ -9,7 +9,7 @@ import Input from "../components/common/Input/Input";
 import Card from "../components/common/Card/Card";
 import Alert from "../components/common/Alert/Alert";
 import Loader from "../components/common/Loader/Loader";
-
+import { appPath } from "../utils/appUrl";
 
 type LoginPageProps = {
   onShowSignup: () => void;
@@ -225,7 +225,7 @@ function LoginPage({
         );
 
         window.location.href =
-          invitationReturnUrl;
+          appPath(invitationReturnUrl);
 
         return;
 

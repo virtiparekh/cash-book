@@ -461,7 +461,7 @@ function App() {
 
 
       window.location.href =
-        destination;
+        appPath(destination);
 
 
       return (
