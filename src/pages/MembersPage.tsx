@@ -1119,7 +1119,7 @@ function MembersPage() {
                                                 onClick={async () => {
 
                                                     const link =
-                                                        `${window.location.origin}${appPath(`/invite?token=$encodeURIComponent{invitation.token}`)}`;
+                                                        `${window.location.origin}${appPath(`/invite?token=${invitation.token}`)}`;
 
                                                     try {
 
