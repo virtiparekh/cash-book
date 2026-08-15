@@ -1,16 +1,17 @@
 import {
     useState,
 } from "react";
+
 import { appPath } from "../utils/appUrl";
 import { supabase } from "../lib/supabase";
 
 import "./../styles/SignupPage.css";
 
+import Popup from "../components/common/Popup/Popup";
 import Logo from "../components/common/Logo/Logo";
 import Card from "../components/common/Card/Card";
 import Button from "../components/common/Button/Button";
 import Input from "../components/common/Input/Input";
-import Alert from "../components/common/Alert/Alert";
 import Loader from "../components/common/Loader/Loader";
 
 import {
@@ -59,18 +60,6 @@ function SignupPage({
     ] = useState("");
 
 
-    const passwordStrength =
-        getPasswordStrength(
-            password
-        );
-
-
-    const passwordsMatch =
-        password.length > 0 &&
-        confirmPassword.length > 0 &&
-        password === confirmPassword;
-
-
     const [
         loading,
         setLoading,
@@ -78,15 +67,79 @@ function SignupPage({
 
 
     const [
-        successMessage,
-        setSuccessMessage,
+        errorMessage,
+        setErrorMessage,
     ] = useState("");
 
 
     const [
-        errorMessage,
-        setErrorMessage,
-    ] = useState("");
+        showPopup,
+        setShowPopup,
+    ] = useState(false);
+
+
+    /*
+     * -------------------------------------------------
+     * Password strength
+     * -------------------------------------------------
+     */
+
+    const passwordStrength =
+        getPasswordStrength(
+            password
+        );
+
+
+    /*
+     * -------------------------------------------------
+     * Password match
+     * -------------------------------------------------
+     */
+
+    const passwordsMatch =
+        password.length > 0 &&
+        confirmPassword.length > 0 &&
+        password === confirmPassword;
+
+
+    /*
+     * -------------------------------------------------
+     * Show error popup
+     * -------------------------------------------------
+     */
+
+    const showError = (
+        message: string
+    ): void => {
+
+        setErrorMessage(
+            message
+        );
+
+        setShowPopup(
+            true
+        );
+
+    };
+
+
+    /*
+     * -------------------------------------------------
+     * Close popup
+     * -------------------------------------------------
+     */
+
+    const closePopup = (): void => {
+
+        setShowPopup(
+            false
+        );
+
+        setErrorMessage(
+            ""
+        );
+
+    };
 
 
     /*
@@ -103,7 +156,6 @@ function SignupPage({
 
 
         setErrorMessage("");
-        setSuccessMessage("");
 
 
         const trimmedName =
@@ -119,12 +171,14 @@ function SignupPage({
 
 
         /*
+         * -------------------------------------------------
          * Full name
+         * -------------------------------------------------
          */
 
         if (!trimmedName) {
 
-            setErrorMessage(
+            showError(
                 "Please enter your full name."
             );
 
@@ -134,12 +188,14 @@ function SignupPage({
 
 
         /*
+         * -------------------------------------------------
          * Contact number
+         * -------------------------------------------------
          */
 
         if (!trimmedContactNo) {
 
-            setErrorMessage(
+            showError(
                 "Please enter your contact number."
             );
 
@@ -154,7 +210,7 @@ function SignupPage({
             )
         ) {
 
-            setErrorMessage(
+            showError(
                 "Please enter a valid 10-digit contact number."
             );
 
@@ -164,12 +220,14 @@ function SignupPage({
 
 
         /*
+         * -------------------------------------------------
          * Email
+         * -------------------------------------------------
          */
 
         if (!trimmedEmail) {
 
-            setErrorMessage(
+            showError(
                 "Please enter your email address."
             );
 
@@ -179,12 +237,16 @@ function SignupPage({
 
 
         /*
+         * -------------------------------------------------
          * Password
+         * -------------------------------------------------
          */
 
-        if (password.length < 6) {
+        if (
+            password.length < 6
+        ) {
 
-            setErrorMessage(
+            showError(
                 "Password must contain at least 6 characters."
             );
 
@@ -194,7 +256,9 @@ function SignupPage({
 
 
         /*
+         * -------------------------------------------------
          * Confirm password
+         * -------------------------------------------------
          */
 
         if (
@@ -202,7 +266,7 @@ function SignupPage({
             confirmPassword
         ) {
 
-            setErrorMessage(
+            showError(
                 "Passwords do not match."
             );
 
@@ -211,9 +275,17 @@ function SignupPage({
         }
 
 
+        /*
+         * -------------------------------------------------
+         * Create account
+         * -------------------------------------------------
+         */
+
         try {
 
-            setLoading(true);
+            setLoading(
+                true
+            );
 
 
             const {
@@ -244,6 +316,12 @@ function SignupPage({
                 });
 
 
+            /*
+             * -------------------------------------------------
+             * Supabase error
+             * -------------------------------------------------
+             */
+
             if (error) {
 
                 throw error;
@@ -252,18 +330,26 @@ function SignupPage({
 
 
             /*
+             * -------------------------------------------------
              * Session exists
              *
-             * This happens when Supabase allows
-             * immediate login after signup.
+             * Supabase allows immediate login.
+             * -------------------------------------------------
              */
 
-            if (data.session) {
+            if (
+                data.session
+            ) {
 
-                setSuccessMessage(
-                    "Account created successfully."
-                );
-
+                /*
+                 * -------------------------------------------------
+                 * Invitation flow
+                 *
+                 * invitation_return_url already contains
+                 * /cash-book/... because it was created using
+                 * appPath() in AcceptInvitationPage.
+                 * -------------------------------------------------
+                 */
 
                 const invitationReturnUrl =
                     sessionStorage.getItem(
@@ -271,29 +357,54 @@ function SignupPage({
                     );
 
 
-                if (invitationReturnUrl) {
+                if (
+                    invitationReturnUrl
+                ) {
 
                     sessionStorage.removeItem(
                         "invitation_return_url"
                     );
 
+
                     window.location.href =
                         appPath(invitationReturnUrl);
+
 
                     return;
 
                 }
 
 
+                /*
+                 * -------------------------------------------------
+                 * Normal signup
+                 * -------------------------------------------------
+                 */
+
+                setFullName("");
+                setContactNo("");
+                setEmail("");
+                setPassword("");
+                setConfirmPassword("");
+
+
                 onSignupSuccess?.();
 
-            } else {
 
-                setSuccessMessage(
-                    "Account created. Please verify your email before logging in."
-                );
+                return;
 
             }
+
+
+            /*
+             * -------------------------------------------------
+             * Email verification required
+             * -------------------------------------------------
+             *
+             * No session means Supabase requires the user
+             * to verify their email before login.
+             * -------------------------------------------------
+             */
 
             setFullName("");
             setContactNo("");
@@ -302,7 +413,14 @@ function SignupPage({
             setConfirmPassword("");
 
 
-        } catch (error: unknown) {
+            showError(
+                "Account created successfully. Please verify your email before logging in."
+            );
+
+
+        } catch (
+            error: unknown
+        ) {
 
             const message =
                 error instanceof Error
@@ -310,26 +428,63 @@ function SignupPage({
                     : "Unable to create account.";
 
 
-            setErrorMessage(
+            showError(
                 message
             );
 
 
         } finally {
 
-            setLoading(false);
+            setLoading(
+                false
+            );
 
         }
 
     };
 
 
+    /*
+     * -------------------------------------------------
+     * Render
+     * -------------------------------------------------
+     */
+
     return (
 
         <main className="signup-page">
 
+            {/* 
+             * -------------------------------------------------
+             * Popup
+             * -------------------------------------------------
+             */}
+
+            {showPopup && (
+
+                <Popup
+                    variant="error"
+                    title="Signup"
+                    onClose={
+                        closePopup
+                    }
+                >
+
+                    {errorMessage}
+
+                </Popup>
+
+            )}
+
+
             <div className="signup-container">
 
+
+                {/* 
+                 * -------------------------------------------------
+                 * Brand section
+                 * -------------------------------------------------
+                 */}
 
                 <section className="signup-brand">
 
@@ -342,6 +497,12 @@ function SignupPage({
 
                 </section>
 
+
+                {/* 
+                 * -------------------------------------------------
+                 * Signup section
+                 * -------------------------------------------------
+                 */}
 
                 <section>
 
@@ -358,99 +519,131 @@ function SignupPage({
                         </p>
 
 
-                        {errorMessage && (
-
-                            <Alert variant="error">
-                                {errorMessage}
-                            </Alert>
-
-                        )}
-
-
-                        {successMessage && (
-
-                            <Alert variant="success">
-                                {successMessage}
-                            </Alert>
-
-                        )}
-
-
                         <form
-                            onSubmit={handleSignup}
+                            onSubmit={
+                                handleSignup
+                            }
                         >
 
 
+                            {/* 
+                             * Full Name
+                             */}
+
                             <Input
                                 label="Full Name"
-                                value={fullName}
-                                required={true}
-                                disabled={loading}
+                                value={
+                                    fullName
+                                }
+                                required={
+                                    true
+                                }
+                                disabled={
+                                    loading
+                                }
                                 placeholder="Enter your full name"
                                 autoComplete="name"
-                                onChange={(event) =>
-                                    setFullName(
-                                        event.target.value
-                                    )
+                                onChange={
+                                    (event) =>
+                                        setFullName(
+                                            event.target.value
+                                        )
                                 }
                             />
 
+
+                            {/* 
+                             * Contact Number
+                             */}
 
                             <Input
                                 label="Contact Number"
                                 type="tel"
-                                value={contactNo}
-                                required={true}
-                                disabled={loading}
+                                value={
+                                    contactNo
+                                }
+                                required={
+                                    true
+                                }
+                                disabled={
+                                    loading
+                                }
                                 placeholder="9876543210"
                                 autoComplete="tel"
-                                onChange={(event) =>
-                                    setContactNo(
-                                        event.target.value
-                                            .replace(
-                                                /\D/g,
-                                                ""
-                                            )
-                                            .slice(
-                                                0,
-                                                10
-                                            )
-                                    )
+                                onChange={
+                                    (event) =>
+                                        setContactNo(
+                                            event.target.value
+                                                .replace(
+                                                    /\D/g,
+                                                    ""
+                                                )
+                                                .slice(
+                                                    0,
+                                                    10
+                                                )
+                                        )
                                 }
                             />
 
+
+                            {/* 
+                             * Email
+                             */}
 
                             <Input
                                 label="Email Address"
                                 type="email"
-                                value={email}
-                                required={true}
-                                disabled={loading}
+                                value={
+                                    email
+                                }
+                                required={
+                                    true
+                                }
+                                disabled={
+                                    loading
+                                }
                                 placeholder="name@example.com"
                                 autoComplete="email"
-                                onChange={(event) =>
-                                    setEmail(
-                                        event.target.value
-                                    )
+                                onChange={
+                                    (event) =>
+                                        setEmail(
+                                            event.target.value
+                                        )
                                 }
                             />
 
+
+                            {/* 
+                             * Password
+                             */}
 
                             <Input
                                 label="Password"
                                 type="password"
-                                value={password}
-                                required={true}
-                                disabled={loading}
+                                value={
+                                    password
+                                }
+                                required={
+                                    true
+                                }
+                                disabled={
+                                    loading
+                                }
                                 placeholder="Minimum 6 characters"
                                 autoComplete="new-password"
-                                onChange={(event) =>
-                                    setPassword(
-                                        event.target.value
-                                    )
+                                onChange={
+                                    (event) =>
+                                        setPassword(
+                                            event.target.value
+                                        )
                                 }
                             />
 
+
+                            {/* 
+                             * Password strength
+                             */}
 
                             <p className="password-strength">
 
@@ -469,28 +662,45 @@ function SignupPage({
 
                                     {" "}
 
-                                    {passwordStrength}
+                                    {
+                                        passwordStrength
+                                    }
 
                                 </span>
 
                             </p>
 
 
+                            {/* 
+                             * Confirm Password
+                             */}
+
                             <Input
                                 label="Confirm Password"
                                 type="password"
-                                value={confirmPassword}
-                                required={true}
-                                disabled={loading}
+                                value={
+                                    confirmPassword
+                                }
+                                required={
+                                    true
+                                }
+                                disabled={
+                                    loading
+                                }
                                 placeholder="Confirm password"
                                 autoComplete="new-password"
-                                onChange={(event) =>
-                                    setConfirmPassword(
-                                        event.target.value
-                                    )
+                                onChange={
+                                    (event) =>
+                                        setConfirmPassword(
+                                            event.target.value
+                                        )
                                 }
                             />
 
+
+                            {/* 
+                             * Password match
+                             */}
 
                             {confirmPassword.length > 0 && (
 
@@ -502,20 +712,28 @@ function SignupPage({
                                     }
                                 >
 
-                                    {passwordsMatch
-                                        ? "✓ Passwords match"
-                                        : "✗ Passwords do not match"}
+                                    {
+                                        passwordsMatch
+                                            ? "✓ Passwords match"
+                                            : "✗ Passwords do not match"
+                                    }
 
                                 </p>
 
                             )}
 
 
+                            {/* 
+                             * Signup button
+                             */}
+
                             <div className="signup-actions">
 
                                 <Button
                                     type="submit"
-                                    disabled={loading}
+                                    disabled={
+                                        loading
+                                    }
                                 >
 
                                     {loading ? (
@@ -538,6 +756,12 @@ function SignupPage({
                         </form>
 
 
+                        {/* 
+                         * -------------------------------------------------
+                         * Footer
+                         * -------------------------------------------------
+                         */}
+
                         <div className="signup-footer">
 
                             <p>
@@ -547,7 +771,9 @@ function SignupPage({
 
                             <Button
                                 variant="secondary"
-                                onClick={onShowLogin}
+                                onClick={
+                                    onShowLogin
+                                }
                             >
                                 Login
                             </Button>
@@ -572,5 +798,6 @@ function SignupPage({
     );
 
 }
+
 
 export default SignupPage;

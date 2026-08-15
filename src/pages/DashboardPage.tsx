@@ -44,16 +44,25 @@ import {
 } from "../services/transactionService";
 
 import {
-  useEffect
+  useEffect,
 } from "react";
 
-import TransactionsPage from "./TransactionPage";
+import TransactionsPage
+  from "./TransactionPage";
 
-import MembersPage from "./MembersPage";
+import MembersPage
+  from "./MembersPage";
 
-import ReportsPage from "./ReportsPage";
+import ReportsPage
+  from "./ReportsPage";
 
-import SettingsPage from "./SettingsPage";
+import SettingsPage
+  from "./SettingsPage";
+
+import Popup
+  from "../components/common/Popup/Popup";
+
+import Button from "../components/common/Button/Button";
 
 type DashboardPageProps = {
 
@@ -72,52 +81,138 @@ function DashboardPage({
 
 }: DashboardPageProps) {
 
-  const [currentPage, setCurrentPage] = useState(1);
+  const [
+    currentPage,
+    setCurrentPage,
+  ] = useState(1);
 
-  const [pageSize, setPageSize] = useState(10);
-  const [activeItem, setActiveItem] =
-    useState("Dashboard");
+
+  const [
+    pageSize,
+    setPageSize,
+  ] = useState(10);
+
+
+  const [
+    activeItem,
+    setActiveItem,
+  ] = useState("Dashboard");
+
+
+  /*
+   * -------------------------------------------------
+   * Delete Confirmation Popup
+   * -------------------------------------------------
+   */
+
+  const [
+    showDeletePopup,
+    setShowDeletePopup,
+  ] = useState(false);
+
+
+  const [
+    transactionToDelete,
+    setTransactionToDelete,
+  ] = useState<Transaction | null>(
+    null
+  );
+
+
+  /*
+   * -------------------------------------------------
+   * Delete Error Popup
+   * -------------------------------------------------
+   */
+
+  const [
+    showDeleteErrorPopup,
+    setShowDeleteErrorPopup,
+  ] = useState(false);
+
+
+  const [
+    deleteErrorMessage,
+    setDeleteErrorMessage,
+  ] = useState("");
+
+
+  /*
+   * -------------------------------------------------
+   * Render Active Page
+   * -------------------------------------------------
+   */
 
   const renderActivePage = () => {
 
     switch (activeItem) {
 
       case "Transactions":
-        return <TransactionsPage />;
+
+        return (
+          <TransactionsPage />
+        );
+
 
       case "Members":
 
-      // if (!isAdmin) {
-      //   return null;
-      // }
+        // if (!isAdmin) {
+        //   return null;
+        // }
 
-      return <MembersPage />;
+        return (
+          <MembersPage />
+        );
+
 
       case "Reports":
-        return <ReportsPage />;
+
+        return (
+          <ReportsPage />
+        );
+
 
       case "Settings":
-        return <SettingsPage />;
+
+        return (
+          <SettingsPage />
+        );
+
 
       case "Dashboard":
+
       default:
+
         return null;
+
     }
+
   };
+
+
+  /*
+   * -------------------------------------------------
+   * Cash Book
+   * -------------------------------------------------
+   */
 
   const {
     selectedCashBook,
   } = useCashBook();
 
-  // const isAdmin = currentMember?.role === "admin";
 
+  /*
+   * -------------------------------------------------
+   * Transactions
+   * -------------------------------------------------
+   */
 
   const {
 
     transactions,
 
     loading:
-    transactionsLoading,
+      transactionsLoading,
 
     reloadTransactions,
 
@@ -126,9 +221,13 @@ function DashboardPage({
   );
 
 
-  const {
+  /*
+   * -------------------------------------------------
+   * Financial Summary
+   * -------------------------------------------------
+   */
 
-    // summary,
+  const {
 
     refreshSummary,
 
@@ -136,6 +235,12 @@ function DashboardPage({
     selectedCashBook?.id
   );
 
+
+  /*
+   * -------------------------------------------------
+   * Transaction Drawer
+   * -------------------------------------------------
+   */
 
   const [
     drawerOpen,
@@ -160,6 +265,12 @@ function DashboardPage({
   >(null);
 
 
+  /*
+   * -------------------------------------------------
+   * Transaction Details Drawer
+   * -------------------------------------------------
+   */
+
   const [
     detailsTransaction,
     setDetailsTransaction,
@@ -168,6 +279,12 @@ function DashboardPage({
   >(null);
 
 
+  /*
+   * -------------------------------------------------
+   * Deleting Transaction
+   * -------------------------------------------------
+   */
+
   const [
     deletingTransactionId,
     setDeletingTransactionId,
@@ -175,285 +292,384 @@ function DashboardPage({
     string | null
   >(null);
 
+
+  /*
+   * -------------------------------------------------
+   * Search
+   * -------------------------------------------------
+   */
+
   const [
     searchTerm,
     setSearchTerm,
   ] = useState("");
 
+
+  /*
+   * -------------------------------------------------
+   * Filters
+   * -------------------------------------------------
+   */
+
   const [
     filters,
     setFilters,
   ] = useState({
-    duration: "All Time",
-    member: "All Members",
-    category: "All Categories",
-    paymentMode: "All Modes",
-    fromDate: "",
-    toDate: "",
+
+    duration:
+      "All Time",
+
+    member:
+      "All Members",
+
+    category:
+      "All Categories",
+
+    paymentMode:
+      "All Modes",
+
+    fromDate:
+      "",
+
+    toDate:
+      "",
+
   });
 
-  const members = Array.from(
-    new Set(
-      transactions
-        .map(
-          (transaction) =>
-            transaction.member_name
-        )
-        .filter(Boolean)
-    )
-  );
 
-  const categories = Array.from(
-    new Set(
-      transactions
-        .map(
-          (transaction) =>
-            transaction.category_name
-        )
-        .filter(Boolean)
-    )
-  );
+  /*
+   * -------------------------------------------------
+   * Members
+   * -------------------------------------------------
+   */
 
-  const paymentModes = Array.from(
-    new Set(
-      transactions
-        .map(
-          (transaction) =>
-            transaction.payment_mode_name
-        )
-        .filter(Boolean)
-    )
-  );
+  const members =
+    Array.from(
+      new Set(
+        transactions
+          .map(
+            (transaction) =>
+              transaction.member_name
+          )
+          .filter(Boolean)
+      )
+    );
+
+
+  /*
+   * -------------------------------------------------
+   * Categories
+   * -------------------------------------------------
+   */
+
+  const categories =
+    Array.from(
+      new Set(
+        transactions
+          .map(
+            (transaction) =>
+              transaction.category_name
+          )
+          .filter(Boolean)
+      )
+    );
+
+
+  /*
+   * -------------------------------------------------
+   * Payment Modes
+   * -------------------------------------------------
+   */
+
+  const paymentModes =
+    Array.from(
+      new Set(
+        transactions
+          .map(
+            (transaction) =>
+              transaction.payment_mode_name
+          )
+          .filter(Boolean)
+      )
+    );
+
+
+  /*
+   * -------------------------------------------------
+   * Filter Transactions
+   * -------------------------------------------------
+   */
 
   const filteredTransactions =
-    transactions.filter((transaction) => {
+    transactions.filter(
+      (transaction) => {
 
-      /*
-       * -----------------------------------------
-       * SEARCH
-       * -----------------------------------------
-       */
+        /*
+         * -----------------------------------------
+         * SEARCH
+         * -----------------------------------------
+         */
 
-      const search =
-        searchTerm
-          .trim()
-          .toLowerCase();
-
-      const amount =
-        String(transaction.amount);
-
-      const remarks =
-        transaction.notes
-          ?.toLowerCase() ?? "";
-
-      const matchesSearch =
-        !search ||
-        amount.includes(search) ||
-        remarks.includes(search);
+        const search =
+          searchTerm
+            .trim()
+            .toLowerCase();
 
 
-      /*
-       * -----------------------------------------
-       * MEMBER
-       * -----------------------------------------
-       */
-
-      const matchesMember =
-        filters.member ===
-        "All Members" ||
-        transaction.member_name ===
-        filters.member;
+        const amount =
+          String(
+            transaction.amount
+          );
 
 
-      /*
-       * -----------------------------------------
-       * CATEGORY
-       * -----------------------------------------
-       */
-
-      const matchesCategory =
-        filters.category ===
-        "All Categories" ||
-        transaction.category_name ===
-        filters.category;
+        const remarks =
+          transaction.notes
+            ?.toLowerCase() ??
+          "";
 
 
-      /*
-       * -----------------------------------------
-       * PAYMENT MODE
-       * -----------------------------------------
-       */
-
-      const matchesPaymentMode =
-        filters.paymentMode ===
-        "All Modes" ||
-        transaction.payment_mode_name ===
-        filters.paymentMode;
+        const matchesSearch =
+          !search ||
+          amount.includes(search) ||
+          remarks.includes(search);
 
 
-      /*
-       * -----------------------------------------
-       * DURATION
-       * -----------------------------------------
-       */
+        /*
+         * -----------------------------------------
+         * MEMBER
+         * -----------------------------------------
+         */
 
-      const transactionDate =
-        new Date(
-          transaction.transaction_at
-        );
-
-      const now = new Date();
-
-      let matchesDuration = true;
+        const matchesMember =
+          filters.member ===
+            "All Members" ||
+          transaction.member_name ===
+            filters.member;
 
 
-      if (
-        filters.duration ===
-        "Today"
-      ) {
+        /*
+         * -----------------------------------------
+         * CATEGORY
+         * -----------------------------------------
+         */
 
-        matchesDuration =
-          transactionDate.getFullYear() ===
-          now.getFullYear() &&
-          transactionDate.getMonth() ===
-          now.getMonth() &&
-          transactionDate.getDate() ===
-          now.getDate();
-
-      }
+        const matchesCategory =
+          filters.category ===
+            "All Categories" ||
+          transaction.category_name ===
+            filters.category;
 
 
-      if (
-        filters.duration ===
-        "This Week"
-      ) {
+        /*
+         * -----------------------------------------
+         * PAYMENT MODE
+         * -----------------------------------------
+         */
 
-        const startOfWeek =
-          new Date(now);
-
-        const day =
-          startOfWeek.getDay();
-
-        const difference =
-          day === 0
-            ? 6
-            : day - 1;
-
-        startOfWeek.setDate(
-          startOfWeek.getDate() -
-          difference
-        );
-
-        startOfWeek.setHours(
-          0,
-          0,
-          0,
-          0
-        );
-
-        matchesDuration =
-          transactionDate >=
-          startOfWeek;
-
-      }
+        const matchesPaymentMode =
+          filters.paymentMode ===
+            "All Modes" ||
+          transaction.payment_mode_name ===
+            filters.paymentMode;
 
 
-      if (
-        filters.duration ===
-        "This Month"
-      ) {
+        /*
+         * -----------------------------------------
+         * DURATION
+         * -----------------------------------------
+         */
 
-        matchesDuration =
-          transactionDate.getFullYear() ===
-          now.getFullYear() &&
-          transactionDate.getMonth() ===
-          now.getMonth();
-
-      }
+        const transactionDate =
+          new Date(
+            transaction.transaction_at
+          );
 
 
-      if (
-        filters.duration ===
-        "This Year"
-      ) {
-
-        matchesDuration =
-          transactionDate.getFullYear() ===
-          now.getFullYear();
-
-      }
-
-      /*
- * -----------------------------------------
- * CUSTOM DATE RANGE
- * -----------------------------------------
- */
-
-      if (
-        filters.duration ===
-        "Custom Range"
-      ) {
-
-        const transactionDay =
-          new Date(transactionDate);
-
-        transactionDay.setHours(
-          0,
-          0,
-          0,
-          0
-        );
+        const now =
+          new Date();
 
 
-        if (filters.fromDate) {
+        let matchesDuration =
+          true;
 
-          const from =
-            new Date(
-              `${filters.fromDate}T00:00:00`
-            );
+
+        if (
+          filters.duration ===
+          "Today"
+        ) {
 
           matchesDuration =
-            transactionDay >= from;
+            transactionDate.getFullYear() ===
+              now.getFullYear() &&
+            transactionDate.getMonth() ===
+              now.getMonth() &&
+            transactionDate.getDate() ===
+              now.getDate();
 
         }
 
 
         if (
-          filters.toDate &&
-          matchesDuration
+          filters.duration ===
+          "This Week"
         ) {
 
-          const to =
-            new Date(
-              `${filters.toDate}T23:59:59`
-            );
+          const startOfWeek =
+            new Date(now);
+
+
+          const day =
+            startOfWeek.getDay();
+
+
+          const difference =
+            day === 0
+              ? 6
+              : day - 1;
+
+
+          startOfWeek.setDate(
+            startOfWeek.getDate() -
+            difference
+          );
+
+
+          startOfWeek.setHours(
+            0,
+            0,
+            0,
+            0
+          );
+
 
           matchesDuration =
-            transactionDay <= to;
+            transactionDate >=
+            startOfWeek;
 
         }
 
+
+        if (
+          filters.duration ===
+          "This Month"
+        ) {
+
+          matchesDuration =
+            transactionDate.getFullYear() ===
+              now.getFullYear() &&
+            transactionDate.getMonth() ===
+              now.getMonth();
+
+        }
+
+
+        if (
+          filters.duration ===
+          "This Year"
+        ) {
+
+          matchesDuration =
+            transactionDate.getFullYear() ===
+            now.getFullYear();
+
+        }
+
+
+        /*
+         * -----------------------------------------
+         * CUSTOM DATE RANGE
+         * -----------------------------------------
+         */
+
+        if (
+          filters.duration ===
+          "Custom Range"
+        ) {
+
+          const transactionDay =
+            new Date(
+              transactionDate
+            );
+
+
+          transactionDay.setHours(
+            0,
+            0,
+            0,
+            0
+          );
+
+
+          if (
+            filters.fromDate
+          ) {
+
+            const from =
+              new Date(
+                `${filters.fromDate}T00:00:00`
+              );
+
+
+            matchesDuration =
+              transactionDay >=
+              from;
+
+          }
+
+
+          if (
+            filters.toDate &&
+            matchesDuration
+          ) {
+
+            const to =
+              new Date(
+                `${filters.toDate}T23:59:59`
+              );
+
+
+            matchesDuration =
+              transactionDay <=
+              to;
+
+          }
+
+        }
+
+
+        /*
+         * -----------------------------------------
+         * FINAL RESULT
+         * -----------------------------------------
+         */
+
+        return (
+
+          matchesSearch &&
+
+          matchesMember &&
+
+          matchesCategory &&
+
+          matchesPaymentMode &&
+
+          matchesDuration
+
+        );
+
       }
+    );
 
 
-      /*
-       * -----------------------------------------
-       * FINAL RESULT
-       * -----------------------------------------
-       */
-
-      return (
-        matchesSearch &&
-        matchesMember &&
-        matchesCategory &&
-        matchesPaymentMode &&
-        matchesDuration
-      );
-
-    });
+  /*
+   * -------------------------------------------------
+   * Pagination
+   * -------------------------------------------------
+   */
 
   const totalFilteredTransactions =
     filteredTransactions.length;
+
 
   const totalPages =
     Math.max(
@@ -464,64 +680,140 @@ function DashboardPage({
       )
     );
 
+
   const paginatedTransactions =
     filteredTransactions.slice(
-      (currentPage - 1) * pageSize,
-      currentPage * pageSize
+
+      (currentPage - 1) *
+        pageSize,
+
+      currentPage *
+        pageSize
+
     );
 
+
+  /*
+   * -------------------------------------------------
+   * Reset Page When Filters Change
+   * -------------------------------------------------
+   */
+
   useEffect(() => {
+
     setCurrentPage(1);
+
   }, [
+
     searchTerm,
+
     filters.duration,
+
     filters.member,
+
     filters.category,
+
     filters.paymentMode,
+
     filters.fromDate,
-    filters.toDate
+
+    filters.toDate,
+
   ]);
+
+
+  /*
+   * -------------------------------------------------
+   * Active Filters
+   * -------------------------------------------------
+   */
 
   const hasActiveFilters =
     searchTerm.trim() !== "" ||
-    filters.duration !== "All Time" ||
-    filters.member !== "All Members" ||
-    filters.category !== "All Categories" ||
-    filters.paymentMode !== "All Modes" ||
+
+    filters.duration !==
+      "All Time" ||
+
+    filters.member !==
+      "All Members" ||
+
+    filters.category !==
+      "All Categories" ||
+
+    filters.paymentMode !==
+      "All Modes" ||
+
     filters.fromDate !== "" ||
+
     filters.toDate !== "";
 
-  /* -----------------------------------------------
-     Cash In
-  ------------------------------------------------ */
+
+  /*
+   * -------------------------------------------------
+   * Filtered Cash In
+   * -------------------------------------------------
+   */
 
   const filteredTotalCashIn =
     filteredTransactions
+
       .filter(
         (transaction) =>
-          transaction.entry_type === "cash_in"
+          transaction.entry_type ===
+          "cash_in"
       )
+
       .reduce(
         (total, transaction) =>
-          total + Number(transaction.amount),
+          total +
+          Number(
+            transaction.amount
+          ),
         0
       );
 
+
+  /*
+   * -------------------------------------------------
+   * Filtered Cash Out
+   * -------------------------------------------------
+   */
+
   const filteredTotalCashOut =
     filteredTransactions
+
       .filter(
         (transaction) =>
-          transaction.entry_type === "cash_out"
+          transaction.entry_type ===
+          "cash_out"
       )
+
       .reduce(
         (total, transaction) =>
-          total + Number(transaction.amount),
+          total +
+          Number(
+            transaction.amount
+          ),
         0
       );
+
+
+  /*
+   * -------------------------------------------------
+   * Filtered Net Balance
+   * -------------------------------------------------
+   */
 
   const filteredNetBalance =
     filteredTotalCashIn -
     filteredTotalCashOut;
+
+
+  /*
+   * -------------------------------------------------
+   * Cash In
+   * -------------------------------------------------
+   */
 
   const handleCashIn = () => {
 
@@ -529,9 +821,11 @@ function DashboardPage({
       null
     );
 
+
     setTransactionType(
       "cash-in"
     );
+
 
     setDrawerOpen(
       true
@@ -540,9 +834,11 @@ function DashboardPage({
   };
 
 
-  /* -----------------------------------------------
-     Cash Out
-  ------------------------------------------------ */
+  /*
+   * -------------------------------------------------
+   * Cash Out
+   * -------------------------------------------------
+   */
 
   const handleCashOut = () => {
 
@@ -550,9 +846,11 @@ function DashboardPage({
       null
     );
 
+
     setTransactionType(
       "cash-out"
     );
+
 
     setDrawerOpen(
       true
@@ -561,9 +859,11 @@ function DashboardPage({
   };
 
 
-  /* -----------------------------------------------
-     Edit
-  ------------------------------------------------ */
+  /*
+   * -------------------------------------------------
+   * Edit Transaction
+   * -------------------------------------------------
+   */
 
   const handleEditTransaction = (
     transaction: Transaction
@@ -573,9 +873,11 @@ function DashboardPage({
       null
     );
 
+
     setEditingTransaction(
       transaction
     );
+
 
     setTransactionType(
 
@@ -588,6 +890,7 @@ function DashboardPage({
 
     );
 
+
     setDrawerOpen(
       true
     );
@@ -595,9 +898,11 @@ function DashboardPage({
   };
 
 
-  /* -----------------------------------------------
-     View Details
-  ------------------------------------------------ */
+  /*
+   * -------------------------------------------------
+   * View Transaction Details
+   * -------------------------------------------------
+   */
 
   const handleViewTransactionDetails = (
     transaction: Transaction
@@ -610,11 +915,13 @@ function DashboardPage({
   };
 
 
-  /* -----------------------------------------------
-     Delete
-  ------------------------------------------------ */
+  /*
+   * -------------------------------------------------
+   * Open Delete Confirmation
+   * -------------------------------------------------
+   */
 
-  const handleDeleteTransaction = async (
+  const handleDeleteTransaction = (
     transaction: Transaction
   ) => {
 
@@ -623,79 +930,160 @@ function DashboardPage({
     }
 
 
-    const confirmed =
-      window.confirm(
-        "Are you sure you want to delete this transaction?"
-      );
+    setTransactionToDelete(
+      transaction
+    );
 
 
-    if (!confirmed) {
-      return;
-    }
-
-
-    try {
-
-      setDeletingTransactionId(
-        transaction.id
-      );
-
-
-      await deleteTransaction(
-
-        transaction.id,
-
-      );
-
-
-      await reloadTransactions();
-
-
-      await refreshSummary();
-
-
-    }
-
-    catch (error) {
-
-      console.error(
-        "Unable to delete transaction.",
-        error
-      );
-
-
-      window.alert(
-
-        error instanceof Error
-
-          ? error.message
-
-          : "Unable to delete transaction."
-
-      );
-
-    }
-
-    finally {
-
-      setDeletingTransactionId(
-        null
-      );
-
-    }
+    setShowDeletePopup(
+      true
+    );
 
   };
 
 
-  /* -----------------------------------------------
-     Close Edit Drawer
-  ------------------------------------------------ */
+  /*
+   * -------------------------------------------------
+   * Cancel Delete
+   * -------------------------------------------------
+   */
+
+  const handleCancelDelete = () => {
+
+    setShowDeletePopup(
+      false
+    );
+
+
+    setTransactionToDelete(
+      null
+    );
+
+  };
+
+
+  /*
+   * -------------------------------------------------
+   * Confirm Delete
+   * -------------------------------------------------
+   */
+
+  const handleConfirmDelete =
+    async () => {
+
+      if (
+        !transactionToDelete ||
+        !selectedCashBook
+      ) {
+
+        return;
+
+      }
+
+
+      try {
+
+        setDeletingTransactionId(
+          transactionToDelete.id
+        );
+
+
+        setShowDeletePopup(
+          false
+        );
+
+
+        await deleteTransaction(
+
+          transactionToDelete.id
+
+        );
+
+
+        await reloadTransactions();
+
+
+        await refreshSummary();
+
+
+      }
+
+      catch (error) {
+
+        console.error(
+          "Unable to delete transaction.",
+          error
+        );
+
+
+        const message =
+          error instanceof Error
+
+            ? error.message
+
+            : "Unable to delete transaction.";
+
+
+        setDeleteErrorMessage(
+          message
+        );
+
+
+        setShowDeleteErrorPopup(
+          true
+        );
+
+      }
+
+      finally {
+
+        setDeletingTransactionId(
+          null
+        );
+
+
+        setTransactionToDelete(
+          null
+        );
+
+      }
+
+    };
+
+
+  /*
+   * -------------------------------------------------
+   * Close Delete Error Popup
+   * -------------------------------------------------
+   */
+
+  const handleCloseDeleteErrorPopup =
+    () => {
+
+      setShowDeleteErrorPopup(
+        false
+      );
+
+
+      setDeleteErrorMessage(
+        ""
+      );
+
+    };
+
+
+  /*
+   * -------------------------------------------------
+   * Close Edit Drawer
+   * -------------------------------------------------
+   */
 
   const handleDrawerClose = () => {
 
     setDrawerOpen(
       false
     );
+
 
     setEditingTransaction(
       null
@@ -704,9 +1092,11 @@ function DashboardPage({
   };
 
 
-  /* -----------------------------------------------
-     Close Details Drawer
-  ------------------------------------------------ */
+  /*
+   * -------------------------------------------------
+   * Close Details Drawer
+   * -------------------------------------------------
+   */
 
   const handleDetailsClose = () => {
 
@@ -717,154 +1107,409 @@ function DashboardPage({
   };
 
 
+  /*
+   * -------------------------------------------------
+   * Render
+   * -------------------------------------------------
+   */
+
   return (
 
     <AppLayout
-      userName={userEmail}
-      cashBookName={
-        selectedCashBook?.name ?? ""
+
+      userName={
+        userEmail
       }
-      onLogout={onLogout}
-      activeItem={activeItem}
+
+      cashBookName={
+        selectedCashBook?.name ??
+        ""
+      }
+
+      onLogout={
+        onLogout
+      }
+
+      activeItem={
+        activeItem
+      }
+
       // isAdmin={isAdmin}
+
       onNavigate={(item) => {
+
         console.log(
           "Sidebar navigation:",
           item
         );
 
-        setActiveItem(item);
+
+        setActiveItem(
+          item
+        );
+
       }}
+
     >
+
+
+      {/* -------------------------------------------------
+          Delete Confirmation Popup
+         ------------------------------------------------- */}
+
+      {showDeletePopup && (
+
+        <Popup
+
+          variant="warning"
+
+          title="Delete Transaction"
+
+          onClose={
+            handleCancelDelete
+          }
+
+        >
+
+          <p>
+            Are you sure you want to delete
+            this transaction?
+          </p>
+
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "10px",
+              marginTop: "20px",
+            }}
+          >
+
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={
+                handleCancelDelete
+              }
+              disabled={
+                deletingTransactionId !== null
+              }
+            >
+
+              Cancel
+
+            </Button>
+
+
+            <Button
+              type="button"
+              onClick={() => {
+                void handleConfirmDelete();
+              }}
+              disabled={
+                deletingTransactionId !== null
+              }
+            >
+
+              {deletingTransactionId !== null
+                ? "Deleting..."
+                : "Delete"}
+
+            </Button>
+
+          </div>
+
+        </Popup>
+
+      )}
+
+
+      {/* -------------------------------------------------
+          Delete Error Popup
+         ------------------------------------------------- */}
+
+      {showDeleteErrorPopup && (
+
+        <Popup
+
+          variant="error"
+
+          title="Delete Transaction Error"
+
+          onClose={
+            handleCloseDeleteErrorPopup
+          }
+
+        >
+
+          {deleteErrorMessage}
+
+        </Popup>
+
+      )}
+
+
+      {/* -------------------------------------------------
+          Dashboard
+         ------------------------------------------------- */}
 
       {activeItem === "Dashboard" ? (
 
         <>
+
           <div className="dashboard-container">
 
-            {/* YOUR EXISTING DASHBOARD CONTENT */}
+
+            {/* -------------------------------------------------
+                Dashboard Header
+               ------------------------------------------------- */}
 
             <DashboardHeader
+
               title={
                 selectedCashBook?.name ??
                 "Cash Book"
               }
+
               subtitle={
                 `Welcome ${userEmail}`
               }
+
             />
+
+
+            {/* -------------------------------------------------
+                Cash Book Toolbar
+               ------------------------------------------------- */}
 
             <CashBookToolbar
-              onCashIn={handleCashIn}
-              onCashOut={handleCashOut}
-              members={members}
-              categories={categories}
-              paymentModes={paymentModes}
-              onFiltersChange={setFilters}
+
+              onCashIn={
+                handleCashIn
+              }
+
+              onCashOut={
+                handleCashOut
+              }
+
+              members={
+                members
+              }
+
+              categories={
+                categories
+              }
+
+              paymentModes={
+                paymentModes
+              }
+
+              onFiltersChange={
+                setFilters
+              }
+
             />
+
+
+            {/* -------------------------------------------------
+                Search
+               ------------------------------------------------- */}
 
             <SearchBar
-              value={searchTerm}
-              onChange={setSearchTerm}
+
+              value={
+                searchTerm
+              }
+
+              onChange={
+                setSearchTerm
+              }
+
             />
 
+
+            {/* -------------------------------------------------
+                Financial Summary
+               ------------------------------------------------- */}
+
             <FinancialSummary
+
               totalCashIn={
                 filteredTotalCashIn
               }
+
               totalCashOut={
                 filteredTotalCashOut
               }
+
               netBalance={
                 filteredNetBalance
               }
+
             />
 
+
+            {/* -------------------------------------------------
+                Transaction Table
+               ------------------------------------------------- */}
+
             <TransactionTable
+
               transactions={
                 paginatedTransactions
               }
+
               loading={
                 transactionsLoading
               }
+
               totalTransactions={
                 totalFilteredTransactions
               }
+
               hasActiveFilters={
                 hasActiveFilters
               }
+
               onEdit={
                 handleEditTransaction
               }
+
               onDelete={
                 handleDeleteTransaction
               }
+
               deletingTransactionId={
                 deletingTransactionId
               }
+
               onViewDetails={
                 handleViewTransactionDetails
               }
+
               onClearFilters={() => {
 
                 setSearchTerm("");
 
+
                 setFilters({
-                  duration: "All Time",
-                  member: "All Members",
-                  category: "All Categories",
-                  paymentMode: "All Modes",
-                  fromDate: "",
-                  toDate: "",
+
+                  duration:
+                    "All Time",
+
+                  member:
+                    "All Members",
+
+                  category:
+                    "All Categories",
+
+                  paymentMode:
+                    "All Modes",
+
+                  fromDate:
+                    "",
+
+                  toDate:
+                    "",
+
                 });
 
               }}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              pageSize={pageSize}
+
+              currentPage={
+                currentPage
+              }
+
+              totalPages={
+                totalPages
+              }
+
+              pageSize={
+                pageSize
+              }
+
               onPageChange={
                 setCurrentPage
               }
-              onPageSizeChange={(size) => {
-                setPageSize(size);
-                setCurrentPage(1);
+
+              onPageSizeChange={(
+                size
+              ) => {
+
+                setPageSize(
+                  size
+                );
+
+
+                setCurrentPage(
+                  1
+                );
+
               }}
+
             />
 
           </div>
 
 
+          {/* -------------------------------------------------
+              Transaction Drawer
+             ------------------------------------------------- */}
+
           <TransactionDrawer
-            open={drawerOpen}
-            type={transactionType}
+
+            open={
+              drawerOpen
+            }
+
+            type={
+              transactionType
+            }
+
             transaction={
               editingTransaction
             }
+
             onClose={
               handleDrawerClose
             }
+
             onTransactionSaved={
               async () => {
+
                 await reloadTransactions();
+
                 await refreshSummary();
+
               }
             }
+
           />
 
 
+          {/* -------------------------------------------------
+              Transaction Details Drawer
+             ------------------------------------------------- */}
+
           <TransactionDetailsDrawer
+
             transaction={
               detailsTransaction
             }
+
             onClose={
               handleDetailsClose
             }
+
             onEdit={
               handleEditTransaction
             }
+
             onDelete={
               handleDeleteTransaction
             }
+
           />
 
         </>
@@ -876,6 +1521,10 @@ function DashboardPage({
       )}
 
     </AppLayout>
+
   );
+
 }
+
+
 export default DashboardPage;

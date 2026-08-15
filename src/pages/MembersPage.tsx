@@ -21,8 +21,14 @@ import type {
     GroupMember,
 } from "../types/member";
 
-import EditMemberModal from "../components/members/EditMemberModal/EditMemberModal";
-import InviteMemberModal from "../components/members/InviteMemberModal/InviteMemberModal";
+import EditMemberModal
+    from "../components/members/EditMemberModal/EditMemberModal";
+
+import InviteMemberModal
+    from "../components/members/InviteMemberModal/InviteMemberModal";
+
+import Popup
+    from "../components/common/Popup/Popup";
 
 import {
     createGroupInvitation,
@@ -30,8 +36,37 @@ import {
     cancelGroupInvitation,
 } from "../services/invitationService";
 
-import type { GroupInvitation } from "../services/invitationService";
-import { appPath } from "../utils/appUrl";
+import type {
+    GroupInvitation
+} from "../services/invitationService";
+
+import {
+    appPath
+} from "../utils/appUrl";
+
+
+/*
+ * -------------------------------------------------
+ * Popup Types
+ * -------------------------------------------------
+ */
+
+type PopupState = {
+
+    open: boolean;
+
+    variant: "error" | "success";
+
+    title: string;
+
+    message: string;
+
+    confirmAction?: () => void;
+
+    confirmButtonText?: string;
+
+} | null;
+
 
 function MembersPage() {
 
@@ -40,60 +75,70 @@ function MembersPage() {
         setInvitationLink
     ] = useState<string | null>(null);
 
+
     const [
         invitationCopied,
         setInvitationCopied
     ] = useState(false);
+
 
     const [
         copiedInvitationId,
         setCopiedInvitationId
     ] = useState<string | null>(null);
 
+
     const {
         selectedCashBook,
         currentMember
     } = useCashBook();
 
-    const isAdmin = currentMember?.role === "admin";
+
+    const isAdmin =
+        currentMember?.role === "admin";
+
 
     const [
         members,
         setMembers,
     ] = useState<GroupMember[]>([]);
 
-    // const [inviteMethod, setInviteMethod] =
-    //     useState<"email" | "phone">("email");
 
     const [
         loading,
         setLoading,
     ] = useState(true);
 
+
     const [
         error,
         setError,
     ] = useState<string | null>(null);
+
 
     const [
         showAddMemberModal,
         setShowAddMemberModal,
     ] = useState(false);
 
+
     const [
         memberName,
         setMemberName,
     ] = useState("");
+
 
     const [
         addingMember,
         setAddingMember,
     ] = useState(false);
 
+
     const [
         addMemberError,
         setAddMemberError,
     ] = useState<string | null>(null);
+
 
     const [
         editingMember,
@@ -102,35 +147,130 @@ function MembersPage() {
         null
     );
 
+
     const [
         editSaving,
         setEditSaving,
     ] = useState(false);
+
 
     const [
         inviteModalOpen,
         setInviteModalOpen,
     ] = useState(false);
 
+
     const [
         inviteLoading,
-        // setInviteLoading,
     ] = useState(false);
+
 
     const [
         invitations,
         setInvitations,
     ] = useState<GroupInvitation[]>([]);
 
+
     const [
         invitationsLoading,
         setInvitationsLoading,
     ] = useState(false);
 
+
     const [
         cancellingInvitationId,
         setCancellingInvitationId,
     ] = useState<string | null>(null);
+
+
+    /*
+     * -------------------------------------------------
+     * Popup State
+     * -------------------------------------------------
+     */
+
+    const [
+        popup,
+        setPopup,
+    ] = useState<PopupState>(null);
+
+
+    /*
+     * -------------------------------------------------
+     * Close Popup
+     * -------------------------------------------------
+     */
+
+    const handleClosePopup = () => {
+
+        setPopup(null);
+
+    };
+
+
+    /*
+     * -------------------------------------------------
+     * Show Error Popup
+     * -------------------------------------------------
+     */
+
+    const showErrorPopup = (
+        title: string,
+        message: string
+    ) => {
+
+        setPopup({
+
+            open: true,
+
+            variant: "error",
+
+            title,
+
+            message,
+
+        });
+
+    };
+
+
+    /*
+     * -------------------------------------------------
+     * Show Confirmation Popup
+     * -------------------------------------------------
+     */
+
+    const showConfirmationPopup = (
+        title: string,
+        message: string,
+        confirmAction: () => void,
+        confirmButtonText = "Confirm"
+    ) => {
+
+        setPopup({
+
+            open: true,
+
+            variant: "error",
+
+            title,
+
+            message,
+
+            confirmAction,
+
+            confirmButtonText,
+
+        });
+
+    };
+
+
+    /*
+     * -------------------------------------------------
+     * Load Invitations
+     * -------------------------------------------------
+     */
 
     useEffect(() => {
 
@@ -163,15 +303,34 @@ function MembersPage() {
 
                     const now = new Date();
 
-                    const activeInvitations = data.filter((invitation) => {
-                        if (invitation.status !== "pending") {
-                            return false;
-                        }
 
-                        return new Date(invitation.expires_at) > now;
-                    });
+                    const activeInvitations =
+                        data.filter(
+                            (invitation) => {
 
-                    setInvitations(activeInvitations);
+                                if (
+                                    invitation.status !==
+                                    "pending"
+                                ) {
+
+                                    return false;
+
+                                }
+
+
+                                return (
+                                    new Date(
+                                        invitation.expires_at
+                                    ) > now
+                                );
+
+                            }
+                        );
+
+
+                    setInvitations(
+                        activeInvitations
+                    );
 
                 }
 
@@ -214,32 +373,49 @@ function MembersPage() {
     }, [
         selectedCashBook?.id,
     ]);
+
+
+    /*
+     * -------------------------------------------------
+     * Load Members
+     * -------------------------------------------------
+     */
+
     useEffect(() => {
 
         let cancelled = false;
+
 
         const loadMembers = async () => {
 
             if (!selectedCashBook?.id) {
 
                 setMembers([]);
+
                 setLoading(false);
 
                 return;
+
             }
+
 
             try {
 
                 setLoading(true);
+
                 setError(null);
+
 
                 const data =
                     await getGroupMembers(
                         selectedCashBook.id
                     );
 
+
                 if (!cancelled) {
+
                     setMembers(data);
+
                 }
 
             } catch (error) {
@@ -248,6 +424,7 @@ function MembersPage() {
                     "Unable to load members.",
                     error
                 );
+
 
                 if (!cancelled) {
 
@@ -262,65 +439,87 @@ function MembersPage() {
             } finally {
 
                 if (!cancelled) {
+
                     setLoading(false);
+
                 }
 
             }
 
         };
 
+
         void loadMembers();
 
+
         return () => {
+
             cancelled = true;
+
         };
 
     }, [
         selectedCashBook?.id,
     ]);
 
+
+    /*
+     * -------------------------------------------------
+     * Add Member
+     * -------------------------------------------------
+     */
+
     const handleAddMember = async () => {
 
         if (!selectedCashBook?.id) {
+
             setAddMemberError(
                 "No Cash Book is selected."
             );
 
             return;
+
         }
+
 
         const cleanName =
             memberName.trim();
 
+
         if (!cleanName) {
+
             setAddMemberError(
                 "Member name is required."
             );
 
             return;
+
         }
+
 
         try {
 
             setAddingMember(true);
+
             setAddMemberError(null);
+
 
             await addGroupMember(
                 selectedCashBook.id,
                 cleanName
             );
 
+
             setMemberName("");
 
             setShowAddMemberModal(false);
 
-            /*
-             * Reload members
-             */
+
             const data =
                 await getGroupMembers(
                     selectedCashBook.id
                 );
+
 
             setMembers(data);
 
@@ -330,6 +529,7 @@ function MembersPage() {
                 "Unable to add member.",
                 error
             );
+
 
             setAddMemberError(
                 error instanceof Error
@@ -342,7 +542,15 @@ function MembersPage() {
             setAddingMember(false);
 
         }
+
     };
+
+
+    /*
+     * -------------------------------------------------
+     * Edit Member
+     * -------------------------------------------------
+     */
 
     const handleEditMember = (
         member: GroupMember
@@ -352,27 +560,36 @@ function MembersPage() {
 
     };
 
+
     const handleCloseEditMember = () => {
 
         if (editSaving) {
+
             return;
+
         }
+
 
         setEditingMember(null);
 
     };
+
 
     const handleSaveMember = async (
         memberName: string
     ) => {
 
         if (!editingMember) {
+
             return;
+
         }
+
 
         try {
 
             setEditSaving(true);
+
 
             const updatedMember =
                 await updateMemberName(
@@ -380,15 +597,35 @@ function MembersPage() {
                     memberName
                 );
 
-            setMembers((currentMembers) =>
-                currentMembers.map((member) =>
-                    member.id === updatedMember.id
-                        ? updatedMember
-                        : member
-                )
+
+            setMembers(
+                (currentMembers) =>
+                    currentMembers.map(
+                        (member) =>
+                            member.id ===
+                            updatedMember.id
+                                ? updatedMember
+                                : member
+                    )
             );
 
+
             setEditingMember(null);
+
+        } catch (error) {
+
+            console.error(
+                "Unable to update member name.",
+                error
+            );
+
+
+            showErrorPopup(
+                "Update Member Error",
+                error instanceof Error
+                    ? error.message
+                    : "Unable to update member name."
+            );
 
         } finally {
 
@@ -398,26 +635,60 @@ function MembersPage() {
 
     };
 
-    const handleToggleMemberStatus = async (
+
+    /*
+     * -------------------------------------------------
+     * Toggle Member Status
+     * -------------------------------------------------
+     */
+
+    const handleToggleMemberStatus = (
         member: GroupMember
     ) => {
 
         const nextStatus =
             !member.is_active;
 
+
         const actionText =
             nextStatus
                 ? "activate"
                 : "deactivate";
 
-        const confirmed =
-            window.confirm(
-                `Are you sure you want to ${actionText} ${member.member_name}?`
-            );
 
-        if (!confirmed) {
-            return;
-        }
+        showConfirmationPopup(
+
+            nextStatus
+                ? "Activate Member"
+                : "Deactivate Member",
+
+            `Are you sure you want to ${actionText} ${member.member_name}?`,
+
+            () => {
+
+                void performToggleMemberStatus(
+                    member,
+                    nextStatus
+                );
+
+            },
+
+            nextStatus
+                ? "Activate"
+                : "Deactivate"
+
+        );
+
+    };
+
+
+    const performToggleMemberStatus = async (
+        member: GroupMember,
+        nextStatus: boolean
+    ) => {
+
+        setPopup(null);
+
 
         try {
 
@@ -426,15 +697,20 @@ function MembersPage() {
                 nextStatus
             );
 
-            setMembers((currentMembers) =>
-                currentMembers.map((currentMember) =>
-                    currentMember.id === member.id
-                        ? {
-                            ...currentMember,
-                            is_active: nextStatus,
-                        }
-                        : currentMember
-                )
+
+            setMembers(
+                (currentMembers) =>
+                    currentMembers.map(
+                        (currentMember) =>
+                            currentMember.id ===
+                            member.id
+                                ? {
+                                    ...currentMember,
+                                    is_active:
+                                        nextStatus,
+                                }
+                                : currentMember
+                    )
             );
 
         } catch (error) {
@@ -444,15 +720,26 @@ function MembersPage() {
                 error
             );
 
-            window.alert(
+
+            showErrorPopup(
+                "Member Status Error",
                 error instanceof Error
                     ? error.message
                     : "Unable to update member status."
             );
+
         }
+
     };
 
-    const handleToggleMemberRole = async (
+
+    /*
+     * -------------------------------------------------
+     * Toggle Member Role
+     * -------------------------------------------------
+     */
+
+    const handleToggleMemberRole = (
         member: GroupMember
     ) => {
 
@@ -461,22 +748,50 @@ function MembersPage() {
                 ? "member"
                 : "admin";
 
+
         const actionText =
             nextRole === "admin"
                 ? "promote"
                 : "demote";
 
-        const confirmed =
-            window.confirm(
-                `Are you sure you want to ${actionText} ${member.member_name} ${nextRole === "admin"
+
+        showConfirmationPopup(
+
+            nextRole === "admin"
+                ? "Promote Member"
+                : "Demote Admin",
+
+            `Are you sure you want to ${actionText} ${member.member_name} ${
+                nextRole === "admin"
                     ? "to Admin"
                     : "to Member"
-                }?`
-            );
+            }?`,
 
-        if (!confirmed) {
-            return;
-        }
+            () => {
+
+                void performToggleMemberRole(
+                    member,
+                    nextRole
+                );
+
+            },
+
+            nextRole === "admin"
+                ? "Make Admin"
+                : "Make Member"
+
+        );
+
+    };
+
+
+    const performToggleMemberRole = async (
+        member: GroupMember,
+        nextRole: "admin" | "member"
+    ) => {
+
+        setPopup(null);
+
 
         try {
 
@@ -486,11 +801,13 @@ function MembersPage() {
                     nextRole
                 );
 
+
             setMembers(
                 (currentMembers) =>
                     currentMembers.map(
                         (currentMember) =>
-                            currentMember.id === member.id
+                            currentMember.id ===
+                            member.id
                                 ? updatedMember
                                 : currentMember
                     )
@@ -503,65 +820,31 @@ function MembersPage() {
                 error
             );
 
-            window.alert(
+
+            showErrorPopup(
+                "Member Role Error",
                 error instanceof Error
                     ? error.message
                     : "Unable to update member role."
             );
+
         }
+
     };
 
-    // const handleInviteMember = async (
-    //     memberName: string,
-    //     email: string
-    // ) => {
 
-    //     if (!selectedCashBook?.id) {
-
-    //         throw new Error(
-    //             "No Cash Book is selected."
-    //         );
-
-    //     }
-
-
-    //     try {
-
-    //         setInviteLoading(true);
-
-    //         await createGroupInvitation(
-    //             selectedCashBook.id,
-    //             memberName,
-    //             email
-    //         );
-    //         await refreshInvitations();
-
-    //         setInviteModalOpen(false);
-
-    //         window.alert(
-    //             "Invitation created successfully."
-    //         );
-
-    //     } catch (error) {
-
-    //         console.error(
-    //             "Unable to create member invitation.",
-    //             error
-    //         );
-
-    //         throw error;
-
-    //     } finally {
-
-    //         setInviteLoading(false);
-
-    //     }
-
-    // };
+    /*
+     * -------------------------------------------------
+     * Refresh Invitations
+     * -------------------------------------------------
+     */
 
     const refreshInvitations = async () => {
 
-        if (!selectedCashBook?.id || currentMember?.role !== "admin") {
+        if (
+            !selectedCashBook?.id ||
+            currentMember?.role !== "admin"
+        ) {
 
             setInvitations([]);
 
@@ -598,21 +881,43 @@ function MembersPage() {
 
     };
 
-    const handleCancelInvitation = async (
+
+    /*
+     * -------------------------------------------------
+     * Cancel Invitation
+     * -------------------------------------------------
+     */
+
+    const handleCancelInvitation = (
         invitation: GroupInvitation
     ) => {
 
-        const confirmed =
-            window.confirm(
-                `Cancel invitation for ${invitation.member_name}?`
-            );
+        showConfirmationPopup(
+
+            "Cancel Invitation",
+
+            `Cancel invitation for ${invitation.member_name}?`,
+
+            () => {
+
+                void performCancelInvitation(
+                    invitation
+                );
+
+            },
+
+            "Cancel Invitation"
+
+        );
+
+    };
 
 
-        if (!confirmed) {
+    const performCancelInvitation = async (
+        invitation: GroupInvitation
+    ) => {
 
-            return;
-
-        }
+        setPopup(null);
 
 
         try {
@@ -637,7 +942,8 @@ function MembersPage() {
             );
 
 
-            window.alert(
+            showErrorPopup(
+                "Cancel Invitation Error",
                 error instanceof Error
                     ? error.message
                     : "Unable to cancel invitation."
@@ -653,11 +959,12 @@ function MembersPage() {
 
     };
 
-    const pendingInvitations =
-        invitations.filter(
-            (invitation) =>
-                invitation.status === "pending"
-        );
+
+    /*
+     * -------------------------------------------------
+     * Create Invitation
+     * -------------------------------------------------
+     */
 
     const handleCreateInvitation = async (
         memberName: string,
@@ -666,8 +973,11 @@ function MembersPage() {
     ) => {
 
         if (!selectedCashBook?.id) {
+
             return;
+
         }
+
 
         try {
 
@@ -681,10 +991,16 @@ function MembersPage() {
 
 
             const link =
-                `${window.location.origin}${appPath(`/invite?token=${invitation.token}`)}`;
+                `${window.location.origin}${appPath(
+                    `/invite?token=${invitation.token}`
+                )}`;
+
 
             setInvitationLink(link);
+
             setInvitationCopied(false);
+
+
             await refreshInvitations();
 
         } catch (error) {
@@ -694,20 +1010,33 @@ function MembersPage() {
                 error
             );
 
-            window.alert(
+
+            showErrorPopup(
+                "Invitation Error",
                 error instanceof Error
                     ? error.message
                     : "Unable to create invitation."
             );
 
         }
+
     };
+
+
+    /*
+     * -------------------------------------------------
+     * Copy New Invitation Link
+     * -------------------------------------------------
+     */
 
     const handleCopyInvitationLink = async () => {
 
         if (!invitationLink) {
+
             return;
+
         }
+
 
         try {
 
@@ -715,10 +1044,14 @@ function MembersPage() {
                 invitationLink
             );
 
+
             setInvitationCopied(true);
 
+
             setTimeout(() => {
+
                 setInvitationCopied(false);
+
             }, 2000);
 
         } catch (error) {
@@ -728,13 +1061,23 @@ function MembersPage() {
                 error
             );
 
-            window.alert(
+
+            showErrorPopup(
+                "Copy Link Error",
                 "Unable to copy the invitation link."
             );
 
         }
 
     };
+
+
+    /*
+     * -------------------------------------------------
+     * Format Invitation Date
+     * -------------------------------------------------
+     */
+
     function formatInvitationDate(
         date: string
     ) {
@@ -757,94 +1100,133 @@ function MembersPage() {
 
     }
 
-    // if (currentMember && currentMember.role !== "admin") 
-    // {
-    //     return (
-    //         <section className="members-page">
 
-    //         <div className="members-error">
+    /*
+     * -------------------------------------------------
+     * Pending Invitations
+     * -------------------------------------------------
+     */
 
-    //             <h2>
-    //             Access Denied
-    //             </h2>
+    const pendingInvitations =
+        invitations.filter(
+            (invitation) =>
+                invitation.status === "pending"
+        );
 
-    //             <p>
-    //             Only Cash Book administrators can access
-    //             the Members page.
-    //             </p>
 
-    //         </div>
+    /*
+     * -------------------------------------------------
+     * Loading
+     * -------------------------------------------------
+     */
 
-    //         </section>
-    //     );
-
-    // }
     if (loading) {
 
         return (
+
             <section className="members-page">
 
                 <div className="members-header">
+
                     <div>
-                        <h1>Members</h1>
+
+                        <h1>
+                            Members
+                        </h1>
 
                         <p>
-                            Manage people who use this Cash Book.
+                            Manage people who use
+                            this Cash Book.
                         </p>
+
                     </div>
+
                 </div>
 
+
                 <div className="members-loading">
+
                     Loading members...
+
                 </div>
 
             </section>
+
         );
 
     }
 
 
+    /*
+     * -------------------------------------------------
+     * Error
+     * -------------------------------------------------
+     */
+
     if (error) {
 
         return (
+
             <section className="members-page">
 
                 <div className="members-header">
+
                     <div>
-                        <h1>Members</h1>
+
+                        <h1>
+                            Members
+                        </h1>
 
                         <p>
-                            Manage people who use this Cash Book.
+                            Manage people who use
+                            this Cash Book.
                         </p>
+
                     </div>
+
                 </div>
 
+
                 <div className="members-error">
+
                     {error}
+
                 </div>
 
             </section>
+
         );
 
     }
 
 
     return (
+
         <section className="members-page">
+
+
+            {/* -----------------------------------------
+                Members Header
+            ----------------------------------------- */}
 
             <div className="members-header">
 
                 <div>
+
                     <h1>
                         Members
                     </h1>
 
                     <p>
-                        Manage people who use this Cash Book.
+                        Manage people who use
+                        this Cash Book.
                     </p>
+
                 </div>
 
+
                 {isAdmin && (
+
                     <button
                         type="button"
                         className="add-member-button"
@@ -852,12 +1234,19 @@ function MembersPage() {
                             setInviteModalOpen(true)
                         }
                     >
+
                         + Invite Member
+
                     </button>
+
                 )}
 
             </div>
 
+
+            {/* -----------------------------------------
+                Members Card
+            ----------------------------------------- */}
 
             <div className="members-card">
 
@@ -874,8 +1263,8 @@ function MembersPage() {
                         </h3>
 
                         <p>
-                            Add a member to start managing
-                            your Cash Book.
+                            Add a member to start
+                            managing your Cash Book.
                         </p>
 
                     </div>
@@ -893,24 +1282,33 @@ function MembersPage() {
                                 >
 
                                     <div className="member-avatar">
+
                                         {member.member_name
                                             .charAt(0)
                                             .toUpperCase()}
+
                                     </div>
 
 
                                     <div className="member-info">
 
                                         <div className="member-name">
+
                                             {member.member_name}
+
                                         </div>
 
+
                                         {isAdmin && (
+
                                             <div className="member-status">
+
                                                 {member.user_id
                                                     ? "Registered user"
                                                     : "Not linked to an account"}
+
                                             </div>
+
                                         )}
 
                                     </div>
@@ -919,43 +1317,71 @@ function MembersPage() {
                                     <div
                                         className={`member-role member-role--${member.role}`}
                                     >
+
                                         {member.role}
+
                                     </div>
 
-                                    {isAdmin && (
-                                        member.role === "admin" ? (
-                                            <button
-                                                type="button"
-                                                className="member-action-button member-action-button--demote"
-                                                onClick={() =>
-                                                    handleToggleMemberRole(member)
-                                                }
-                                            >
-                                                Make Member
-                                            </button>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                className="member-action-button member-action-button--promote"
-                                                onClick={() =>
-                                                    handleToggleMemberRole(member)
-                                                }
-                                            >
-                                                Make Admin
-                                            </button>
-                                        )
-                                    )}
 
                                     {isAdmin && (
+
+                                        member.role === "admin"
+
+                                            ? (
+
+                                                <button
+                                                    type="button"
+                                                    className="member-action-button member-action-button--demote"
+                                                    onClick={() =>
+                                                        handleToggleMemberRole(
+                                                            member
+                                                        )
+                                                    }
+                                                >
+
+                                                    Make Member
+
+                                                </button>
+
+                                            )
+
+                                            : (
+
+                                                <button
+                                                    type="button"
+                                                    className="member-action-button member-action-button--promote"
+                                                    onClick={() =>
+                                                        handleToggleMemberRole(
+                                                            member
+                                                        )
+                                                    }
+                                                >
+
+                                                    Make Admin
+
+                                                </button>
+
+                                            )
+
+                                    )}
+
+
+                                    {isAdmin && (
+
                                         <div className="member-status-badge">
+
                                             {member.is_active
                                                 ? "Active"
                                                 : "Inactive"}
+
                                         </div>
+
                                     )}
+
 
                                     {isAdmin &&
                                         member.role === "member" && (
+
                                             <button
                                                 type="button"
                                                 className={
@@ -964,23 +1390,34 @@ function MembersPage() {
                                                         : "member-action-button member-action-button--activate"
                                                 }
                                                 onClick={() =>
-                                                    handleToggleMemberStatus(member)
+                                                    handleToggleMemberStatus(
+                                                        member
+                                                    )
                                                 }
                                             >
+
                                                 {member.is_active
                                                     ? "Deactivate"
                                                     : "Activate"}
+
                                             </button>
+
                                         )}
+
+
                                     {isAdmin && (
+
                                         <button
                                             type="button"
                                             className="member-edit-button"
                                             onClick={() =>
-                                                handleEditMember(member)
+                                                handleEditMember(
+                                                    member
+                                                )
                                             }
                                             title={`Edit ${member.member_name}`}
                                         >
+
                                             <svg
                                                 viewBox="0 0 24 24"
                                                 aria-hidden="true"
@@ -1005,7 +1442,9 @@ function MembersPage() {
                                             </svg>
 
                                         </button>
+
                                     )}
+
                                 </div>
 
                             )
@@ -1016,7 +1455,14 @@ function MembersPage() {
                 )}
 
             </div>
+
+
+            {/* -----------------------------------------
+                Pending Invitations
+            ----------------------------------------- */}
+
             {isAdmin && (
+
                 <div className="invitations-section">
 
                     <div className="invitations-header">
@@ -1028,15 +1474,19 @@ function MembersPage() {
                             </h2>
 
                             <p>
-                                Invitations that are waiting to be accepted.
+                                Invitations that are
+                                waiting to be accepted.
                             </p>
 
                         </div>
 
+
                         {pendingInvitations.length > 0 && (
 
                             <span className="invitation-count">
+
                                 {pendingInvitations.length}
+
                             </span>
 
                         )}
@@ -1049,7 +1499,9 @@ function MembersPage() {
                         {invitationsLoading ? (
 
                             <div className="invitations-loading">
+
                                 Loading invitations...
+
                             </div>
 
                         ) : pendingInvitations.length === 0 ? (
@@ -1065,7 +1517,8 @@ function MembersPage() {
                                 </h3>
 
                                 <p>
-                                    Invitations you create will appear here.
+                                    Invitations you create
+                                    will appear here.
                                 </p>
 
                             </div>
@@ -1083,35 +1536,49 @@ function MembersPage() {
                                         >
 
                                             <div className="invitation-avatar">
+
                                                 {invitation.member_name
                                                     .charAt(0)
                                                     .toUpperCase()}
+
                                             </div>
 
 
                                             <div className="invitation-info">
 
                                                 <div className="invitation-name">
+
                                                     {invitation.member_name}
+
                                                 </div>
 
+
                                                 <div className="invitation-email">
+
                                                     {invitation.email}
+
                                                 </div>
 
                                             </div>
 
 
                                             <div className="invitation-status">
+
                                                 Pending
+
                                             </div>
 
+
                                             <div className="invitation-expiry">
+
                                                 Expires{" "}
+
                                                 {formatInvitationDate(
                                                     invitation.expires_at
                                                 )}
+
                                             </div>
+
 
                                             <button
                                                 type="button"
@@ -1119,7 +1586,10 @@ function MembersPage() {
                                                 onClick={async () => {
 
                                                     const link =
-                                                        `${window.location.origin}${appPath(`/invite?token=${invitation.token}`)}`;
+                                                        `${window.location.origin}${appPath(
+                                                            `/invite?token=${invitation.token}`
+                                                        )}`;
+
 
                                                     try {
 
@@ -1127,9 +1597,11 @@ function MembersPage() {
                                                             link
                                                         );
 
+
                                                         setCopiedInvitationId(
                                                             invitation.id
                                                         );
+
 
                                                         setTimeout(() => {
 
@@ -1146,7 +1618,9 @@ function MembersPage() {
                                                             error
                                                         );
 
-                                                        window.alert(
+
+                                                        showErrorPopup(
+                                                            "Copy Link Error",
                                                             "Unable to copy the invitation link."
                                                         );
 
@@ -1154,11 +1628,16 @@ function MembersPage() {
 
                                                 }}
                                             >
-                                                {copiedInvitationId === invitation.id
+
+                                                {copiedInvitationId ===
+                                                    invitation.id
+
                                                     ? "✓ Copied"
-                                                    : "Copy Link"
-                                                }
+
+                                                    : "Copy Link"}
+
                                             </button>
+
 
                                             <button
                                                 type="button"
@@ -1173,12 +1652,16 @@ function MembersPage() {
                                                     invitation.id
                                                 }
                                             >
+
                                                 {cancellingInvitationId ===
                                                     invitation.id
+
                                                     ? "Cancelling..."
-                                                    : "Cancel"
-                                                }
+
+                                                    : "Cancel"}
+
                                             </button>
+
                                         </div>
 
                                     )
@@ -1191,8 +1674,16 @@ function MembersPage() {
                     </div>
 
                 </div>
+
             )}
+
+
+            {/* -----------------------------------------
+                Add Member Modal
+            ----------------------------------------- */}
+
             {showAddMemberModal && (
+
                 <div className="member-modal-overlay">
 
                     <div
@@ -1205,27 +1696,39 @@ function MembersPage() {
                         <div className="member-modal-header">
 
                             <div>
+
                                 <h2 id="add-member-title">
                                     Add Member
                                 </h2>
 
                                 <p>
-                                    Add a person to this Cash Book.
+                                    Add a person to this
+                                    Cash Book.
                                 </p>
+
                             </div>
+
 
                             <button
                                 type="button"
                                 className="member-modal-close"
                                 onClick={() => {
+
                                     if (!addingMember) {
-                                        setShowAddMemberModal(false);
+
+                                        setShowAddMemberModal(
+                                            false
+                                        );
+
                                     }
+
                                 }}
                                 disabled={addingMember}
                                 aria-label="Close"
                             >
+
                                 ×
+
                             </button>
 
                         </div>
@@ -1237,8 +1740,11 @@ function MembersPage() {
                                 htmlFor="member-name"
                                 className="member-modal-label"
                             >
+
                                 Member Name
+
                             </label>
+
 
                             <input
                                 id="member-name"
@@ -1257,9 +1763,13 @@ function MembersPage() {
 
 
                             {addMemberError && (
+
                                 <div className="member-modal-error">
+
                                     {addMemberError}
+
                                 </div>
+
                             )}
 
                         </div>
@@ -1271,14 +1781,23 @@ function MembersPage() {
                                 type="button"
                                 className="member-modal-cancel"
                                 onClick={() => {
+
                                     if (!addingMember) {
-                                        setShowAddMemberModal(false);
+
+                                        setShowAddMemberModal(
+                                            false
+                                        );
+
                                     }
+
                                 }}
                                 disabled={addingMember}
                             >
+
                                 Cancel
+
                             </button>
+
 
                             <button
                                 type="button"
@@ -1289,9 +1808,11 @@ function MembersPage() {
                                     !memberName.trim()
                                 }
                             >
+
                                 {addingMember
                                     ? "Adding..."
                                     : "Add Member"}
+
                             </button>
 
                         </div>
@@ -1299,7 +1820,13 @@ function MembersPage() {
                     </div>
 
                 </div>
+
             )}
+
+
+            {/* -----------------------------------------
+                Edit Member Modal
+            ----------------------------------------- */}
 
             <EditMemberModal
                 member={editingMember}
@@ -1308,6 +1835,11 @@ function MembersPage() {
                 onClose={handleCloseEditMember}
                 onSave={handleSaveMember}
             />
+
+
+            {/* -----------------------------------------
+                Invite Member Modal
+            ----------------------------------------- */}
 
             <InviteMemberModal
                 open={inviteModalOpen}
@@ -1319,7 +1851,14 @@ function MembersPage() {
                     handleCreateInvitation
                 }
             />
+
+
+            {/* -----------------------------------------
+                Invitation Link Modal
+            ----------------------------------------- */}
+
             {invitationLink && (
+
                 <div className="invitation-link-modal-overlay">
 
                     <div
@@ -1332,25 +1871,34 @@ function MembersPage() {
                         <div className="invitation-link-modal-header">
 
                             <div>
+
                                 <h2 id="invitation-link-title">
                                     Invitation Created
                                 </h2>
 
                                 <p>
-                                    Copy this link and share it with the member.
+                                    Copy this link and
+                                    share it with the member.
                                 </p>
+
                             </div>
+
 
                             <button
                                 type="button"
                                 className="invitation-link-close"
                                 onClick={() => {
+
                                     setInvitationLink(null);
+
                                     setInvitationCopied(false);
+
                                 }}
                                 aria-label="Close"
                             >
+
                                 ×
+
                             </button>
 
                         </div>
@@ -1362,8 +1910,11 @@ function MembersPage() {
                                 htmlFor="invitation-link"
                                 className="invitation-link-label"
                             >
+
                                 Invitation Link
+
                             </label>
+
 
                             <div className="invitation-link-row">
 
@@ -1374,22 +1925,31 @@ function MembersPage() {
                                     readOnly
                                 />
 
+
                                 <button
                                     type="button"
                                     className="invitation-copy-button"
-                                    onClick={handleCopyInvitationLink}
+                                    onClick={
+                                        handleCopyInvitationLink
+                                    }
                                 >
+
                                     {invitationCopied
                                         ? "Copied!"
-                                        : "Copy Link"
-                                    }
+                                        : "Copy Link"}
+
                                 </button>
 
                             </div>
 
+
                             <p className="invitation-link-help">
-                                This link can be shared through WhatsApp,
-                                SMS, email, or any other messaging app.
+
+                                This link can be shared
+                                through WhatsApp, SMS,
+                                email, or any other
+                                messaging app.
+
                             </p>
 
                         </div>
@@ -1401,13 +1961,20 @@ function MembersPage() {
                                 type="button"
                                 className="invitation-link-done-button"
                                 onClick={() => {
+
                                     setInvitationLink(null);
+
                                     setInvitationCopied(false);
+
                                     setInviteModalOpen(false);
+
                                     void refreshInvitations();
+
                                 }}
                             >
+
                                 Done
+
                             </button>
 
                         </div>
@@ -1415,10 +1982,75 @@ function MembersPage() {
                     </div>
 
                 </div>
+
+            )}
+
+
+            {/* -----------------------------------------
+                Common Popup
+            ----------------------------------------- */}
+
+            {popup?.open && (
+
+                <Popup
+                    variant={popup.variant}
+                    title={popup.title}
+                    onClose={handleClosePopup}
+                >
+
+                    <div className="members-popup-content">
+
+                        <p>
+                            {popup.message}
+                        </p>
+
+
+                        {popup.confirmAction && (
+
+                            <div
+                                className="members-popup-actions"
+                            >
+
+                                <button
+                                    type="button"
+                                    className="member-modal-cancel"
+                                    onClick={
+                                        handleClosePopup
+                                    }
+                                >
+
+                                    Cancel
+
+                                </button>
+
+
+                                <button
+                                    type="button"
+                                    className="member-modal-submit"
+                                    onClick={() => {
+                                        popup.confirmAction?.();
+                                    }}
+                                >
+
+                                    {popup.confirmButtonText ??
+                                        "Confirm"}
+
+                                </button>
+
+                            </div>
+
+                        )}
+
+                    </div>
+
+                </Popup>
+
             )}
 
         </section>
+
     );
+
 }
 
 export default MembersPage;

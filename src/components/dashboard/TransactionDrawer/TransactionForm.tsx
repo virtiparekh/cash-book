@@ -1,3 +1,8 @@
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import Input
   from "../../common/Input/Input";
 
@@ -10,8 +15,8 @@ import TextArea
 import Button
   from "../../common/Button/Button";
 
-import Alert
-  from "../../common/Alert/Alert";
+import Popup
+  from "../../common/Popup/Popup";
 
 
 type Option = {
@@ -102,6 +107,52 @@ function TransactionForm({
 
 }: Props) {
 
+
+  /*
+   * -------------------------------------------------
+   * Popup
+   * -------------------------------------------------
+   */
+
+  const [
+    showPopup,
+    setShowPopup,
+  ] = useState(false);
+
+
+  /*
+   * -------------------------------------------------
+   * Show popup whenever parent sends an error
+   * -------------------------------------------------
+   */
+
+  useEffect(() => {
+
+    if (error) {
+
+      setShowPopup(true);
+
+    }
+
+  }, [
+    error,
+  ]);
+
+
+  /*
+   * -------------------------------------------------
+   * Close popup
+   * -------------------------------------------------
+   */
+
+  const handleClosePopup =
+    () => {
+
+      setShowPopup(false);
+
+    };
+
+
   return (
 
     <form
@@ -110,11 +161,23 @@ function TransactionForm({
     >
 
 
-      {error && (
+      {/* -------------------------------------------------
+          Transaction Error Popup
+         ------------------------------------------------- */}
 
-        <Alert variant="error">
+      {showPopup && error && (
+
+        <Popup
+          variant="error"
+          title="Transaction Error"
+          onClose={
+            handleClosePopup
+          }
+        >
+
           {error}
-        </Alert>
+
+        </Popup>
 
       )}
 
@@ -278,7 +341,10 @@ function TransactionForm({
 
 
     </form>
+
   );
+
 }
+
 
 export default TransactionForm;

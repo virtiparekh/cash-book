@@ -3,13 +3,13 @@ import "./../styles/LoginPage.css";
 
 import Logo from "../components/common/Logo/Logo";
 import { supabase } from "../lib/supabase";
-
+import Popup from "../components/common/Popup/Popup";
 import Button from "../components/common/Button/Button";
 import Input from "../components/common/Input/Input";
 import Card from "../components/common/Card/Card";
-import Alert from "../components/common/Alert/Alert";
 import Loader from "../components/common/Loader/Loader";
 import { appPath } from "../utils/appUrl";
+
 
 type LoginPageProps = {
   onShowSignup: () => void;
@@ -46,6 +46,12 @@ function LoginPage({
   ] = useState("");
 
 
+  const [
+    showPopup,
+    setShowPopup,
+  ] = useState(false);
+
+
   /*
    * -------------------------------------------------
    * Login
@@ -68,7 +74,9 @@ function LoginPage({
 
     event.preventDefault();
 
+
     setErrorMessage("");
+    setShowPopup(false);
 
 
     const trimmedLoginId =
@@ -87,6 +95,8 @@ function LoginPage({
         "Please enter your email address or phone number."
       );
 
+      setShowPopup(true);
+
       return;
 
     }
@@ -97,6 +107,8 @@ function LoginPage({
       setErrorMessage(
         "Please enter your password."
       );
+
+      setShowPopup(true);
 
       return;
 
@@ -130,6 +142,8 @@ function LoginPage({
         "Please enter a valid email address or 10-digit phone number."
       );
 
+      setShowPopup(true);
+
       return;
 
     }
@@ -149,7 +163,9 @@ function LoginPage({
       if (isPhone) {
 
         /*
+         * -------------------------------------------------
          * Phone login
+         * -------------------------------------------------
          *
          * Supabase expects an international
          * phone number format.
@@ -161,6 +177,7 @@ function LoginPage({
          * becomes:
          *
          * +919876543210
+         * -------------------------------------------------
          */
 
         const phone =
@@ -185,14 +202,17 @@ function LoginPage({
       } else {
 
         /*
+         * -------------------------------------------------
          * Email login
+         * -------------------------------------------------
          */
 
         const {
           error,
         } =
           await supabase.auth.signInWithPassword({
-            email: trimmedLoginId.toLowerCase(),
+            email:
+              trimmedLoginId.toLowerCase(),
             password,
           });
 
@@ -207,10 +227,13 @@ function LoginPage({
 
 
       /*
-       * Authentication succeeded.
+       * -------------------------------------------------
+       * Authentication succeeded
+       * -------------------------------------------------
        *
-       * App.tsx will handle any returnTo
-       * invitation URL.
+       * If this login came from an invitation,
+       * return to the invitation page.
+       * -------------------------------------------------
        */
 
       const invitationReturnUrl =
@@ -218,11 +241,21 @@ function LoginPage({
           "invitation_return_url"
         );
 
+
       if (invitationReturnUrl) {
 
         sessionStorage.removeItem(
           "invitation_return_url"
         );
+
+
+        /*
+         * invitationReturnUrl may already contain
+         * /cash-book because it was created using
+         * appPath().
+         *
+         * Therefore do NOT call appPath() again here.
+         */
 
         window.location.href =
           appPath(invitationReturnUrl);
@@ -230,6 +263,13 @@ function LoginPage({
         return;
 
       }
+
+
+      /*
+       * -------------------------------------------------
+       * Normal login
+       * -------------------------------------------------
+       */
 
       onLoginSuccess?.();
 
@@ -247,6 +287,9 @@ function LoginPage({
       );
 
 
+      setShowPopup(true);
+
+
     } finally {
 
       setLoading(false);
@@ -259,6 +302,31 @@ function LoginPage({
   return (
 
     <main className="login-page">
+
+
+      {/* -------------------------------------------------
+          Login Error Popup
+         ------------------------------------------------- */}
+
+      {showPopup && (
+
+        <Popup
+          variant="error"
+          title="Login Error"
+          onClose={() => {
+
+            setShowPopup(false);
+            setErrorMessage("");
+
+          }}
+        >
+
+          {errorMessage}
+
+        </Popup>
+
+      )}
+
 
       <div className="login-container">
 
@@ -281,6 +349,7 @@ function LoginPage({
 
           <Card className="login-card">
 
+
             <h2>
               Welcome Back
             </h2>
@@ -289,15 +358,6 @@ function LoginPage({
             <p>
               Login to continue
             </p>
-
-
-            {errorMessage && (
-
-              <Alert variant="error">
-                {errorMessage}
-              </Alert>
-
-            )}
 
 
             <form
@@ -325,7 +385,7 @@ function LoginPage({
                 label="Password"
                 type="password"
                 value={password}
-                placeholder="Enter password"
+                placeholder="Enter your password"
                 disabled={loading}
                 required={true}
                 autoComplete="current-password"
@@ -346,6 +406,7 @@ function LoginPage({
                   />
 
                   {" "}
+
                   Remember Me
 
                 </label>
@@ -382,6 +443,7 @@ function LoginPage({
 
             <div className="login-footer">
 
+
               <p>
                 Don't have an account?
               </p>
@@ -391,7 +453,9 @@ function LoginPage({
                 variant="secondary"
                 onClick={onShowSignup}
               >
+
                 Create Account
+
               </Button>
 
 
@@ -402,8 +466,11 @@ function LoginPage({
 
 
               <div className="login-bottom-text">
+
                 © 2026 Family Cash Book
+
               </div>
+
 
             </div>
 
@@ -415,10 +482,12 @@ function LoginPage({
 
       </div>
 
+
     </main>
 
   );
 
 }
+
 
 export default LoginPage;
