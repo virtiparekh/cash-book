@@ -603,7 +603,7 @@ function MembersPage() {
                     currentMembers.map(
                         (member) =>
                             member.id ===
-                            updatedMember.id
+                                updatedMember.id
                                 ? updatedMember
                                 : member
                     )
@@ -703,7 +703,7 @@ function MembersPage() {
                     currentMembers.map(
                         (currentMember) =>
                             currentMember.id ===
-                            member.id
+                                member.id
                                 ? {
                                     ...currentMember,
                                     is_active:
@@ -761,10 +761,9 @@ function MembersPage() {
                 ? "Promote Member"
                 : "Demote Admin",
 
-            `Are you sure you want to ${actionText} ${member.member_name} ${
-                nextRole === "admin"
-                    ? "to Admin"
-                    : "to Member"
+            `Are you sure you want to ${actionText} ${member.member_name} ${nextRole === "admin"
+                ? "to Admin"
+                : "to Member"
             }?`,
 
             () => {
@@ -807,7 +806,7 @@ function MembersPage() {
                     currentMembers.map(
                         (currentMember) =>
                             currentMember.id ===
-                            member.id
+                                member.id
                                 ? updatedMember
                                 : currentMember
                     )
@@ -1313,138 +1312,109 @@ function MembersPage() {
 
                                     </div>
 
+                                    <div className="member-actions">
 
-                                    <div
-                                        className={`member-role member-role--${member.role}`}
-                                    >
+                                        <div className="member-top-actions">
 
-                                        {member.role}
+                                            <div
+                                                className={`member-role member-role--${member.role}`}
+                                            >
+                                                {member.role}
+                                            </div>
 
-                                    </div>
+                                            {isAdmin && (
+                                                <div className="member-status-badge">
+                                                    {member.is_active
+                                                        ? "Active"
+                                                        : "Inactive"}
+                                                </div>
+                                            )}
 
-
-                                    {isAdmin && (
-
-                                        member.role === "admin"
-
-                                            ? (
-
+                                            {isAdmin && (
                                                 <button
                                                     type="button"
-                                                    className="member-action-button member-action-button--demote"
+                                                    className="member-edit-button"
                                                     onClick={() =>
-                                                        handleToggleMemberRole(
-                                                            member
-                                                        )
+                                                        handleEditMember(member)
                                                     }
+                                                    title={`Edit ${member.member_name}`}
                                                 >
+                                                    <svg
+                                                        viewBox="0 0 24 24"
+                                                        aria-hidden="true"
+                                                    >
+                                                        <path
+                                                            d="M12 20h9"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                            strokeLinecap="round"
+                                                        />
 
-                                                    Make Member
-
+                                                        <path
+                                                            d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            strokeWidth="2"
+                                                            strokeLinejoin="round"
+                                                        />
+                                                    </svg>
                                                 </button>
-
-                                            )
-
-                                            : (
-
-                                                <button
-                                                    type="button"
-                                                    className="member-action-button member-action-button--promote"
-                                                    onClick={() =>
-                                                        handleToggleMemberRole(
-                                                            member
-                                                        )
-                                                    }
-                                                >
-
-                                                    Make Admin
-
-                                                </button>
-
-                                            )
-
-                                    )}
-
-
-                                    {isAdmin && (
-
-                                        <div className="member-status-badge">
-
-                                            {member.is_active
-                                                ? "Active"
-                                                : "Inactive"}
+                                            )}
 
                                         </div>
 
-                                    )}
 
+                                        <div className="member-bottom-actions">
 
-                                    {isAdmin &&
-                                        member.role === "member" && (
-
-                                            <button
-                                                type="button"
-                                                className={
-                                                    member.is_active
-                                                        ? "member-action-button member-action-button--deactivate"
-                                                        : "member-action-button member-action-button--activate"
-                                                }
-                                                onClick={() =>
-                                                    handleToggleMemberStatus(
-                                                        member
+                                            {isAdmin && (
+                                                member.role === "admin"
+                                                    ? (
+                                                        <button
+                                                            type="button"
+                                                            className="member-action-button member-action-button--demote"
+                                                            onClick={() =>
+                                                                handleToggleMemberRole(member)
+                                                            }
+                                                        >
+                                                            Make Member
+                                                        </button>
                                                     )
-                                                }
-                                            >
+                                                    : (
+                                                        <button
+                                                            type="button"
+                                                            className="member-action-button member-action-button--promote"
+                                                            onClick={() =>
+                                                                handleToggleMemberRole(member)
+                                                            }
+                                                        >
+                                                            Make Admin
+                                                        </button>
+                                                    )
+                                            )}
 
-                                                {member.is_active
-                                                    ? "Deactivate"
-                                                    : "Activate"}
+                                            {isAdmin &&
+                                                member.role === "member" && (
+                                                    <button
+                                                        type="button"
+                                                        className={
+                                                            member.is_active
+                                                                ? "member-action-button member-action-button--deactivate"
+                                                                : "member-action-button member-action-button--activate"
+                                                        }
+                                                        onClick={() =>
+                                                            handleToggleMemberStatus(member)
+                                                        }
+                                                    >
+                                                        {member.is_active
+                                                            ? "Deactivate"
+                                                            : "Activate"}
+                                                    </button>
+                                                )}
 
-                                            </button>
+                                        </div>
 
-                                        )}
-
-
-                                    {isAdmin && (
-
-                                        <button
-                                            type="button"
-                                            className="member-edit-button"
-                                            onClick={() =>
-                                                handleEditMember(
-                                                    member
-                                                )
-                                            }
-                                            title={`Edit ${member.member_name}`}
-                                        >
-
-                                            <svg
-                                                viewBox="0 0 24 24"
-                                                aria-hidden="true"
-                                            >
-
-                                                <path
-                                                    d="M12 20h9"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinecap="round"
-                                                />
-
-                                                <path
-                                                    d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
-                                                    fill="none"
-                                                    stroke="currentColor"
-                                                    strokeWidth="2"
-                                                    strokeLinejoin="round"
-                                                />
-
-                                            </svg>
-
-                                        </button>
-
-                                    )}
-
+                                    </div>
                                 </div>
 
                             )

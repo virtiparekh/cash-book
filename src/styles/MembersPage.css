@@ -1,5 +1,5 @@
 /* =========================================================
-   Members Page
+   MEMBERS PAGE
 ========================================================= */
 
 .members-page {
@@ -16,7 +16,7 @@
 
 
 /* =========================================================
-   Header
+   HEADER
 ========================================================= */
 
 .members-header {
@@ -48,13 +48,12 @@
   border-radius: 9px;
 
   background: #2563eb;
-  color: white;
+  color: #ffffff;
 
   font-size: 14px;
   font-weight: 600;
 
   cursor: pointer;
-
   white-space: nowrap;
 
   transition:
@@ -69,7 +68,7 @@
 
 
 /* =========================================================
-   Members Card
+   MEMBERS CARD
 ========================================================= */
 
 .members-card {
@@ -90,7 +89,8 @@
 
 
 /* =========================================================
-   Member Row - Desktop
+   MEMBER ROW
+   Desktop
 ========================================================= */
 
 .member-row {
@@ -98,18 +98,23 @@
   align-items: center;
   gap: 12px;
 
+  width: 100%;
+  min-width: 0;
   min-height: 76px;
+
   padding: 14px 20px;
 
   border-bottom: 1px solid #f1f5f9;
-
-  width: 100%;
-  min-width: 0;
 }
 
 .member-row:last-child {
   border-bottom: none;
 }
+
+
+/* =========================================================
+   MEMBER AVATAR
+========================================================= */
 
 .member-avatar {
   width: 42px;
@@ -130,9 +135,15 @@
   font-weight: 700;
 }
 
+
+/* =========================================================
+   MEMBER INFORMATION
+========================================================= */
+
 .member-info {
   flex: 1;
-  min-width: 120px;
+  min-width: 0;
+
   overflow: hidden;
 }
 
@@ -157,6 +168,36 @@
   white-space: nowrap;
 }
 
+
+/* =========================================================
+   MEMBER ACTIONS CONTAINER
+========================================================= */
+
+.member-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  flex-shrink: 0;
+}
+
+.member-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.member-bottom-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+/* =========================================================
+   MEMBER ROLE
+========================================================= */
+
 .member-role {
   min-width: 72px;
 
@@ -168,7 +209,9 @@
 
   font-size: 12px;
   font-weight: 600;
+
   text-transform: capitalize;
+  white-space: nowrap;
 
   flex-shrink: 0;
 }
@@ -190,7 +233,30 @@
 
 
 /* =========================================================
-   Member Buttons
+   MEMBER STATUS BADGE
+========================================================= */
+
+.member-status-badge {
+  min-width: 60px;
+
+  padding: 5px 10px;
+
+  border-radius: 999px;
+
+  background: #ecfdf5;
+  color: #15803d;
+
+  text-align: center;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   MEMBER ACTION BUTTONS
 ========================================================= */
 
 .member-action-button {
@@ -206,7 +272,6 @@
   cursor: pointer;
 
   white-space: nowrap;
-
   flex-shrink: 0;
 
   transition:
@@ -214,6 +279,9 @@
     border-color 0.2s ease,
     color 0.2s ease;
 }
+
+
+/* Deactivate */
 
 .member-action-button--deactivate {
   border: 1px solid #fecaca;
@@ -226,6 +294,9 @@
   border-color: #fca5a5;
 }
 
+
+/* Activate */
+
 .member-action-button--activate {
   border: 1px solid #bbf7d0;
   background: #ffffff;
@@ -237,6 +308,9 @@
   border-color: #86efac;
 }
 
+
+/* Promote */
+
 .member-action-button--promote {
   border: 1px solid #bfdbfe;
   background: #ffffff;
@@ -247,6 +321,9 @@
   background: #eff6ff;
   border-color: #93c5fd;
 }
+
+
+/* Demote */
 
 .member-action-button--demote {
   border: 1px solid #e5e7eb;
@@ -261,55 +338,28 @@
 
 
 /* =========================================================
-   Member Status
-========================================================= */
-
-.member-status-badge {
-  min-width: 70px;
-
-  text-align: center;
-
-  padding: 5px 10px;
-
-  border-radius: 999px;
-
-  background: #ecfdf5;
-  color: #15803d;
-
-  font-size: 12px;
-  font-weight: 600;
-
-  flex-shrink: 0;
-}
-
-
-/* =========================================================
-   Edit Button
+   EDIT BUTTON
 ========================================================= */
 
 .member-edit-button {
-  margin-left: 0;
-
   width: 36px;
   height: 36px;
 
+  flex: 0 0 36px;
+
   padding: 0;
 
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 
   border: 1px solid #dbe2ea;
-
   border-radius: 8px;
 
   background: #ffffff;
-
   color: #2563eb;
 
   cursor: pointer;
-
-  flex-shrink: 0;
 
   transition:
     background-color 0.15s ease,
@@ -328,7 +378,7 @@
 
 
 /* =========================================================
-   Loading / Error / Empty
+   LOADING / ERROR / EMPTY
 ========================================================= */
 
 .members-loading {
@@ -363,8 +413,9 @@
 }
 
 .members-empty-icon {
-  font-size: 42px;
   margin-bottom: 10px;
+
+  font-size: 42px;
 }
 
 .members-empty h3 {
@@ -386,14 +437,14 @@
 
 
 /* =========================================================
-   Add Member Modal
+   ADD MEMBER MODAL
 ========================================================= */
 
 .member-modal-overlay {
   position: fixed;
   inset: 0;
 
-  background: rgba(15, 23, 42, 0.45);
+  z-index: 1000;
 
   display: flex;
   align-items: center;
@@ -401,7 +452,7 @@
 
   padding: 20px;
 
-  z-index: 1000;
+  background: rgba(15, 23, 42, 0.45);
 }
 
 .member-modal {
@@ -486,8 +537,6 @@
   width: 100%;
   height: 44px;
 
-  box-sizing: border-box;
-
   padding: 0 12px;
 
   border: 1px solid #d1d5db;
@@ -525,9 +574,7 @@
 
 .member-modal-footer {
   display: flex;
-
   justify-content: flex-end;
-
   gap: 10px;
 
   padding: 16px 24px;
@@ -585,19 +632,18 @@
 
 
 /* =========================================================
-   Invitations
+   INVITATIONS SECTION
 ========================================================= */
 
 .invitations-section {
-  margin-top: 28px;
   width: 100%;
+
+  margin-top: 28px;
 }
 
 .invitations-header {
   display: flex;
-
   align-items: center;
-
   justify-content: space-between;
 
   gap: 15px;
@@ -609,7 +655,6 @@
   margin: 0;
 
   font-size: 18px;
-
   font-weight: 600;
 
   color: #111827;
@@ -625,25 +670,20 @@
 
 .invitation-count {
   min-width: 28px;
-
   height: 28px;
 
   padding: 0 8px;
 
   display: inline-flex;
-
   align-items: center;
-
   justify-content: center;
 
   border-radius: 999px;
 
   background: #eff6ff;
-
   color: #2563eb;
 
   font-size: 13px;
-
   font-weight: 600;
 
   flex-shrink: 0;
@@ -655,7 +695,6 @@
   background: #ffffff;
 
   border: 1px solid #e5e7eb;
-
   border-radius: 14px;
 
   overflow: hidden;
@@ -663,7 +702,6 @@
 
 .invitations-list {
   display: flex;
-
   flex-direction: column;
 
   width: 100%;
@@ -671,23 +709,22 @@
 
 
 /* =========================================================
-   Invitation Row - Desktop
+   INVITATION ROW
+   Desktop
 ========================================================= */
 
 .invitation-row {
   display: flex;
-
   align-items: center;
 
   gap: 14px;
 
+  width: 100%;
+  min-width: 0;
+
   padding: 16px 20px;
 
   border-bottom: 1px solid #f1f5f9;
-
-  width: 100%;
-
-  min-width: 0;
 }
 
 .invitation-row:last-child {
@@ -696,21 +733,17 @@
 
 .invitation-avatar {
   width: 40px;
-
   height: 40px;
 
   flex: 0 0 40px;
 
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
   border-radius: 50%;
 
   background: #eef2ff;
-
   color: #2563eb;
 
   font-weight: 600;
@@ -718,7 +751,6 @@
 
 .invitation-info {
   flex: 1;
-
   min-width: 150px;
 
   overflow: hidden;
@@ -726,15 +758,12 @@
 
 .invitation-name {
   font-size: 14px;
-
   font-weight: 600;
 
   color: #1f2937;
 
   overflow: hidden;
-
   text-overflow: ellipsis;
-
   white-space: nowrap;
 }
 
@@ -746,9 +775,7 @@
   color: #6b7280;
 
   overflow: hidden;
-
   text-overflow: ellipsis;
-
   white-space: nowrap;
 }
 
@@ -758,12 +785,12 @@
   border-radius: 999px;
 
   background: #fff7ed;
-
   color: #c2410c;
 
   font-size: 12px;
-
   font-weight: 600;
+
+  white-space: nowrap;
 
   flex-shrink: 0;
 }
@@ -780,7 +807,7 @@
 
 
 /* =========================================================
-   Invitation Buttons
+   INVITATION BUTTONS
 ========================================================= */
 
 .copy-existing-invitation-button {
@@ -789,21 +816,17 @@
   padding: 0 14px;
 
   border: 1px solid #bfdbfe;
-
   border-radius: 8px;
 
   background: #eff6ff;
-
   color: #2563eb;
 
   font-size: 13px;
-
   font-weight: 600;
 
   cursor: pointer;
 
   white-space: nowrap;
-
   flex-shrink: 0;
 
   transition:
@@ -814,7 +837,6 @@
 
 .copy-existing-invitation-button:hover {
   background: #dbeafe;
-
   border-color: #93c5fd;
 
   transform: translateY(-1px);
@@ -830,27 +852,22 @@
   padding: 0 12px;
 
   border: 1px solid #fecaca;
-
   border-radius: 8px;
 
   background: #ffffff;
-
   color: #dc2626;
 
   font-size: 13px;
-
   font-weight: 500;
 
   cursor: pointer;
 
   white-space: nowrap;
-
   flex-shrink: 0;
 }
 
 .cancel-invitation-button:hover {
   background: #fef2f2;
-
   border-color: #fca5a5;
 }
 
@@ -860,6 +877,11 @@
   cursor: not-allowed;
 }
 
+
+/* =========================================================
+   INVITATION LOADING / EMPTY
+========================================================= */
+
 .invitations-loading,
 .invitations-empty {
   padding: 45px 20px;
@@ -867,17 +889,22 @@
   text-align: center;
 }
 
-.invitations-empty-icon {
-  font-size: 34px;
+.invitations-loading {
+  color: #64748b;
 
+  font-size: 14px;
+}
+
+.invitations-empty-icon {
   margin-bottom: 8px;
+
+  font-size: 34px;
 }
 
 .invitations-empty h3 {
   margin: 0;
 
   font-size: 16px;
-
   font-weight: 600;
 
   color: #374151;
@@ -891,28 +918,19 @@
   color: #94a3b8;
 }
 
-.invitations-loading {
-  color: #64748b;
-
-  font-size: 14px;
-}
-
 
 /* =========================================================
-   Invitation Link Modal
+   INVITATION LINK MODAL
 ========================================================= */
 
 .invitation-link-modal-overlay {
   position: fixed;
-
   inset: 0;
 
   z-index: 1000;
 
   display: flex;
-
   align-items: center;
-
   justify-content: center;
 
   padding: 20px;
@@ -925,9 +943,8 @@
 
   background: #ffffff;
 
-  border-radius: 16px;
-
   border: 1px solid #e5e7eb;
+  border-radius: 16px;
 
   box-shadow:
     0 20px 50px rgba(15, 23, 42, 0.18);
@@ -937,9 +954,7 @@
 
 .invitation-link-modal-header {
   display: flex;
-
   align-items: flex-start;
-
   justify-content: space-between;
 
   gap: 20px;
@@ -953,7 +968,6 @@
   margin: 0;
 
   font-size: 20px;
-
   font-weight: 600;
 
   color: #111827;
@@ -971,21 +985,17 @@
 
 .invitation-link-close {
   width: 34px;
-
   height: 34px;
 
   flex-shrink: 0;
 
   border: 1px solid #e5e7eb;
-
   border-radius: 8px;
 
   background: #ffffff;
-
   color: #64748b;
 
   font-size: 22px;
-
   line-height: 1;
 
   cursor: pointer;
@@ -997,7 +1007,6 @@
 
 .invitation-link-close:hover {
   background: #f8fafc;
-
   color: #111827;
 }
 
@@ -1011,7 +1020,6 @@
   margin-bottom: 8px;
 
   font-size: 13px;
-
   font-weight: 600;
 
   color: #374151;
@@ -1027,7 +1035,6 @@
 
 .invitation-link-row input {
   flex: 1;
-
   min-width: 0;
 
   height: 42px;
@@ -1035,11 +1042,9 @@
   padding: 0 12px;
 
   border: 1px solid #d1d5db;
-
   border-radius: 9px;
 
   background: #f8fafc;
-
   color: #374151;
 
   font-size: 13px;
@@ -1057,15 +1062,12 @@
   padding: 0 16px;
 
   border: 1px solid #2563eb;
-
   border-radius: 9px;
 
   background: #2563eb;
-
   color: #ffffff;
 
   font-size: 14px;
-
   font-weight: 600;
 
   cursor: pointer;
@@ -1095,7 +1097,6 @@
 
 .invitation-link-modal-footer {
   display: flex;
-
   justify-content: flex-end;
 
   padding: 16px 24px;
@@ -1111,15 +1112,12 @@
   padding: 0 18px;
 
   border: 1px solid #d1d5db;
-
   border-radius: 8px;
 
   background: #ffffff;
-
   color: #374151;
 
   font-size: 14px;
-
   font-weight: 500;
 
   cursor: pointer;
@@ -1131,7 +1129,7 @@
 
 
 /* =========================================================
-   Invite Method
+   INVITE METHOD
 ========================================================= */
 
 .invite-method-section {
@@ -1144,7 +1142,6 @@
   margin-bottom: 8px;
 
   font-size: 14px;
-
   font-weight: 500;
 
   color: #374151;
@@ -1160,7 +1157,6 @@
 
 .invite-method-option {
   display: inline-flex;
-
   align-items: center;
 
   gap: 7px;
@@ -1179,9 +1175,9 @@
 }
 
 .members-popup-actions {
-  gap: 10px;
-
   display: inline-flex;
+
+  gap: 10px;
 
   margin-top: 15px;
 }
@@ -1189,281 +1185,55 @@
 
 /* =========================================================
    TABLET
-   769px - 1100px
+   641px - 1100px
 ========================================================= */
 
 @media (max-width: 1100px) {
 
-  .members-page {
-    width: 100%;
-  }
-
-  .members-header {
-    margin-bottom: 20px;
-  }
-
-  /*
-   * Member rows become a small grid.
-   * This prevents all action buttons from
-   * fighting for horizontal space.
-   */
+  /* -------------------------------------------------------
+     Member Row
+  ------------------------------------------------------- */
 
   .member-row {
-    display: grid;
-
-    grid-template-columns:
-      42px
-      minmax(120px, 1fr)
-      auto
-      auto;
-
-    gap: 12px;
-
-    padding: 14px 16px;
-  }
-
-  .member-avatar {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-  }
-
-  .member-info {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-
-    align-self: center;
-  }
-
-  .member-role {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
-  .member-status-badge {
-    grid-column: 3;
-    grid-row: 2;
-  }
-
-  .member-edit-button {
-    grid-column: 4;
-    grid-row: 1;
-  }
-
-  .member-action-button {
-    grid-column: 4;
-    grid-row: 2;
-
-    justify-self: end;
-  }
-
-  /*
-   * Invitations
-   */
-
-  .invitation-row {
-    display: grid;
-
-    grid-template-columns:
-      40px
-      minmax(140px, 1fr)
-      auto
-      auto;
-
-    gap: 12px;
-
-    padding: 14px 16px;
-  }
-
-  .invitation-avatar {
-    grid-column: 1;
-    grid-row: 1 / span 2;
-  }
-
-  .invitation-info {
-    grid-column: 2;
-    grid-row: 1 / span 2;
-  }
-
-  .invitation-status {
-    grid-column: 3;
-    grid-row: 1;
-  }
-
-  .invitation-expiry {
-    grid-column: 3;
-    grid-row: 2;
-  }
-
-  .copy-existing-invitation-button {
-    grid-column: 4;
-    grid-row: 1;
-  }
-
-  .cancel-invitation-button {
-    grid-column: 4;
-    grid-row: 2;
-  }
-
-}
-
-
-/* =========================================================
-   TABLET SMALL
-   641px - 768px
-========================================================= */
-
-@media (max-width: 768px) {
-
-  .members-header {
     align-items: flex-start;
 
-    flex-direction: column;
-
-    gap: 14px;
-  }
-
-  .members-header h1 {
-    font-size: 24px;
-  }
-
-  .add-member-button {
-    width: 100%;
-
-    height: 44px;
-  }
-
-  /*
-   * Member rows become cards.
-   */
-
-  .member-row {
-    display: grid;
-
-    grid-template-columns:
-      42px
-      minmax(0, 1fr)
-      auto;
-
-    grid-template-areas:
-      "avatar info edit"
-      "avatar role role"
-      "avatar status action";
-
-    gap: 10px 12px;
-
     padding: 16px;
-  }
-
-  .member-avatar {
-    grid-area: avatar;
-
-    align-self: start;
   }
 
   .member-info {
-    grid-area: info;
-
-    min-width: 0;
+    min-width: 120px;
   }
 
-  .member-role {
-    grid-area: role;
+  .member-actions {
+    flex-direction: column;
+    align-items: flex-end;
 
-    justify-self: start;
-  }
+    gap: 10px;
 
-  .member-status-badge {
-    grid-area: status;
-
-    justify-self: start;
-  }
-
-  .member-edit-button {
-    grid-area: edit;
-
-    justify-self: end;
-  }
-
-  .member-action-button {
-    grid-area: action;
-
-    justify-self: end;
-  }
-
-  /*
-   * Invitations become cards.
-   */
-
-  .invitation-row {
-    display: grid;
-
-    grid-template-columns:
-      40px
-      minmax(0, 1fr)
-      auto;
-
-    grid-template-areas:
-      "avatar info status"
-      "avatar expiry expiry"
-      "avatar copy cancel";
-
-    gap: 10px 12px;
-
-    padding: 16px;
-  }
-
-  .invitation-avatar {
-    grid-area: avatar;
-
-    align-self: start;
-  }
-
-  .invitation-info {
-    grid-area: info;
-
-    min-width: 0;
-  }
-
-  .invitation-status {
-    grid-area: status;
-
-    justify-self: end;
-  }
-
-  .invitation-expiry {
-    grid-area: expiry;
-  }
-
-  .copy-existing-invitation-button {
-    grid-area: copy;
-
-    justify-self: end;
-  }
-
-  .cancel-invitation-button {
-    grid-area: cancel;
-
-    justify-self: end;
-  }
-
-  /*
-   * Modal
-   */
-
-  .member-modal-overlay {
-    align-items: center;
-
-    padding: 16px;
-  }
-
-  .member-modal {
     max-width: 520px;
   }
 
-  .invitation-link-modal {
-    width: min(560px, 100%);
+  .member-top-actions,
+  .member-bottom-actions {
+    justify-content: flex-end;
+
+    flex-wrap: wrap;
   }
 
+
+  /* -------------------------------------------------------
+     Invitations
+  ------------------------------------------------------- */
+
+  .invitation-row {
+    padding: 14px 16px;
+
+    gap: 12px;
+  }
+
+  .invitation-info {
+    min-width: 120px;
+  }
 }
 
 
@@ -1530,70 +1300,141 @@
   ------------------------------------------------------- */
 
   .member-row {
+    display: grid;
+
     grid-template-columns:
       40px
-      minmax(0, 1fr)
-      36px;
+      minmax(0, 1fr);
 
     grid-template-areas:
-      "avatar info edit"
-      "avatar role role"
-      "avatar status status"
-      "avatar action action";
+      "avatar info"
+      "avatar actions";
 
-    gap: 10px;
+    column-gap: 12px;
+    row-gap: 12px;
 
     padding: 15px;
   }
 
   .member-avatar {
+    grid-area: avatar;
+
     width: 40px;
     height: 40px;
 
-    flex-basis: 40px;
+    flex: 0 0 40px;
+
+    align-self: start;
+  }
+
+  .member-info {
+    grid-area: info;
+
+    min-width: 0;
+
+    align-self: center;
   }
 
   .member-name {
-    font-size: 14px;
+    font-size: 15px;
 
     white-space: normal;
 
     overflow-wrap: anywhere;
+
+    overflow: visible;
+    text-overflow: clip;
   }
 
   .member-status {
+    font-size: 12px;
+
     white-space: normal;
 
     overflow-wrap: anywhere;
+
+    overflow: visible;
 
     line-height: 1.4;
   }
 
-  .member-role {
-    font-size: 11px;
 
-    padding: 5px 9px;
+  /* -------------------------------------------------------
+     Member Actions
+  ------------------------------------------------------- */
+
+  .member-actions {
+    grid-area: actions;
+
+    width: 100%;
+    max-width: none;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: stretch;
+
+    gap: 10px;
+  }
+
+  .member-top-actions {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: flex-start;
+
+    gap: 8px;
+
+    flex-wrap: nowrap;
+  }
+
+  .member-bottom-actions {
+    width: 100%;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+  }
+
+  .member-role {
+    min-width: 62px;
+
+    padding: 6px 10px;
+
+    font-size: 12px;
   }
 
   .member-status-badge {
-    font-size: 11px;
+    min-width: 60px;
 
-    min-width: auto;
+    padding: 6px 10px;
 
-    padding: 5px 9px;
+    font-size: 12px;
   }
 
   .member-edit-button {
     width: 34px;
     height: 34px;
+
+    flex: 0 0 34px;
+
+    margin-left: auto;
   }
 
   .member-action-button {
-    width: 100%;
-
     height: 38px;
 
-    justify-self: stretch;
+    padding: 0 12px;
+
+    flex: 1;
+
+    min-width: 0;
 
     font-size: 13px;
   }
@@ -1628,6 +1469,8 @@
   }
 
   .invitation-row {
+    display: grid;
+
     grid-template-columns:
       40px
       minmax(0, 1fr);
@@ -1639,26 +1482,37 @@
       "avatar copy"
       "avatar cancel";
 
-    gap: 10px 12px;
+    column-gap: 12px;
+    row-gap: 10px;
 
     padding: 16px;
   }
 
   .invitation-avatar {
+    grid-area: avatar;
+
     width: 40px;
     height: 40px;
+
+    align-self: start;
   }
 
   .invitation-info {
+    grid-area: info;
+
     width: 100%;
+    min-width: 0;
   }
 
   .invitation-name {
+    font-size: 14px;
+
     white-space: normal;
 
     overflow-wrap: anywhere;
 
-    font-size: 14px;
+    overflow: visible;
+    text-overflow: clip;
   }
 
   .invitation-email {
@@ -1667,22 +1521,40 @@
     overflow-wrap: anywhere;
 
     line-height: 1.4;
+
+    overflow: visible;
+    text-overflow: clip;
   }
 
   .invitation-status {
+    grid-area: status;
+
     justify-self: start;
 
     width: fit-content;
   }
 
   .invitation-expiry {
+    grid-area: expiry;
+
     white-space: normal;
 
     line-height: 1.4;
   }
 
-  .copy-existing-invitation-button,
+  .copy-existing-invitation-button {
+    grid-area: copy;
+
+    width: 100%;
+
+    height: 40px;
+
+    justify-self: stretch;
+  }
+
   .cancel-invitation-button {
+    grid-area: cancel;
+
     width: 100%;
 
     height: 40px;
@@ -1702,9 +1574,8 @@
   }
 
   .member-modal {
-    max-width: none;
-
     width: 100%;
+    max-width: none;
 
     max-height: 90vh;
 
@@ -1839,7 +1710,6 @@
   .invitations-empty {
     padding: 40px 18px;
   }
-
 }
 
 
@@ -1853,8 +1723,7 @@
   .member-row {
     grid-template-columns:
       36px
-      minmax(0, 1fr)
-      34px;
+      minmax(0, 1fr);
 
     padding: 13px;
   }
@@ -1863,16 +1732,44 @@
     width: 36px;
     height: 36px;
 
+    flex-basis: 36px;
+
     font-size: 14px;
+  }
+
+  .member-top-actions {
+    gap: 6px;
+  }
+
+  .member-role {
+    min-width: 58px;
+
+    padding: 5px 8px;
+
+    font-size: 11px;
+  }
+
+  .member-status-badge {
+    min-width: 56px;
+
+    padding: 5px 8px;
+
+    font-size: 11px;
   }
 
   .member-edit-button {
     width: 32px;
     height: 32px;
+
+    flex-basis: 32px;
   }
 
   .member-action-button {
     height: 36px;
+
+    padding: 0 8px;
+
+    font-size: 12px;
   }
 
   .invitation-row {
@@ -1896,33 +1793,4 @@
   .member-modal-footer {
     gap: 8px;
   }
-
-}
-
-
-/* =========================================================
-   Accessibility / Touch
-========================================================= */
-
-@media (hover: none) and (pointer: coarse) {
-
-  .add-member-button,
-  .member-action-button,
-  .member-edit-button,
-  .copy-existing-invitation-button,
-  .cancel-invitation-button,
-  .invitation-copy-button,
-  .invitation-link-done-button {
-    transform: none;
-  }
-
-  .add-member-button:hover,
-  .member-action-button:hover,
-  .member-edit-button:hover,
-  .copy-existing-invitation-button:hover,
-  .cancel-invitation-button:hover,
-  .invitation-copy-button:hover {
-    transform: none;
-  }
-
 }
