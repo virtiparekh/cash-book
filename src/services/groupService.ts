@@ -6,7 +6,13 @@ type UserGroupMembership = {
     role: "admin" | "member";
 };
 
+
+/* =========================================================
+   Get current user's group memberships
+========================================================= */
+
 export async function getMyGroupIds(): Promise<UserGroupMembership[]> {
+
     const {
         data: authData,
         error: authError,
@@ -45,6 +51,11 @@ export async function getMyGroupIds(): Promise<UserGroupMembership[]> {
     }));
 }
 
+
+/* =========================================================
+   Get Cash Book groups by IDs
+========================================================= */
+
 export async function getGroupsByIds(
     memberships: UserGroupMembership[]
 ): Promise<CashBookGroup[]> {
@@ -59,15 +70,15 @@ export async function getGroupsByIds(
     } = await supabase
         .from("cash_book_groups")
         .select(`
-      id,
-      name,
-      description,
-      currency_code,
-      opening_balance,
-      created_by,
-      created_at,
-      updated_at
-    `)
+            id,
+            name,
+            description,
+            currency_code,
+            opening_balance,
+            created_by,
+            created_at,
+            updated_at
+        `)
         .in(
             "id",
             memberships.map(
@@ -85,6 +96,7 @@ export async function getGroupsByIds(
     }
 
     return data.map((group) => {
+
         const membership =
             memberships.find(
                 (item) =>
@@ -109,6 +121,11 @@ export async function getGroupsByIds(
     });
 }
 
+
+/* =========================================================
+   Load current user's Cash Books
+========================================================= */
+
 export async function loadMyCashBookGroups(): Promise<CashBookGroup[]> {
 
     const memberships =
@@ -121,5 +138,89 @@ export async function loadMyCashBookGroups(): Promise<CashBookGroup[]> {
     return await getGroupsByIds(
         memberships
     );
-
 }
+
+
+/* =========================================================
+   Rename Cash Book
+   Admin only
+========================================================= */
+
+export async function renameCashBookGroup(
+    groupId: string,
+    name: string
+): Promise<void> {
+
+    const trimmedName = name.trim();
+
+    if (!trimmedName) {
+        throw new Error(
+            "Cash Book name cannot be empty."
+        );
+    }
+
+    const {
+        error,
+    } = await supabase
+        .from("cash_book_groups")
+        .update({
+            name: trimmedName,
+        })
+        .eq("id", groupId);
+
+    if (error) {
+        throw error;
+    }
+}
+
+
+/* =========================================================
+   Delete Cash Book
+   Admin only
+========================================================= */
+
+export async function deleteCashBookGroup(
+    groupId: string
+): Promise<void> {
+
+    const {
+        error,
+    } = await supabase
+        .from("cash_book_groups")
+        .delete()
+        .eq("id", groupId);
+
+    if (error) {
+        throw error;
+    }
+}
+
+
+/* =========================================================
+   Leave Cash Book
+========================================================= */
+
+export async function leaveCashBookGroup(
+    groupId: string
+): Promise<void> {
+
+    const { error } = await supabase.rpc(
+        "leave_cash_book_group",
+        {
+            p_group_id: groupId,
+        }
+    );
+
+    if (error) {
+        console.error(
+            "Unable to leave cash book.",
+            error
+        );
+
+        throw new Error(
+            error.message ||
+            "Unable to leave the cash book."
+        );
+    }
+}
+

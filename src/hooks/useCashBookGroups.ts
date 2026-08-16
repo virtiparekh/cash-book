@@ -34,13 +34,26 @@ export function useCashBookGroups() {
 
             setGroups(loadedGroups);
 
-            if (
-                loadedGroups.length > 0 &&
-                selectedCashBook?.id !== loadedGroups[0].id
-            ) {
-                setSelectedCashBook(
-                    loadedGroups[0]
-                );
+            if (loadedGroups.length === 0) {
+
+                setSelectedCashBook(null);
+
+            } else {
+
+                const selectedStillExists =
+                    selectedCashBook &&
+                    loadedGroups.some(
+                        (group) =>
+                            group.id === selectedCashBook.id
+                    );
+
+                if (!selectedStillExists) {
+
+                    setSelectedCashBook(
+                        loadedGroups[0]
+                    );
+
+                }
             }
 
         } catch (err) {

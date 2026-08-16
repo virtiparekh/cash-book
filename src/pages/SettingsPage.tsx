@@ -7,12 +7,27 @@ import {
 } from "../services/profileService";
 
 import "./../styles/SettingsPage.css"
+import {
+  renameCashBookGroup,
+  deleteCashBookGroup,
+  leaveCashBookGroup,
+} from "../services/groupService";
 
-type SettingsSection = "profile" | "security" | "preferences";
+import { useCashBookGroups } from "../hooks/useCashBookGroups";
+
+import type { CashBookGroup } from "../types/cashBook";
+
+type SettingsSection = "profile" | "cashbooks" | "security" | "preferences";
 
 const SettingsPage = () => {
   const [activeSection, setActiveSection] =
     useState<SettingsSection>("profile");
+
+  const {
+    groups,
+    loading: groupsLoading,
+    reloadGroups,
+  } = useCashBookGroups();
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
@@ -26,9 +41,25 @@ const SettingsPage = () => {
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
+  const [editingGroupId, setEditingGroupId] =
+    useState<string | null>(null);
+
+  const [editingGroupName, setEditingGroupName] =
+    useState("");
+
+  const [savingGroupId, setSavingGroupId] =
+    useState<string | null>(null);
+
+  const [processingGroupId, setProcessingGroupId] =
+    useState<string | null>(null);
   useEffect(() => {
     loadProfile();
   }, []);
+
+  const [confirmationPopup, setConfirmationPopup] = useState<{
+    type: "delete" | "leave";
+    group: CashBookGroup;
+  } | null>(null);
 
   async function loadProfile() {
     try {
@@ -112,6 +143,173 @@ const SettingsPage = () => {
       }
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleRenameGroup(
+    group: CashBookGroup
+  ) {
+
+    const trimmedName =
+      editingGroupName.trim();
+
+    if (!trimmedName) {
+      setError("Cash book name is required.");
+      return;
+    }
+
+    if (trimmedName === group.name) {
+      setEditingGroupId(null);
+      return;
+    }
+
+    try {
+
+      setSavingGroupId(group.id);
+      setError("");
+      setSuccessMessage("");
+
+      await renameCashBookGroup(
+        group.id,
+        trimmedName
+      );
+
+      setEditingGroupId(null);
+
+      await reloadGroups();
+
+      setSuccessMessage(
+        "Cash book name updated successfully."
+      );
+
+      window.setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
+
+    } catch (err: unknown) {
+
+      console.error(
+        "Error renaming cash book:",
+        err
+      );
+
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(
+          "Unable to rename the cash book."
+        );
+      }
+
+    } finally {
+
+      setSavingGroupId(null);
+
+    }
+  }
+
+  async function executeDeleteGroup(group: CashBookGroup) {
+  try {
+    setProcessingGroupId(group.id);
+    setError("");
+    setSuccessMessage("");
+
+    await deleteCashBookGroup(group.id);
+
+    await reloadGroups();
+
+    setSuccessMessage(
+      `"${group.name}" was deleted successfully.`
+    );
+
+    window.setTimeout(() => {
+      setSuccessMessage("");
+    }, 3000);
+
+  } catch (err: unknown) {
+    console.error("Error deleting cash book:", err);
+
+    if (err instanceof Error) {
+      setError(err.message);
+    } else {
+      setError("Unable to delete the cash book.");
+    }
+  } finally {
+    setProcessingGroupId(null);
+  }
+}
+
+  // async function handleDeleteGroup(
+  //   group: CashBookGroup
+  // ) {
+  //   try {
+  //     setProcessingGroupId(group.id);
+  //     setError("");
+  //     setSuccessMessage("");
+
+  //     await deleteCashBookGroup(group.id);
+
+  //     await reloadGroups();
+
+  //     setSuccessMessage(
+  //       `"${group.name}" was deleted successfully.`
+  //     );
+
+  //     window.setTimeout(() => {
+  //       setSuccessMessage("");
+  //     }, 3000);
+  //   } catch (err: unknown) {
+  //     console.error(
+  //       "Error deleting cash book:",
+  //       err
+  //     );
+
+  //     if (err instanceof Error) {
+  //       setError(err.message);
+  //     } else {
+  //       setError(
+  //         "Unable to delete the cash book."
+  //       );
+  //     }
+  //   } finally {
+  //     setProcessingGroupId(null);
+  //   }
+  // }
+
+  async function handleLeaveGroup(
+    group: CashBookGroup
+  ) {
+    try {
+      setProcessingGroupId(group.id);
+      setError("");
+      setSuccessMessage("");
+
+      await leaveCashBookGroup(group.id);
+
+      await reloadGroups();
+
+      setSuccessMessage(
+        `You left "${group.name}" successfully.`
+      );
+
+      window.setTimeout(() => {
+        setSuccessMessage("");
+      }, 3000);
+    } catch (err: unknown) {
+      console.error(
+        "Error leaving cash book:",
+        err
+      );
+
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(
+          "Unable to leave the cash book."
+        );
+      }
+    } finally {
+      setProcessingGroupId(null);
     }
   }
 
@@ -272,6 +470,246 @@ const SettingsPage = () => {
     );
   }
 
+  function renderCashBooksSection() {
+
+    return (
+      <div className="settings-section-content">
+
+        <div className="settings-section-heading">
+
+          <h2>Cash Books</h2>
+
+          <p>
+            Manage the cash books you belong to.
+          </p>
+
+        </div>
+
+        {error && (
+          <div className="settings-message settings-message--error">
+            {error}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="settings-message settings-message--success">
+            {successMessage}
+          </div>
+        )}
+
+        {groupsLoading ? (
+
+          <div className="settings-loading">
+            Loading your cash books...
+          </div>
+
+        ) : groups.length === 0 ? (
+
+          <div className="cashbooks-empty">
+
+            <div className="cashbooks-empty-icon">
+              📖
+            </div>
+
+            <h3>
+              No Cash Books
+            </h3>
+
+            <p>
+              You are not currently a member of any cash book.
+            </p>
+
+          </div>
+
+        ) : (
+
+          <div className="cashbooks-list">
+
+            {groups.map((group) => {
+
+              const isEditing =
+                editingGroupId === group.id;
+
+              const isSaving =
+                savingGroupId === group.id;
+
+              const isProcessing =
+                processingGroupId === group.id;
+
+              return (
+
+                <div
+                  key={group.id}
+                  className="cashbook-settings-item"
+                >
+
+                  <div className="cashbook-settings-info">
+
+                    <div className="cashbook-settings-icon">
+                      📖
+                    </div>
+
+                    <div className="cashbook-settings-details">
+
+                      {isEditing ? (
+
+                        <input
+                          type="text"
+                          value={editingGroupName}
+                          onChange={(event) =>
+                            setEditingGroupName(
+                              event.target.value
+                            )
+                          }
+                          className="cashbook-name-input"
+                          autoFocus
+                          disabled={isSaving}
+                        />
+
+                      ) : (
+
+                        <h3>
+                          {group.name}
+                        </h3>
+
+                      )}
+
+                      <div className="cashbook-settings-meta">
+
+                        <span>
+                          {group.currencyCode}
+                        </span>
+
+                        <span className="cashbook-meta-separator">
+                          •
+                        </span>
+
+                        <span>
+                          {group.role === "admin"
+                            ? "Admin"
+                            : "Member"}
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+                  <div className="cashbook-settings-actions">
+
+                    {group.role === "admin" ? (
+
+                      isEditing ? (
+
+                        <>
+                          <button
+                            type="button"
+                            className="cashbook-action-button cashbook-action-button--save"
+                            onClick={() =>
+                              handleRenameGroup(group)
+                            }
+                            disabled={
+                              isSaving ||
+                              isProcessing
+                            }
+                          >
+                            {isSaving
+                              ? "Saving..."
+                              : "Save"}
+                          </button>
+
+                          <button
+                            type="button"
+                            className="cashbook-action-button"
+                            onClick={() =>
+                              setEditingGroupId(null)
+                            }
+                            disabled={isSaving}
+                          >
+                            Cancel
+                          </button>
+                        </>
+
+                      ) : (
+
+                        <>
+                          <button
+                            type="button"
+                            className="cashbook-action-button"
+                            onClick={() => {
+                              setEditingGroupId(
+                                group.id
+                              );
+
+                              setEditingGroupName(
+                                group.name
+                              );
+
+                              setError("");
+                              setSuccessMessage("");
+                            }}
+                            disabled={isProcessing}
+                          >
+                            Edit
+                          </button>
+
+                          <button
+                            type="button"
+                            className="cashbook-action-button cashbook-action-button--danger"
+                            onClick={() =>
+                              setConfirmationPopup({
+                                type: "delete",
+                                group,
+                              })
+                            }
+                            disabled={isProcessing}
+                          >
+                            {isProcessing
+                              ? "Deleting..."
+                              : "Delete"}
+                          </button>
+                        </>
+
+                      )
+
+                    ) : (
+
+                      <button
+                        type="button"
+                        className="cashbook-action-button cashbook-action-button--danger"
+                        onClick={() =>
+                          setConfirmationPopup({
+                            type: "leave",
+                            group,
+                          })
+                        }
+                        disabled={isProcessing}
+                      >
+                        {isProcessing
+                          ? "Leaving..."
+                          : "Leave"}
+                      </button>
+
+                    )}
+
+                  </div>
+
+                </div>
+
+              );
+
+            })}
+
+          </div>
+
+        )}
+
+      </div>
+    );
+  }
+
   function renderComingSoon(
     title: string,
     description: string
@@ -300,100 +738,210 @@ const SettingsPage = () => {
   }
 
   return (
-    <div className="settings-page">
-      <div className="settings-header">
-        <div>
-          <h1>Settings</h1>
+    <>
+      {confirmationPopup && (
+        <div className="settings-popup-overlay">
+          <div className="settings-confirmation-popup">
 
-          <p>
-            Manage your account and application preferences.
-          </p>
+            <div className="settings-confirmation-icon">
+              {confirmationPopup.type === "delete"
+                ? "🗑️"
+                : "🚪"}
+            </div>
+
+            <h3>
+              {confirmationPopup.type === "delete"
+                ? "Delete Cash Book?"
+                : "Leave Cash Book?"}
+            </h3>
+
+            <p>
+              {confirmationPopup.type === "delete"
+                ? `Are you sure you want to delete "${confirmationPopup.group.name}"? This action cannot be undone.`
+                : `Are you sure you want to leave "${confirmationPopup.group.name}"? You will no longer have access to this cash book unless you are invited again.`}
+            </p>
+
+            <div className="settings-confirmation-actions">
+
+              <button
+                type="button"
+                className="settings-confirmation-cancel"
+                onClick={() => setConfirmationPopup(null)}
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                className={
+                  confirmationPopup.type === "delete"
+                    ? "settings-confirmation-danger"
+                    : "settings-confirmation-leave"
+                }
+                onClick={async () => {
+                  const group = confirmationPopup.group;
+                  const type = confirmationPopup.type;
+
+                  setConfirmationPopup(null);
+
+                  if (type === "delete") {
+                    await executeDeleteGroup(group);
+                  } else {
+                    await handleLeaveGroup(group);
+                  }
+                }}
+              >
+                {confirmationPopup.type === "delete"
+                  ? "Delete"
+                  : "Leave"}
+              </button>
+
+            </div>
+
+          </div>
         </div>
+      )}
+
+      <div className="settings-page">
+
+        <div className="settings-header">
+          <div>
+            <h1>Settings</h1>
+
+            <p>
+              Manage your account and application preferences.
+            </p>
+          </div>
+        </div>
+
+        <div className="settings-layout">
+
+          <aside className="settings-sidebar">
+
+            <button
+              type="button"
+              className={`settings-nav-item ${activeSection === "profile"
+                  ? "settings-nav-item--active"
+                  : ""
+                }`}
+              onClick={() => handleSectionChange("profile")}
+            >
+              <span className="settings-nav-icon">
+                👤
+              </span>
+
+              <span className="settings-nav-text">
+                <strong>Profile</strong>
+
+                <small>
+                  Personal information
+                </small>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className={`settings-nav-item ${activeSection === "cashbooks"
+                  ? "settings-nav-item--active"
+                  : ""
+                }`}
+              onClick={() =>
+                handleSectionChange("cashbooks")
+              }
+            >
+              <span className="settings-nav-icon">
+                📖
+              </span>
+
+              <span className="settings-nav-text">
+                <strong>
+                  Cash Books
+                </strong>
+
+                <small>
+                  Manage your cash books
+                </small>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className={`settings-nav-item ${activeSection === "security"
+                  ? "settings-nav-item--active"
+                  : ""
+                }`}
+              onClick={() =>
+                handleSectionChange("security")
+              }
+            >
+              <span className="settings-nav-icon">
+                🔒
+              </span>
+
+              <span className="settings-nav-text">
+                <strong>
+                  Security
+                </strong>
+
+                <small>
+                  Account security
+                </small>
+              </span>
+            </button>
+
+            <button
+              type="button"
+              className={`settings-nav-item ${activeSection === "preferences"
+                  ? "settings-nav-item--active"
+                  : ""
+                }`}
+              onClick={() =>
+                handleSectionChange("preferences")
+              }
+            >
+              <span className="settings-nav-icon">
+                ⚙️
+              </span>
+
+              <span className="settings-nav-text">
+                <strong>
+                  Preferences
+                </strong>
+
+                <small>
+                  Application preferences
+                </small>
+              </span>
+            </button>
+
+          </aside>
+
+          <main className="settings-card">
+
+            {activeSection === "profile" &&
+              renderProfileSection()}
+
+            {activeSection === "cashbooks" &&
+              renderCashBooksSection()}
+
+            {activeSection === "security" &&
+              renderComingSoon(
+                "Security",
+                "Manage your account security and authentication settings."
+              )}
+
+            {activeSection === "preferences" &&
+              renderComingSoon(
+                "Preferences",
+                "Manage your Family Cash Book application preferences."
+              )}
+
+          </main>
+
+        </div>
+
       </div>
-
-      <div className="settings-layout">
-        <aside className="settings-sidebar">
-          <button
-            type="button"
-            className={`settings-nav-item ${
-              activeSection === "profile"
-                ? "settings-nav-item--active"
-                : ""
-            }`}
-            onClick={() => handleSectionChange("profile")}
-          >
-            <span className="settings-nav-icon">👤</span>
-
-            <span className="settings-nav-text">
-              <strong>Profile</strong>
-
-              <small>
-                Personal information
-              </small>
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={`settings-nav-item ${
-              activeSection === "security"
-                ? "settings-nav-item--active"
-                : ""
-            }`}
-            onClick={() => handleSectionChange("security")}
-          >
-            <span className="settings-nav-icon">🔒</span>
-
-            <span className="settings-nav-text">
-              <strong>Security</strong>
-
-              <small>
-                Account security
-              </small>
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={`settings-nav-item ${
-              activeSection === "preferences"
-                ? "settings-nav-item--active"
-                : ""
-            }`}
-            onClick={() =>
-              handleSectionChange("preferences")
-            }
-          >
-            <span className="settings-nav-icon">⚙️</span>
-
-            <span className="settings-nav-text">
-              <strong>Preferences</strong>
-
-              <small>
-                Application preferences
-              </small>
-            </span>
-          </button>
-        </aside>
-
-        <main className="settings-card">
-          {activeSection === "profile" &&
-            renderProfileSection()}
-
-          {activeSection === "security" &&
-            renderComingSoon(
-              "Security",
-              "Manage your account security and authentication settings."
-            )}
-
-          {activeSection === "preferences" &&
-            renderComingSoon(
-              "Preferences",
-              "Manage your Family Cash Book application preferences."
-            )}
-        </main>
-      </div>
-    </div>
+    </>
   );
 };
 

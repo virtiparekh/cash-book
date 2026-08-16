@@ -343,6 +343,51 @@ function App() {
 
 
   /*
+ * -------------------------------------------------
+ * Keep selected Cash Book in sync with memberships
+ * -------------------------------------------------
+ *
+ * If the current user leaves a Cash Book, that group
+ * disappears from `groups`. Clear the old selection
+ * or switch to another available Cash Book.
+ * -------------------------------------------------
+ */
+
+  useEffect(() => {
+
+    if (groups.length === 0) {
+
+      if (selectedCashBook) {
+        setSelectedCashBook(null);
+      }
+
+      setCurrentMember(null);
+
+      return;
+    }
+
+    const selectedStillExists =
+      selectedCashBook &&
+      groups.some(
+        (group) =>
+          group.id === selectedCashBook.id
+      );
+
+    if (!selectedStillExists) {
+
+      setSelectedCashBook(
+        groups[0]
+      );
+
+    }
+
+  }, [
+    groups,
+    selectedCashBook,
+    setSelectedCashBook,
+    setCurrentMember,
+  ]);
+  /*
    * -------------------------------------------------
    * Load current member
    * -------------------------------------------------
@@ -350,17 +395,23 @@ function App() {
 
   useEffect(() => {
 
-    async function
-    initialiseCurrentMember() {
+    async function initialiseCurrentMember() {
 
-      if (
-        !selectedCashBook
-      ) {
-
+      if (!selectedCashBook) {
+        setCurrentMember(null);
         return;
-
       }
 
+      const selectedGroupStillExists =
+        groups.some(
+          (group) =>
+            group.id === selectedCashBook.id
+        );
+
+      if (!selectedGroupStillExists) {
+        setCurrentMember(null);
+        return;
+      }
 
       try {
 
@@ -369,11 +420,7 @@ function App() {
             selectedCashBook.id
           );
 
-
-        setCurrentMember(
-          member
-        );
-
+        setCurrentMember(member);
 
       } catch (error) {
 
@@ -382,18 +429,18 @@ function App() {
           error
         );
 
+        setCurrentMember(null);
       }
 
     }
-
 
     void initialiseCurrentMember();
 
   }, [
     selectedCashBook,
+    groups,
     setCurrentMember,
   ]);
-
 
   /*
    * -------------------------------------------------
@@ -789,44 +836,66 @@ function App() {
    * -------------------------------------------------
    */
 
- if (!user) {
+  if (!user) {
 
-  /*
-   * User is not authenticated.
-   *
-   * If the current route is not an authentication
-   * route, redirect the browser to /login.
-   */
+    /*
+     * User is not authenticated.
+     *
+     * If the current route is not an authentication
+     * route, redirect the browser to /login.
+     */
 
-  if (
-    currentPath !== "/login" &&
-    currentPath !== "/signup"
-  ) {
+    if (
+      currentPath !== "/login" &&
+      currentPath !== "/signup"
+    ) {
 
-    window.location.href =
-      appPath("/login");
+      window.location.href =
+        appPath("/login");
 
-    return null;
+      return null;
 
-  }
+    }
 
 
-  /*
-   * Normal login
-   */
+    /*
+     * Normal login
+     */
 
-  if (
-    currentPath === "/login"
-  ) {
+    if (
+      currentPath === "/login"
+    ) {
+
+      return (
+
+        <LoginPage
+
+          onShowSignup={() => {
+
+            window.location.href =
+              appPath("/signup");
+
+          }}
+
+        />
+
+      );
+
+    }
+
+
+    /*
+     * Normal signup
+     */
 
     return (
 
-      <LoginPage
+      <SignupPage
 
-        onShowSignup={() => {
+        onShowLogin={() => {
 
           window.location.href =
-            appPath("/signup");
+            appPath("/login");
 
         }}
 
@@ -835,28 +904,6 @@ function App() {
     );
 
   }
-
-
-  /*
-   * Normal signup
-   */
-
-  return (
-
-    <SignupPage
-
-      onShowLogin={() => {
-
-        window.location.href =
-          appPath("/login");
-
-      }}
-
-    />
-
-  );
-
-}
 
 
   /*
