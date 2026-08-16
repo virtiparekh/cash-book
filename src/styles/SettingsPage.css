@@ -1,0 +1,709 @@
+/* =========================================================
+   Settings Page
+========================================================= */
+
+.settings-page {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.settings-page *,
+.settings-page *::before,
+.settings-page *::after {
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   Header
+========================================================= */
+
+.settings-header {
+  margin-bottom: 24px;
+}
+
+.settings-header h1 {
+  margin: 0;
+
+  font-size: 26px;
+  font-weight: 650;
+
+  color: #111827;
+}
+
+.settings-header p {
+  margin: 6px 0 0;
+
+  font-size: 14px;
+
+  color: #6b7280;
+}
+
+
+/* =========================================================
+   Layout
+========================================================= */
+
+.settings-layout {
+  display: grid;
+
+  grid-template-columns: 230px minmax(0, 1fr);
+
+  gap: 20px;
+
+  width: 100%;
+
+  align-items: start;
+}
+
+
+/* =========================================================
+   Sidebar
+========================================================= */
+
+.settings-sidebar {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+  padding: 8px;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 14px;
+}
+
+.settings-nav-item {
+  width: 100%;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 12px;
+
+  border: 1px solid transparent;
+
+  border-radius: 10px;
+
+  background: transparent;
+
+  color: #475569;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.settings-nav-item:hover {
+  background: #f8fafc;
+
+  color: #1f2937;
+}
+
+.settings-nav-item--active {
+  background: #eff6ff;
+
+  border-color: #dbeafe;
+
+  color: #2563eb;
+}
+
+.settings-nav-icon {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  flex: 0 0 34px;
+
+  border-radius: 8px;
+
+  background: #f8fafc;
+
+  font-size: 16px;
+}
+
+.settings-nav-item--active .settings-nav-icon {
+  background: #dbeafe;
+}
+
+.settings-nav-text {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 2px;
+
+  min-width: 0;
+}
+
+.settings-nav-text strong {
+  font-size: 14px;
+
+  font-weight: 600;
+}
+
+.settings-nav-text small {
+  font-size: 11px;
+
+  color: #94a3b8;
+}
+
+.settings-nav-item--active
+  .settings-nav-text
+  small {
+  color: #60a5fa;
+}
+
+
+/* =========================================================
+   Main Card
+========================================================= */
+
+.settings-card {
+  min-width: 0;
+
+  background: #ffffff;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 14px;
+
+  overflow: hidden;
+}
+
+.settings-section-content {
+  padding: 28px;
+}
+
+
+/* =========================================================
+   Section Heading
+========================================================= */
+
+.settings-section-heading {
+  margin-bottom: 26px;
+}
+
+.settings-section-heading h2 {
+  margin: 0;
+
+  font-size: 20px;
+
+  font-weight: 600;
+
+  color: #111827;
+}
+
+.settings-section-heading p {
+  margin: 6px 0 0;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  color: #6b7280;
+}
+
+
+/* =========================================================
+   Profile Avatar
+========================================================= */
+
+.profile-avatar-section {
+  display: flex;
+
+  align-items: center;
+
+  gap: 16px;
+
+  margin-bottom: 28px;
+
+  padding-bottom: 24px;
+
+  border-bottom: 1px solid #eef2f7;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+
+  flex: 0 0 64px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border-radius: 50%;
+
+  background: #eff6ff;
+
+  color: #2563eb;
+
+  font-size: 22px;
+
+  font-weight: 700;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+.profile-avatar-info {
+  min-width: 0;
+}
+
+.profile-avatar-info h3 {
+  margin: 0;
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+  color: #1f2937;
+}
+
+.profile-avatar-info p {
+  margin: 5px 0 0;
+
+  font-size: 13px;
+
+  line-height: 1.4;
+
+  color: #94a3b8;
+}
+
+
+/* =========================================================
+   Form
+========================================================= */
+
+.settings-form {
+  width: 100%;
+
+  max-width: 620px;
+}
+
+.settings-form-field {
+  margin-bottom: 20px;
+}
+
+.settings-form-field label {
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  color: #374151;
+}
+
+.settings-form-field input {
+  width: 100%;
+
+  height: 44px;
+
+  padding: 0 12px;
+
+  border: 1px solid #d1d5db;
+
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 14px;
+
+  outline: none;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.settings-form-field input:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.settings-form-field input:disabled {
+  background: #f8fafc;
+
+  color: #64748b;
+
+  cursor: not-allowed;
+}
+
+.settings-field-help {
+  display: block;
+
+  margin-top: 6px;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+
+  color: #94a3b8;
+}
+
+
+/* =========================================================
+   Messages
+========================================================= */
+
+.settings-message {
+  margin-bottom: 20px;
+
+  padding: 10px 12px;
+
+  border-radius: 8px;
+
+  font-size: 13px;
+}
+
+.settings-message--error {
+  background: #fef2f2;
+
+  color: #b91c1c;
+
+  border: 1px solid #fecaca;
+}
+
+.settings-message--success {
+  background: #ecfdf5;
+
+  color: #15803d;
+
+  border: 1px solid #bbf7d0;
+}
+
+
+/* =========================================================
+   Form Actions
+========================================================= */
+
+.settings-form-actions {
+  display: flex;
+
+  justify-content: flex-end;
+
+  padding-top: 8px;
+}
+
+.settings-save-button {
+  height: 40px;
+
+  padding: 0 18px;
+
+  border: 1px solid #2563eb;
+
+  border-radius: 8px;
+
+  background: #2563eb;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.settings-save-button:hover {
+  background: #1d4ed8;
+
+  transform: translateY(-1px);
+}
+
+.settings-save-button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* =========================================================
+   Loading
+========================================================= */
+
+.settings-loading {
+  min-height: 300px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  color: #64748b;
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   Coming Soon
+========================================================= */
+
+.settings-coming-soon {
+  min-height: 300px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+}
+
+.settings-coming-soon-icon {
+  width: 52px;
+  height: 52px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-bottom: 12px;
+
+  border-radius: 50%;
+
+  background: #f1f5f9;
+
+  font-size: 22px;
+}
+
+.settings-coming-soon h3 {
+  margin: 0;
+
+  font-size: 17px;
+
+  font-weight: 600;
+
+  color: #374151;
+}
+
+.settings-coming-soon p {
+  margin: 6px 0 0;
+
+  font-size: 13px;
+
+  color: #94a3b8;
+}
+
+
+/* =========================================================
+   Tablet
+========================================================= */
+
+@media (max-width: 800px) {
+
+  .settings-layout {
+    grid-template-columns: 190px minmax(0, 1fr);
+
+    gap: 14px;
+  }
+
+  .settings-section-content {
+    padding: 22px;
+  }
+
+}
+
+
+/* =========================================================
+   Mobile
+========================================================= */
+
+@media (max-width: 640px) {
+
+  .settings-header {
+    margin-bottom: 18px;
+  }
+
+  .settings-header h1 {
+    font-size: 22px;
+  }
+
+  .settings-header p {
+    font-size: 13px;
+
+    line-height: 1.5;
+  }
+
+  .settings-layout {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 14px;
+  }
+
+  .settings-sidebar {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    gap: 6px;
+
+    padding: 6px;
+  }
+
+  .settings-nav-item {
+    flex-direction: column;
+
+    justify-content: center;
+
+    gap: 6px;
+
+    padding: 10px 6px;
+
+    text-align: center;
+  }
+
+  .settings-nav-icon {
+    width: 30px;
+    height: 30px;
+
+    flex-basis: 30px;
+
+    font-size: 14px;
+  }
+
+  .settings-nav-text {
+    align-items: center;
+
+    gap: 1px;
+  }
+
+  .settings-nav-text strong {
+    font-size: 12px;
+  }
+
+  .settings-nav-text small {
+    display: none;
+  }
+
+  .settings-card {
+    width: 100%;
+
+    border-radius: 12px;
+  }
+
+  .settings-section-content {
+    padding: 18px;
+  }
+
+  .settings-section-heading {
+    margin-bottom: 22px;
+  }
+
+  .settings-section-heading h2 {
+    font-size: 18px;
+  }
+
+  .settings-section-heading p {
+    font-size: 13px;
+  }
+
+  .profile-avatar-section {
+    margin-bottom: 22px;
+
+    padding-bottom: 20px;
+  }
+
+  .profile-avatar {
+    width: 56px;
+    height: 56px;
+
+    flex-basis: 56px;
+
+    font-size: 20px;
+  }
+
+  .profile-avatar-info h3 {
+    font-size: 15px;
+  }
+
+  .profile-avatar-info p {
+    font-size: 12px;
+  }
+
+  .settings-form-field {
+    margin-bottom: 18px;
+  }
+
+  .settings-form-actions {
+    justify-content: stretch;
+  }
+
+  .settings-save-button {
+    width: 100%;
+
+    height: 42px;
+  }
+
+}
+
+
+/* =========================================================
+   Very Small Mobile
+========================================================= */
+
+@media (max-width: 400px) {
+
+  .settings-sidebar {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .settings-nav-item {
+    padding: 8px 4px;
+  }
+
+  .settings-nav-text strong {
+    font-size: 11px;
+  }
+
+  .settings-section-content {
+    padding: 16px;
+  }
+
+}
