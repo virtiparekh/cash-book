@@ -228,3 +228,148 @@ export async function createPaymentMode(
 
   return data;
 }
+
+/*
+ * =========================================================
+ * Rename Category
+ * =========================================================
+ */
+
+export async function renameCategory(
+  categoryId: string,
+  name: string
+): Promise<MasterDataOption> {
+
+  const trimmedName = name.trim();
+
+  if (!trimmedName) {
+    throw new Error(
+      "Category name cannot be empty."
+    );
+  }
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("categories")
+    .update({
+      name: trimmedName,
+    })
+    .eq("id", categoryId)
+    .select("id,name")
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error(
+      "Unable to rename category."
+    );
+  }
+
+  return data;
+}
+
+
+/*
+ * =========================================================
+ * Delete Category
+ *
+ * Soft delete:
+ * is_active = false
+ * =========================================================
+ */
+
+export async function deleteCategory(
+  categoryId: string
+): Promise<void> {
+
+  const {
+    error,
+  } = await supabase
+    .from("categories")
+    .update({
+      is_active: false,
+    })
+    .eq("id", categoryId);
+
+  if (error) {
+    throw error;
+  }
+}
+
+
+/*
+ * =========================================================
+ * Rename Payment Mode
+ * =========================================================
+ */
+
+export async function renamePaymentMode(
+  paymentModeId: string,
+  name: string
+): Promise<MasterDataOption> {
+
+  const trimmedName = name.trim();
+
+  if (!trimmedName) {
+    throw new Error(
+      "Payment Mode name cannot be empty."
+    );
+  }
+
+  const {
+    data,
+    error,
+  } = await supabase
+    .from("payment_modes")
+    .update({
+      name: trimmedName,
+    })
+    .eq("id", paymentModeId)
+    .select("id,name")
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    throw new Error(
+      "Unable to rename payment mode."
+    );
+  }
+
+  return data;
+}
+
+
+/*
+ * =========================================================
+ * Delete Payment Mode
+ *
+ * Soft delete:
+ * is_active = false
+ * =========================================================
+ */
+
+export async function deletePaymentMode(
+  paymentModeId: string
+): Promise<void> {
+
+  const {
+    error,
+  } = await supabase
+    .from("payment_modes")
+    .update({
+      is_active: false,
+    })
+    .eq("id", paymentModeId);
+
+  if (error) {
+    throw error;
+  }
+}

@@ -6,7 +6,6 @@ import {
   type UserProfile,
 } from "../services/profileService";
 
-import "./../styles/SettingsPage.css"
 import {
   renameCashBookGroup,
   deleteCashBookGroup,
@@ -16,28 +15,57 @@ import {
 import { useCashBookGroups } from "../hooks/useCashBookGroups";
 
 import type { CashBookGroup } from "../types/cashBook";
+
 import {
   DEFAULT_CURRENCY,
   DEFAULT_OPENING_BALANCE,
 } from "../constants/app";
 
-import {
-  CURRENCY_OPTIONS,
-} from "../constants/currencies";
+import { CURRENCY_OPTIONS } from "../constants/currencies";
+
+import { createCashBookGroup } from "../services/cashBookService";
+
+import { validateCashBook } from "../utils/cashBookValidation";
 
 import {
-  createCashBookGroup,
-} from "../services/cashBookService";
+  loadCategories,
+  loadPaymentModes,
+  createCategory,
+  createPaymentMode,
+  type MasterDataOption,
+} from "../services/masterDataService";
 
-import {
-  validateCashBook,
-} from "../utils/cashBookValidation";
+import "./../styles/SettingsPage.css";
 
-type SettingsSection = "profile" | "cashbooks" | "security" | "preferences";
+
+type SettingsSection =
+  | "profile"
+  | "cashbooks"
+  | "masterdata"
+  | "security"
+  | "preferences";
+
+
+type MasterDataType =
+  | "category"
+  | "paymentMode";
+
 
 const SettingsPage = () => {
-  const [activeSection, setActiveSection] =
-    useState<SettingsSection>("profile");
+
+  /* =====================================================
+     SECTION
+  ===================================================== */
+
+  const [
+    activeSection,
+    setActiveSection,
+  ] = useState<SettingsSection>("profile");
+
+
+  /* =====================================================
+     CASH BOOKS
+  ===================================================== */
 
   const {
     groups,
@@ -45,17 +73,44 @@ const SettingsPage = () => {
     reloadGroups,
   } = useCashBookGroups();
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
 
-  const [fullName, setFullName] = useState("");
-  const [contactNo, setContactNo] = useState("");
-  const [email, setEmail] = useState("");
+  /* =====================================================
+     PROFILE
+  ===================================================== */
 
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [profile, setProfile] =
+    useState<UserProfile | null>(null);
 
-  const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [fullName, setFullName] =
+    useState("");
+
+  const [contactNo, setContactNo] =
+    useState("");
+
+  const [email, setEmail] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [saving, setSaving] =
+    useState(false);
+
+
+  /* =====================================================
+     COMMON MESSAGES
+  ===================================================== */
+
+  const [error, setError] =
+    useState("");
+
+  const [successMessage, setSuccessMessage] =
+    useState("");
+
+
+  /* =====================================================
+     CASH BOOK EDITING
+  ===================================================== */
 
   const [editingGroupId, setEditingGroupId] =
     useState<string | null>(null);
@@ -68,143 +123,342 @@ const SettingsPage = () => {
 
   const [processingGroupId, setProcessingGroupId] =
     useState<string | null>(null);
-  useEffect(() => {
-    loadProfile();
-  }, []);
+
+
+  /* =====================================================
+     CREATE CASH BOOK
+  ===================================================== */
 
   const [
-  showCreateCashBook,
-  setShowCreateCashBook,
-] = useState(false);
+    showCreateCashBook,
+    setShowCreateCashBook,
+  ] = useState(false);
 
-const [
-  creatingCashBook,
-  setCreatingCashBook,
-] = useState(false);
+  const [
+    creatingCashBook,
+    setCreatingCashBook,
+  ] = useState(false);
 
-const [
-  createCashBookError,
-  setCreateCashBookError,
-] = useState("");
+  const [
+    createCashBookError,
+    setCreateCashBookError,
+  ] = useState("");
 
-const [
-  newCashBookName,
-  setNewCashBookName,
-] = useState("");
+  const [
+    newCashBookName,
+    setNewCashBookName,
+  ] = useState("");
 
-const [
-  newCashBookDescription,
-  setNewCashBookDescription,
-] = useState("");
+  const [
+    newCashBookDescription,
+    setNewCashBookDescription,
+  ] = useState("");
 
-const [
-  newCashBookOwnerName,
-  setNewCashBookOwnerName,
-] = useState(
-  profile?.full_name ?? ""
-);
+  const [
+    newCashBookOwnerName,
+    setNewCashBookOwnerName,
+  ] = useState("");
 
-const [
-  newCashBookCurrency,
-  setNewCashBookCurrency,
-] = useState(
-  DEFAULT_CURRENCY
-);
+  const [
+    newCashBookCurrency,
+    setNewCashBookCurrency,
+  ] = useState(DEFAULT_CURRENCY);
 
-const [
-  newCashBookOpeningBalance,
-  setNewCashBookOpeningBalance,
-] = useState(
-  DEFAULT_OPENING_BALANCE
-);
+  const [
+    newCashBookOpeningBalance,
+    setNewCashBookOpeningBalance,
+  ] = useState(DEFAULT_OPENING_BALANCE);
 
-  const [confirmationPopup, setConfirmationPopup] = useState<{
+
+  /* =====================================================
+     CASH BOOK CONFIRMATION
+  ===================================================== */
+
+  const [
+    confirmationPopup,
+    setConfirmationPopup,
+  ] = useState<{
     type: "delete" | "leave";
     group: CashBookGroup;
   } | null>(null);
 
+
+  /* =====================================================
+     MASTER DATA
+  ===================================================== */
+
+  const [
+    categories,
+    setCategories,
+  ] = useState<MasterDataOption[]>([]);
+
+  const [
+    paymentModes,
+    setPaymentModes,
+  ] = useState<MasterDataOption[]>([]);
+
+  const [
+    masterDataLoading,
+    setMasterDataLoading,
+  ] = useState(false);
+
+  const [
+    masterDataError,
+    setMasterDataError,
+  ] = useState("");
+
+  const [
+    masterDataSuccess,
+    setMasterDataSuccess,
+  ] = useState("");
+
+
+  /* =====================================================
+     MASTER DATA POPUP
+  ===================================================== */
+
+  const [
+    masterDataPopup,
+    setMasterDataPopup,
+  ] = useState<{
+    type: MasterDataType;
+    mode: "create" | "edit";
+    item?: MasterDataOption;
+  } | null>(null);
+
+  const [
+    masterDataName,
+    setMasterDataName,
+  ] = useState("");
+
+  const [
+    masterDataSaving,
+    setMasterDataSaving,
+  ] = useState(false);
+
+
+  /* =====================================================
+     MASTER DATA DELETE CONFIRMATION
+  ===================================================== */
+
+  const [
+    masterDataDeletePopup,
+    setMasterDataDeletePopup,
+  ] = useState<{
+    type: MasterDataType;
+    item: MasterDataOption;
+  } | null>(null);
+
+
+  /* =====================================================
+     LOAD PROFILE
+  ===================================================== */
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+
   async function loadProfile() {
+
     try {
+
       setLoading(true);
       setError("");
 
-      const data = await getMyProfile();
+      const data =
+        await getMyProfile();
 
       setProfile(data);
-      setFullName(data.full_name);
-      setContactNo(data.contact_no);
 
-      /*
-       * Email is stored in Supabase Auth rather than
-       * public.profiles.
-       */
-      const { supabase } = await import("../lib/supabase");
+      setFullName(
+        data.full_name
+      );
+
+      setContactNo(
+        data.contact_no
+      );
 
       const {
-        data: { user },
-      } = await supabase.auth.getUser();
+        supabase,
+      } = await import(
+        "../lib/supabase"
+      );
 
-      setEmail(user?.email ?? "");
+      const {
+        data: {
+          user,
+        },
+      } =
+        await supabase.auth.getUser();
+
+      setEmail(
+        user?.email ?? ""
+      );
+
     } catch (err: unknown) {
-      console.error("Error loading profile:", err);
 
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Unable to load your profile.");
-      }
+      console.error(
+        "Error loading profile:",
+        err
+      );
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to load your profile."
+      );
+
     } finally {
+
       setLoading(false);
+
     }
   }
 
+
+  /* =====================================================
+     SET DEFAULT OWNER NAME
+  ===================================================== */
+
   useEffect(() => {
 
-  if (profile?.full_name) {
+    if (profile?.full_name) {
 
-    setNewCashBookOwnerName(
-      profile.full_name
-    );
+      setNewCashBookOwnerName(
+        profile.full_name
+      );
 
-  }
+    }
 
-}, [
-  profile?.full_name,
-]);
+  }, [
+    profile?.full_name,
+  ]);
 
-async function handleCreateCashBook(
-  event: React.FormEvent<HTMLFormElement>
-) {
 
-  event.preventDefault();
+  /* =====================================================
+     LOAD MASTER DATA
+     
+     IMPORTANT:
+     This is the useEffect you were asking about.
+     
+     It runs whenever the first/available Cash Book
+     changes and loads Categories + Payment Modes.
+  ===================================================== */
 
-  if (creatingCashBook) {
-    return;
-  }
+  useEffect(() => {
 
-  setCreateCashBookError("");
+    async function loadMasterData() {
 
-  const validationError =
-    validateCashBook(
-      newCashBookName,
-      newCashBookOwnerName,
-      newCashBookOpeningBalance
-    );
+      if (!groups.length) {
 
-  if (validationError) {
+        setCategories([]);
+        setPaymentModes([]);
 
-    setCreateCashBookError(
-      validationError
-    );
+        return;
+      }
 
-    return;
-  }
+      /*
+       * Use the first available Cash Book.
+       *
+       * Your existing groups contain the user's
+       * Cash Book membership and role.
+       */
 
-  try {
+      const group =
+        groups[0];
 
-    setCreatingCashBook(true);
+      try {
 
-    // const groupId =
+        setMasterDataLoading(true);
+        setMasterDataError("");
+
+        const [
+          loadedCategories,
+          loadedPaymentModes,
+        ] = await Promise.all([
+
+          loadCategories(
+            group.id
+          ),
+
+          loadPaymentModes(
+            group.id
+          ),
+
+        ]);
+
+        setCategories(
+          loadedCategories
+        );
+
+        setPaymentModes(
+          loadedPaymentModes
+        );
+
+      } catch (err: unknown) {
+
+        console.error(
+          "Unable to load master data:",
+          err
+        );
+
+        setMasterDataError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load categories and payment modes."
+        );
+
+      } finally {
+
+        setMasterDataLoading(false);
+
+      }
+    }
+
+    loadMasterData();
+
+  }, [
+    groups,
+  ]);
+
+
+  /* =====================================================
+     CREATE CASH BOOK
+  ===================================================== */
+
+  async function handleCreateCashBook(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
+
+    event.preventDefault();
+
+    if (creatingCashBook) {
+      return;
+    }
+
+    setCreateCashBookError("");
+
+    const validationError =
+      validateCashBook(
+        newCashBookName,
+        newCashBookOwnerName,
+        newCashBookOpeningBalance
+      );
+
+    if (validationError) {
+
+      setCreateCashBookError(
+        validationError
+      );
+
+      return;
+    }
+
+    try {
+
+      setCreatingCashBook(true);
+
       await createCashBookGroup({
 
         name:
@@ -224,119 +478,152 @@ async function handleCreateCashBook(
 
       });
 
-    /*
-     * Refresh Cash Books.
-     *
-     * This also updates selectedCashBook
-     * through useCashBookGroups.
-     */
-    await reloadGroups();
+      await reloadGroups();
 
-    /*
-     * Close modal.
-     */
-    setShowCreateCashBook(false);
+      setShowCreateCashBook(false);
 
-    /*
-     * Clear form.
-     */
-    setNewCashBookName("");
-    setNewCashBookDescription("");
+      setNewCashBookName("");
 
-    setNewCashBookOwnerName(
-      profile?.full_name ?? ""
-    );
+      setNewCashBookDescription("");
 
-    setNewCashBookCurrency(
-      DEFAULT_CURRENCY
-    );
+      setNewCashBookOwnerName(
+        profile?.full_name ?? ""
+      );
 
-    setNewCashBookOpeningBalance(
-      DEFAULT_OPENING_BALANCE
-    );
+      setNewCashBookCurrency(
+        DEFAULT_CURRENCY
+      );
 
-    setCreateCashBookError("");
+      setNewCashBookOpeningBalance(
+        DEFAULT_OPENING_BALANCE
+      );
 
-    /*
-     * Optional success message.
-     */
-    setSuccessMessage(
-      "Cash Book created successfully."
-    );
+      setCreateCashBookError("");
 
-    window.setTimeout(() => {
-      setSuccessMessage("");
-    }, 3000);
+      setSuccessMessage(
+        "Cash Book created successfully."
+      );
 
-  } catch (error: unknown) {
+      window.setTimeout(() => {
 
-    console.error(
-      "Unable to create Cash Book.",
-      error
-    );
+        setSuccessMessage("");
 
-    setCreateCashBookError(
-      error instanceof Error
-        ? error.message
-        : "Unable to create Cash Book."
-    );
+      }, 3000);
 
-  } finally {
+    } catch (err: unknown) {
 
-    setCreatingCashBook(false);
+      console.error(
+        "Unable to create Cash Book.",
+        err
+      );
 
+      setCreateCashBookError(
+        err instanceof Error
+          ? err.message
+          : "Unable to create Cash Book."
+      );
+
+    } finally {
+
+      setCreatingCashBook(false);
+
+    }
   }
-}
+
+
+  /* =====================================================
+     SAVE PROFILE
+  ===================================================== */
 
   async function handleSaveProfile() {
+
     setError("");
     setSuccessMessage("");
 
-    const trimmedName = fullName.trim();
-    const trimmedContact = contactNo.trim();
+    const trimmedName =
+      fullName.trim();
+
+    const trimmedContact =
+      contactNo.trim();
 
     if (!trimmedName) {
-      setError("Full name is required.");
+
+      setError(
+        "Full name is required."
+      );
+
       return;
     }
 
-    if (!/^[6-9][0-9]{9}$/.test(trimmedContact)) {
-      setError("Please enter a valid 10-digit Indian mobile number.");
+    if (
+      !/^[6-9][0-9]{9}$/.test(
+        trimmedContact
+      )
+    ) {
+
+      setError(
+        "Please enter a valid 10-digit Indian mobile number."
+      );
+
       return;
     }
 
     try {
+
       setSaving(true);
 
-      const updatedProfile = await updateMyProfile(
-        trimmedName,
-        trimmedContact
+      const updatedProfile =
+        await updateMyProfile(
+          trimmedName,
+          trimmedContact
+        );
+
+      setProfile(
+        updatedProfile
       );
 
-      setProfile(updatedProfile);
-      setFullName(updatedProfile.full_name);
-      setContactNo(updatedProfile.contact_no);
+      setFullName(
+        updatedProfile.full_name
+      );
 
-      setSuccessMessage("Profile updated successfully.");
+      setContactNo(
+        updatedProfile.contact_no
+      );
 
-      /*
-       * Remove the success message after a few seconds.
-       */
+      setSuccessMessage(
+        "Profile updated successfully."
+      );
+
       window.setTimeout(() => {
-        setSuccessMessage("");
-      }, 3000);
-    } catch (err: unknown) {
-      console.error("Error updating profile:", err);
 
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Unable to update your profile.");
-      }
+        setSuccessMessage("");
+
+      }, 3000);
+
+    } catch (err: unknown) {
+
+      console.error(
+        "Error updating profile:",
+        err
+      );
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to update your profile."
+      );
+
     } finally {
+
       setSaving(false);
+
     }
   }
+
+
+  /* =====================================================
+     RENAME CASH BOOK
+  ===================================================== */
 
   async function handleRenameGroup(
     group: CashBookGroup
@@ -346,18 +633,29 @@ async function handleCreateCashBook(
       editingGroupName.trim();
 
     if (!trimmedName) {
-      setError("Cash book name is required.");
+
+      setError(
+        "Cash book name is required."
+      );
+
       return;
     }
 
-    if (trimmedName === group.name) {
+    if (
+      trimmedName === group.name
+    ) {
+
       setEditingGroupId(null);
+
       return;
     }
 
     try {
 
-      setSavingGroupId(group.id);
+      setSavingGroupId(
+        group.id
+      );
+
       setError("");
       setSuccessMessage("");
 
@@ -375,7 +673,9 @@ async function handleCreateCashBook(
       );
 
       window.setTimeout(() => {
+
         setSuccessMessage("");
+
       }, 3000);
 
     } catch (err: unknown) {
@@ -385,13 +685,11 @@ async function handleCreateCashBook(
         err
       );
 
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError(
-          "Unable to rename the cash book."
-        );
-      }
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to rename the cash book."
+      );
 
     } finally {
 
@@ -400,83 +698,83 @@ async function handleCreateCashBook(
     }
   }
 
-  async function executeDeleteGroup(group: CashBookGroup) {
-  try {
-    setProcessingGroupId(group.id);
-    setError("");
-    setSuccessMessage("");
 
-    await deleteCashBookGroup(group.id);
+  /* =====================================================
+     DELETE CASH BOOK
+  ===================================================== */
 
-    await reloadGroups();
+  async function executeDeleteGroup(
+    group: CashBookGroup
+  ) {
 
-    setSuccessMessage(
-      `"${group.name}" was deleted successfully.`
-    );
+    try {
 
-    window.setTimeout(() => {
+      setProcessingGroupId(
+        group.id
+      );
+
+      setError("");
       setSuccessMessage("");
-    }, 3000);
 
-  } catch (err: unknown) {
-    console.error("Error deleting cash book:", err);
+      await deleteCashBookGroup(
+        group.id
+      );
 
-    if (err instanceof Error) {
-      setError(err.message);
-    } else {
-      setError("Unable to delete the cash book.");
+      await reloadGroups();
+
+      setSuccessMessage(
+        `"${group.name}" was deleted successfully.`
+      );
+
+      window.setTimeout(() => {
+
+        setSuccessMessage("");
+
+      }, 3000);
+
+    } catch (err: unknown) {
+
+      console.error(
+        "Error deleting cash book:",
+        err
+      );
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to delete the cash book."
+      );
+
+    } finally {
+
+      setProcessingGroupId(
+        null
+      );
+
     }
-  } finally {
-    setProcessingGroupId(null);
   }
-}
 
-  // async function handleDeleteGroup(
-  //   group: CashBookGroup
-  // ) {
-  //   try {
-  //     setProcessingGroupId(group.id);
-  //     setError("");
-  //     setSuccessMessage("");
 
-  //     await deleteCashBookGroup(group.id);
-
-  //     await reloadGroups();
-
-  //     setSuccessMessage(
-  //       `"${group.name}" was deleted successfully.`
-  //     );
-
-  //     window.setTimeout(() => {
-  //       setSuccessMessage("");
-  //     }, 3000);
-  //   } catch (err: unknown) {
-  //     console.error(
-  //       "Error deleting cash book:",
-  //       err
-  //     );
-
-  //     if (err instanceof Error) {
-  //       setError(err.message);
-  //     } else {
-  //       setError(
-  //         "Unable to delete the cash book."
-  //       );
-  //     }
-  //   } finally {
-  //     setProcessingGroupId(null);
-  //   }
-  // }
+  /* =====================================================
+     LEAVE CASH BOOK
+  ===================================================== */
 
   async function handleLeaveGroup(
     group: CashBookGroup
   ) {
+
     try {
-      setProcessingGroupId(group.id);
+
+      setProcessingGroupId(
+        group.id
+      );
+
       setError("");
       setSuccessMessage("");
 
-      await leaveCashBookGroup(group.id);
+      await leaveCashBookGroup(
+        group.id
+      );
 
       await reloadGroups();
 
@@ -485,106 +783,724 @@ async function handleCreateCashBook(
       );
 
       window.setTimeout(() => {
+
         setSuccessMessage("");
+
       }, 3000);
+
     } catch (err: unknown) {
+
       console.error(
         "Error leaving cash book:",
         err
       );
 
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError(
-          "Unable to leave the cash book."
-        );
-      }
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to leave the cash book."
+      );
+
     } finally {
-      setProcessingGroupId(null);
+
+      setProcessingGroupId(
+        null
+      );
+
     }
   }
 
-  function handleSectionChange(section: SettingsSection) {
-    setActiveSection(section);
+
+  /* =====================================================
+     SECTION CHANGE
+  ===================================================== */
+
+  function handleSectionChange(
+    section: SettingsSection
+  ) {
+
+    setActiveSection(
+      section
+    );
 
     setError("");
     setSuccessMessage("");
+    setMasterDataError("");
+    setMasterDataSuccess("");
   }
 
-  function getInitials(name: string) {
-    const trimmedName = name.trim();
+
+  /* =====================================================
+     INITIALS
+  ===================================================== */
+
+  function getInitials(
+    name: string
+  ) {
+
+    const trimmedName =
+      name.trim();
 
     if (!trimmedName) {
       return "?";
     }
 
-    const words = trimmedName.split(/\s+/);
+    const words =
+      trimmedName.split(
+        /\s+/
+      );
 
-    if (words.length === 1) {
-      return words[0].charAt(0).toUpperCase();
+    if (
+      words.length === 1
+    ) {
+
+      return words[0]
+        .charAt(0)
+        .toUpperCase();
+
     }
 
     return (
-      words[0].charAt(0) + words[words.length - 1].charAt(0)
+      words[0]
+        .charAt(0) +
+      words[words.length - 1]
+        .charAt(0)
     ).toUpperCase();
   }
 
+
+  /* =====================================================
+     MASTER DATA HELPERS
+  ===================================================== */
+
+  function getCurrentGroup():
+    CashBookGroup | null {
+
+    if (!groups.length) {
+      return null;
+    }
+
+    return groups[0];
+  }
+
+
+  function getMasterDataTitle(
+    type: MasterDataType
+  ) {
+
+    return type === "category"
+      ? "Category"
+      : "Payment Mode";
+  }
+
+
+  function getMasterDataItems(
+    type: MasterDataType
+  ) {
+
+    return type === "category"
+      ? categories
+      : paymentModes;
+  }
+
+
+  /* =====================================================
+     OPEN CREATE MASTER DATA
+  ===================================================== */
+
+  function handleAddMasterData(
+    type: MasterDataType
+  ) {
+
+    const group =
+      getCurrentGroup();
+
+    if (!group) {
+
+      setMasterDataError(
+        "Please create or join a Cash Book first."
+      );
+
+      return;
+    }
+
+    if (
+      group.role !== "admin"
+    ) {
+
+      setMasterDataError(
+        "Only Cash Book admins can add categories or payment modes."
+      );
+
+      return;
+    }
+
+    setMasterDataName("");
+
+    setMasterDataPopup({
+
+      type,
+
+      mode: "create",
+
+    });
+
+    setMasterDataError("");
+    setMasterDataSuccess("");
+  }
+
+
+  /* =====================================================
+     OPEN EDIT MASTER DATA
+  ===================================================== */
+
+  function handleEditMasterData(
+    type: MasterDataType,
+    item: MasterDataOption
+  ) {
+
+    const group =
+      getCurrentGroup();
+
+    if (
+      !group ||
+      group.role !== "admin"
+    ) {
+
+      return;
+    }
+
+    setMasterDataName(
+      item.name
+    );
+
+    setMasterDataPopup({
+
+      type,
+
+      mode: "edit",
+
+      item,
+
+    });
+
+    setMasterDataError("");
+    setMasterDataSuccess("");
+  }
+
+
+  /* =====================================================
+     SAVE MASTER DATA
+  ===================================================== */
+
+  async function handleSaveMasterData(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
+
+    event.preventDefault();
+
+    if (
+      masterDataSaving ||
+      !masterDataPopup
+    ) {
+
+      return;
+    }
+
+    const group =
+      getCurrentGroup();
+
+    if (!group) {
+
+      setMasterDataError(
+        "Please select a Cash Book."
+      );
+
+      return;
+    }
+
+    if (
+      group.role !== "admin"
+    ) {
+
+      setMasterDataError(
+        "Only Cash Book admins can manage master data."
+      );
+
+      return;
+    }
+
+    const trimmedName =
+      masterDataName.trim();
+
+    if (!trimmedName) {
+
+      setMasterDataError(
+        `${getMasterDataTitle(masterDataPopup.type)} name is required.`
+      );
+
+      return;
+    }
+
+    try {
+
+      setMasterDataSaving(
+        true
+      );
+
+      setMasterDataError("");
+
+      if (
+        masterDataPopup.mode ===
+        "create"
+      ) {
+
+        if (
+          masterDataPopup.type ===
+          "category"
+        ) {
+
+          /*
+           * Categories support cash_in /
+           * cash_out entry types.
+           *
+           * For Settings, create it as
+           * "both" so it is available
+           * for both transaction types.
+           */
+
+          const created =
+            await createCategory(
+              group.id,
+              trimmedName,
+              "cash_in"
+            );
+
+          setCategories(
+            (previous) =>
+              [
+                ...previous,
+                created,
+              ].sort(
+                (a, b) =>
+                  a.name.localeCompare(
+                    b.name
+                  )
+              )
+          );
+
+        } else {
+
+          const created =
+            await createPaymentMode(
+              group.id,
+              trimmedName
+            );
+
+          setPaymentModes(
+            (previous) =>
+              [
+                ...previous,
+                created,
+              ].sort(
+                (a, b) =>
+                  a.name.localeCompare(
+                    b.name
+                  )
+              )
+          );
+        }
+
+        setMasterDataPopup(
+          null
+        );
+
+        setMasterDataName("");
+
+        setMasterDataSuccess(
+          `${getMasterDataTitle(masterDataPopup.type)} added successfully.`
+        );
+
+      } else {
+
+        /*
+         * Rename using Supabase directly.
+         *
+         * The existing RLS policies allow
+         * admins to update master data.
+         */
+
+        const {
+          supabase,
+        } = await import(
+          "../lib/supabase"
+        );
+
+        const table =
+          masterDataPopup.type ===
+          "category"
+            ? "categories"
+            : "payment_modes";
+
+        const {
+          data,
+          error: updateError,
+        } = await supabase
+          .from(table)
+          .update({
+            name: trimmedName,
+          })
+          .eq(
+            "id",
+            masterDataPopup.item!.id
+          )
+          .select("id,name")
+          .single();
+
+        if (updateError) {
+          throw updateError;
+        }
+
+        if (!data) {
+          throw new Error(
+            `Unable to rename ${getMasterDataTitle(masterDataPopup.type).toLowerCase()}.`
+          );
+        }
+
+        if (
+          masterDataPopup.type ===
+          "category"
+        ) {
+
+          setCategories(
+            (previous) =>
+              previous
+                .map(
+                  (item) =>
+                    item.id === data.id
+                      ? data
+                      : item
+                )
+                .sort(
+                  (a, b) =>
+                    a.name.localeCompare(
+                      b.name
+                    )
+                )
+          );
+
+        } else {
+
+          setPaymentModes(
+            (previous) =>
+              previous
+                .map(
+                  (item) =>
+                    item.id === data.id
+                      ? data
+                      : item
+                )
+                .sort(
+                  (a, b) =>
+                    a.name.localeCompare(
+                      b.name
+                    )
+                )
+          );
+        }
+
+        setMasterDataPopup(
+          null
+        );
+
+        setMasterDataName("");
+
+        setMasterDataSuccess(
+          `${getMasterDataTitle(masterDataPopup.type)} renamed successfully.`
+        );
+      }
+
+      window.setTimeout(() => {
+
+        setMasterDataSuccess("");
+
+      }, 3000);
+
+    } catch (err: unknown) {
+
+      console.error(
+        "Error saving master data:",
+        err
+      );
+
+      /*
+       * Handle duplicate names nicely.
+       */
+
+      if (
+        typeof err === "object" &&
+        err !== null &&
+        "code" in err &&
+        (err as { code?: string }).code ===
+          "23505"
+      ) {
+
+        setMasterDataError(
+          `A ${getMasterDataTitle(masterDataPopup.type).toLowerCase()} with this name already exists.`
+        );
+
+      } else {
+
+        setMasterDataError(
+          err instanceof Error
+            ? err.message
+            : `Unable to save ${getMasterDataTitle(masterDataPopup.type).toLowerCase()}.`
+        );
+
+      }
+
+    } finally {
+
+      setMasterDataSaving(
+        false
+      );
+
+    }
+  }
+
+
+  /* =====================================================
+     DELETE MASTER DATA
+     
+     We use soft delete by setting
+     is_active = false.
+  ===================================================== */
+
+  async function executeDeleteMasterData() {
+
+    if (
+      !masterDataDeletePopup
+    ) {
+
+      return;
+    }
+
+    const {
+      type,
+      item,
+    } =
+      masterDataDeletePopup;
+
+    const group =
+      getCurrentGroup();
+
+    if (
+      !group ||
+      group.role !== "admin"
+    ) {
+
+      setMasterDataDeletePopup(
+        null
+      );
+
+      return;
+    }
+
+    try {
+
+      setMasterDataSaving(
+        true
+      );
+
+      setMasterDataError("");
+
+      const {
+        supabase,
+      } = await import(
+        "../lib/supabase"
+      );
+
+      const table =
+        type === "category"
+          ? "categories"
+          : "payment_modes";
+
+      const {
+        error: deleteError,
+      } = await supabase
+        .from(table)
+        .update({
+          is_active: false,
+        })
+        .eq(
+          "id",
+          item.id
+        );
+
+      if (deleteError) {
+        throw deleteError;
+      }
+
+      if (
+        type === "category"
+      ) {
+
+        setCategories(
+          (previous) =>
+            previous.filter(
+              (entry) =>
+                entry.id !== item.id
+            )
+        );
+
+      } else {
+
+        setPaymentModes(
+          (previous) =>
+            previous.filter(
+              (entry) =>
+                entry.id !== item.id
+            )
+        );
+      }
+
+      setMasterDataDeletePopup(
+        null
+      );
+
+      setMasterDataSuccess(
+        `"${item.name}" deleted successfully.`
+      );
+
+      window.setTimeout(() => {
+
+        setMasterDataSuccess("");
+
+      }, 3000);
+
+    } catch (err: unknown) {
+
+      console.error(
+        "Error deleting master data:",
+        err
+      );
+
+      setMasterDataError(
+        err instanceof Error
+          ? err.message
+          : `Unable to delete ${getMasterDataTitle(type).toLowerCase()}.`
+      );
+
+      setMasterDataDeletePopup(
+        null
+      );
+
+    } finally {
+
+      setMasterDataSaving(
+        false
+      );
+
+    }
+  }
+
+
+  /* =====================================================
+     PROFILE SECTION
+  ===================================================== */
+
   function renderProfileSection() {
+
     if (loading) {
+
       return (
         <div className="settings-loading">
           Loading your profile...
         </div>
       );
+
     }
 
     return (
+
       <div className="settings-section-content">
+
         <div className="settings-section-heading">
-          <h2>Profile</h2>
+
+          <h2>
+            Profile
+          </h2>
 
           <p>
             Manage your personal information and contact details.
           </p>
+
         </div>
 
+
         <div className="profile-avatar-section">
+
           <div className="profile-avatar">
+
             {profile?.avatar_url ? (
+
               <img
                 src={profile.avatar_url}
                 alt="Profile"
               />
+
             ) : (
-              <span>{getInitials(fullName)}</span>
+
+              <span>
+                {getInitials(
+                  fullName
+                )}
+              </span>
+
             )}
+
           </div>
 
+
           <div className="profile-avatar-info">
-            <h3>{fullName || "Your Profile"}</h3>
+
+            <h3>
+              {fullName ||
+                "Your Profile"}
+            </h3>
 
             <p>
               Your profile information is used across the Family
               Cash Book.
             </p>
+
           </div>
+
         </div>
 
+
         {error && (
+
           <div className="settings-message settings-message--error">
             {error}
           </div>
+
         )}
 
+
         {successMessage && (
+
           <div className="settings-message settings-message--success">
             {successMessage}
           </div>
+
         )}
 
+
         <div className="settings-form">
+
           <div className="settings-form-field">
+
             <label htmlFor="settings-full-name">
               Full Name
             </label>
@@ -594,14 +1510,19 @@ async function handleCreateCashBook(
               type="text"
               value={fullName}
               onChange={(event) =>
-                setFullName(event.target.value)
+                setFullName(
+                  event.target.value
+                )
               }
               placeholder="Enter your full name"
               disabled={saving}
             />
+
           </div>
 
+
           <div className="settings-form-field">
+
             <label htmlFor="settings-email">
               Email Address
             </label>
@@ -617,9 +1538,12 @@ async function handleCreateCashBook(
             <span className="settings-field-help">
               Email address is managed by your account login.
             </span>
+
           </div>
 
+
           <div className="settings-form-field">
+
             <label htmlFor="settings-contact-no">
               Contact Number
             </label>
@@ -631,12 +1555,17 @@ async function handleCreateCashBook(
               maxLength={10}
               value={contactNo}
               onChange={(event) => {
-                const value = event.target.value.replace(
-                  /\D/g,
-                  ""
+
+                const value =
+                  event.target.value.replace(
+                    /\D/g,
+                    ""
+                  );
+
+                setContactNo(
+                  value
                 );
 
-                setContactNo(value);
               }}
               placeholder="10-digit mobile number"
               disabled={saving}
@@ -645,62 +1574,97 @@ async function handleCreateCashBook(
             <span className="settings-field-help">
               Enter a valid 10-digit Indian mobile number.
             </span>
+
           </div>
 
+
           <div className="settings-form-actions">
+
             <button
               type="button"
               className="settings-save-button"
-              onClick={handleSaveProfile}
+              onClick={
+                handleSaveProfile
+              }
               disabled={saving}
             >
-              {saving ? "Saving..." : "Save Changes"}
+
+              {saving
+                ? "Saving..."
+                : "Save Changes"}
+
             </button>
+
           </div>
+
         </div>
+
       </div>
     );
   }
 
+
+  /* =====================================================
+     CASH BOOKS SECTION
+  ===================================================== */
+
   function renderCashBooksSection() {
 
     return (
+
       <div className="settings-section-content">
 
         <div className="settings-section-heading settings-section-heading--cashbooks">
 
-  <div>
-    <h2>Cash Books</h2>
+          <div>
 
-    <p>
-      Manage the cash books you belong to.
-    </p>
-  </div>
+            <h2>
+              Cash Books
+            </h2>
 
-  <button
-    type="button"
-    className="settings-create-cashbook-button"
-    onClick={() => {
-      setShowCreateCashBook(true);
-      setCreateCashBookError("");
-    }}
-  >
-    + Create Cash Book
-  </button>
+            <p>
+              Manage the cash books you belong to.
+            </p>
 
-</div>
+          </div>
+
+
+          <button
+            type="button"
+            className="settings-create-cashbook-button"
+            onClick={() => {
+
+              setShowCreateCashBook(
+                true
+              );
+
+              setCreateCashBookError("");
+
+            }}
+          >
+            + Create Cash Book
+          </button>
+
+        </div>
+
 
         {error && (
+
           <div className="settings-message settings-message--error">
             {error}
           </div>
+
         )}
 
+
         {successMessage && (
+
           <div className="settings-message settings-message--success">
             {successMessage}
           </div>
+
         )}
+
 
         {groupsLoading ? (
 
@@ -733,13 +1697,16 @@ async function handleCreateCashBook(
             {groups.map((group) => {
 
               const isEditing =
-                editingGroupId === group.id;
+                editingGroupId ===
+                group.id;
 
               const isSaving =
-                savingGroupId === group.id;
+                savingGroupId ===
+                group.id;
 
               const isProcessing =
-                processingGroupId === group.id;
+                processingGroupId ===
+                group.id;
 
               return (
 
@@ -760,7 +1727,9 @@ async function handleCreateCashBook(
 
                         <input
                           type="text"
-                          value={editingGroupName}
+                          value={
+                            editingGroupName
+                          }
                           onChange={(event) =>
                             setEditingGroupName(
                               event.target.value
@@ -768,7 +1737,9 @@ async function handleCreateCashBook(
                           }
                           className="cashbook-name-input"
                           autoFocus
-                          disabled={isSaving}
+                          disabled={
+                            isSaving
+                          }
                         />
 
                       ) : (
@@ -778,6 +1749,7 @@ async function handleCreateCashBook(
                         </h3>
 
                       )}
+
 
                       <div className="cashbook-settings-meta">
 
@@ -790,7 +1762,8 @@ async function handleCreateCashBook(
                         </span>
 
                         <span>
-                          {group.role === "admin"
+                          {group.role ===
+                          "admin"
                             ? "Admin"
                             : "Member"}
                         </span>
@@ -804,16 +1777,20 @@ async function handleCreateCashBook(
 
                   <div className="cashbook-settings-actions">
 
-                    {group.role === "admin" ? (
+                    {group.role ===
+                    "admin" ? (
 
                       isEditing ? (
 
                         <>
+
                           <button
                             type="button"
                             className="cashbook-action-button cashbook-action-button--save"
                             onClick={() =>
-                              handleRenameGroup(group)
+                              handleRenameGroup(
+                                group
+                              )
                             }
                             disabled={
                               isSaving ||
@@ -825,25 +1802,33 @@ async function handleCreateCashBook(
                               : "Save"}
                           </button>
 
+
                           <button
                             type="button"
                             className="cashbook-action-button"
                             onClick={() =>
-                              setEditingGroupId(null)
+                              setEditingGroupId(
+                                null
+                              )
                             }
-                            disabled={isSaving}
+                            disabled={
+                              isSaving
+                            }
                           >
                             Cancel
                           </button>
+
                         </>
 
                       ) : (
 
                         <>
+
                           <button
                             type="button"
                             className="cashbook-action-button"
                             onClick={() => {
+
                               setEditingGroupId(
                                 group.id
                               );
@@ -854,27 +1839,35 @@ async function handleCreateCashBook(
 
                               setError("");
                               setSuccessMessage("");
+
                             }}
-                            disabled={isProcessing}
+                            disabled={
+                              isProcessing
+                            }
                           >
                             Edit
                           </button>
+
 
                           <button
                             type="button"
                             className="cashbook-action-button cashbook-action-button--danger"
                             onClick={() =>
                               setConfirmationPopup({
-                                type: "delete",
+                                type:
+                                  "delete",
                                 group,
                               })
                             }
-                            disabled={isProcessing}
+                            disabled={
+                              isProcessing
+                            }
                           >
                             {isProcessing
                               ? "Deleting..."
                               : "Delete"}
                           </button>
+
                         </>
 
                       )
@@ -886,11 +1879,14 @@ async function handleCreateCashBook(
                         className="cashbook-action-button cashbook-action-button--danger"
                         onClick={() =>
                           setConfirmationPopup({
-                            type: "leave",
+                            type:
+                              "leave",
                             group,
                           })
                         }
-                        disabled={isProcessing}
+                        disabled={
+                          isProcessing
+                        }
                       >
                         {isProcessing
                           ? "Leaving..."
@@ -915,384 +1911,1135 @@ async function handleCreateCashBook(
     );
   }
 
-  function renderComingSoon(
-    title: string,
-    description: string
-  ) {
+
+  /* =====================================================
+     MASTER DATA SECTION
+  ===================================================== */
+
+  function renderMasterDataSection() {
+
+    const group =
+      getCurrentGroup();
+
+    const isAdmin =
+      group?.role === "admin";
+
+
     return (
+
       <div className="settings-section-content">
+
         <div className="settings-section-heading">
-          <h2>{title}</h2>
 
-          <p>{description}</p>
-        </div>
-
-        <div className="settings-coming-soon">
-          <div className="settings-coming-soon-icon">
-            ⚙
-          </div>
-
-          <h3>Coming Soon</h3>
+          <h2>
+            Categories & Payment Modes
+          </h2>
 
           <p>
-            This section will be available in a future update.
+            Manage the categories and payment modes used in your
+            Cash Book.
           </p>
+
         </div>
+
+
+        {!group ? (
+
+          <div className="cashbooks-empty">
+
+            <div className="cashbooks-empty-icon">
+              ⚙️
+            </div>
+
+            <h3>
+              No Cash Book
+            </h3>
+
+            <p>
+              Create or join a Cash Book before managing categories
+              and payment modes.
+            </p>
+
+          </div>
+
+        ) : (
+
+          <>
+
+            {masterDataError && (
+
+              <div className="settings-message settings-message--error">
+                {masterDataError}
+              </div>
+
+            )}
+
+
+            {masterDataSuccess && (
+
+              <div className="settings-message settings-message--success">
+                {masterDataSuccess}
+              </div>
+
+            )}
+
+
+            {masterDataLoading ? (
+
+              <div className="settings-loading">
+                Loading categories and payment modes...
+              </div>
+
+            ) : (
+
+              <div className="master-data-management">
+
+
+                {/* =================================================
+                   CATEGORIES
+                ================================================= */}
+
+                <div className="master-data-card">
+
+                  <div className="master-data-card-header">
+
+                    <div>
+
+                      <h3>
+                        Categories
+                      </h3>
+
+                      <p>
+                        Transaction categories available in this
+                        Cash Book.
+                      </p>
+
+                    </div>
+
+
+                    {isAdmin && (
+
+                      <button
+                        type="button"
+                        className="settings-create-cashbook-button"
+                        onClick={() =>
+                          handleAddMasterData(
+                            "category"
+                          )
+                        }
+                      >
+                        + Add Category
+                      </button>
+
+                    )}
+
+                  </div>
+
+
+                  {categories.length ===
+                  0 ? (
+
+                    <div className="master-data-management-empty">
+                      No categories found.
+                    </div>
+
+                  ) : (
+
+                    <div className="master-data-list">
+
+                      {categories.map(
+                        (item) => (
+
+                          <div
+                            key={
+                              item.id
+                            }
+                            className="master-data-item"
+                          >
+
+                            <div className="master-data-item-info">
+
+                              <div className="master-data-item-icon">
+                                🏷️
+                              </div>
+
+                              <span>
+                                {item.name}
+                              </span>
+
+                            </div>
+
+
+                            {isAdmin && (
+
+                              <div className="master-data-item-actions">
+
+                                <button
+                                  type="button"
+                                  className="cashbook-action-button"
+                                  onClick={() =>
+                                    handleEditMasterData(
+                                      "category",
+                                      item
+                                    )
+                                  }
+                                >
+                                  Edit
+                                </button>
+
+
+                                <button
+                                  type="button"
+                                  className="cashbook-action-button cashbook-action-button--danger"
+                                  onClick={() =>
+                                    setMasterDataDeletePopup({
+                                      type:
+                                        "category",
+                                      item,
+                                    })
+                                  }
+                                >
+                                  Delete
+                                </button>
+
+                              </div>
+
+                            )}
+
+                          </div>
+
+                        )
+                      )}
+
+                    </div>
+
+                  )}
+
+                </div>
+
+
+                {/* =================================================
+                   PAYMENT MODES
+                ================================================= */}
+
+                <div className="master-data-card">
+
+                  <div className="master-data-card-header">
+
+                    <div>
+
+                      <h3>
+                        Payment Modes
+                      </h3>
+
+                      <p>
+                        Payment methods available for transactions.
+                      </p>
+
+                    </div>
+
+
+                    {isAdmin && (
+
+                      <button
+                        type="button"
+                        className="settings-create-cashbook-button"
+                        onClick={() =>
+                          handleAddMasterData(
+                            "paymentMode"
+                          )
+                        }
+                      >
+                        + Add Payment Mode
+                      </button>
+
+                    )}
+
+                  </div>
+
+
+                  {paymentModes.length ===
+                  0 ? (
+
+                    <div className="master-data-empty">
+                      No payment modes found.
+                    </div>
+
+                  ) : (
+
+                    <div className="master-data-list">
+
+                      {paymentModes.map(
+                        (item) => (
+
+                          <div
+                            key={
+                              item.id
+                            }
+                            className="master-data-item"
+                          >
+
+                            <div className="master-data-item-info">
+
+                              <div className="master-data-item-icon">
+                                💳
+                              </div>
+
+                              <span>
+                                {item.name}
+                              </span>
+
+                            </div>
+
+
+                            {isAdmin && (
+
+                              <div className="master-data-item-actions">
+
+                                <button
+                                  type="button"
+                                  className="cashbook-action-button"
+                                  onClick={() =>
+                                    handleEditMasterData(
+                                      "paymentMode",
+                                      item
+                                    )
+                                  }
+                                >
+                                  Edit
+                                </button>
+
+
+                                <button
+                                  type="button"
+                                  className="cashbook-action-button cashbook-action-button--danger"
+                                  onClick={() =>
+                                    setMasterDataDeletePopup({
+                                      type:
+                                        "paymentMode",
+                                      item,
+                                    })
+                                  }
+                                >
+                                  Delete
+                                </button>
+
+                              </div>
+
+                            )}
+
+                          </div>
+
+                        )
+                      )}
+
+                    </div>
+
+                  )}
+
+                </div>
+
+              </div>
+
+            )}
+
+          </>
+
+        )}
+
       </div>
     );
   }
 
-  return (
-    <>
-  {showCreateCashBook && (
 
-    <div className="settings-popup-overlay">
+  /* =====================================================
+     COMING SOON
+  ===================================================== */
 
-      <div className="settings-create-cashbook-popup">
+  function renderComingSoon(
+    title: string,
+    description: string
+  ) {
 
-        <div className="settings-create-cashbook-header">
+    return (
 
-          <div>
+      <div className="settings-section-content">
 
-            <h2>
-              Create Cash Book
-            </h2>
+        <div className="settings-section-heading">
 
-            <p>
-              Create a new cash book for your family.
-            </p>
+          <h2>
+            {title}
+          </h2>
 
-          </div>
-
-          <button
-            type="button"
-            className="settings-popup-close"
-            onClick={() => {
-              if (!creatingCashBook) {
-                setShowCreateCashBook(false);
-                setCreateCashBookError("");
-              }
-            }}
-            disabled={creatingCashBook}
-          >
-            ×
-          </button>
+          <p>
+            {description}
+          </p>
 
         </div>
 
-        {createCashBookError && (
 
-          <div className="settings-message settings-message--error">
-            {createCashBookError}
+        <div className="settings-coming-soon">
+
+          <div className="settings-coming-soon-icon">
+            ⚙
           </div>
 
-        )}
+          <h3>
+            Coming Soon
+          </h3>
 
-        <form
-          className="settings-create-cashbook-form"
-          onSubmit={handleCreateCashBook}
-          autoComplete="off"
-        >
+          <p>
+            This section will be available in a future update.
+          </p>
 
-          <div className="settings-create-field">
-
-            <label htmlFor="create-cashbook-name">
-              Cash Book Name
-            </label>
-
-            <input
-              id="create-cashbook-name"
-              type="text"
-              value={newCashBookName}
-              disabled={creatingCashBook}
-              required
-              placeholder="e.g. Parekh Family Cash Book"
-              onChange={(event) => {
-
-                setCreateCashBookError("");
-
-                setNewCashBookName(
-                  event.target.value
-                );
-
-              }}
-            />
-
-          </div>
-
-
-          <div className="settings-create-field">
-
-            <label htmlFor="create-cashbook-description">
-              Description
-            </label>
-
-            <textarea
-              id="create-cashbook-description"
-              value={newCashBookDescription}
-              disabled={creatingCashBook}
-              placeholder="Optional description"
-              rows={3}
-              onChange={(event) => {
-
-                setCreateCashBookError("");
-
-                setNewCashBookDescription(
-                  event.target.value
-                );
-
-              }}
-            />
-
-          </div>
-
-
-          <div className="settings-create-field">
-
-            <label htmlFor="create-cashbook-owner">
-              Owner Name
-            </label>
-
-            <input
-              id="create-cashbook-owner"
-              type="text"
-              value={newCashBookOwnerName}
-              disabled={creatingCashBook}
-              required
-              placeholder="Owner name"
-              onChange={(event) => {
-
-                setCreateCashBookError("");
-
-                setNewCashBookOwnerName(
-                  event.target.value
-                );
-
-              }}
-            />
-
-          </div>
-
-
-          <div className="settings-create-field">
-
-            <label htmlFor="create-cashbook-currency">
-              Currency
-            </label>
-
-            <select
-              id="create-cashbook-currency"
-              value={newCashBookCurrency}
-              disabled={creatingCashBook}
-              onChange={(event) => {
-
-                setCreateCashBookError("");
-
-                setNewCashBookCurrency(
-                  event.target.value
-                );
-
-              }}
-            >
-
-              {CURRENCY_OPTIONS.map(
-                (option) => (
-
-                  <option
-                    key={option.value}
-                    value={option.value}
-                  >
-                    {option.label}
-                  </option>
-
-                )
-              )}
-
-            </select>
-
-          </div>
-
-
-          <div className="settings-create-field">
-
-            <label htmlFor="create-cashbook-opening-balance">
-              Opening Balance
-            </label>
-
-            <input
-              id="create-cashbook-opening-balance"
-              type="number"
-              value={newCashBookOpeningBalance}
-              disabled={creatingCashBook}
-              onChange={(event) => {
-
-                setCreateCashBookError("");
-
-                setNewCashBookOpeningBalance(
-                  Number(event.target.value)
-                );
-
-              }}
-            />
-
-            <span className="settings-field-help">
-              You can keep this as 0 if you're starting fresh.
-            </span>
-
-          </div>
-
-
-          <div className="settings-create-cashbook-actions">
-
-            <button
-              type="button"
-              className="settings-confirmation-cancel"
-              disabled={creatingCashBook}
-              onClick={() => {
-
-                setShowCreateCashBook(false);
-                setCreateCashBookError("");
-
-              }}
-            >
-              Cancel
-            </button>
-
-
-            <button
-              type="submit"
-              className="settings-create-cashbook-submit"
-              disabled={creatingCashBook}
-            >
-              {creatingCashBook
-                ? "Creating..."
-                : "Create Cash Book"}
-            </button>
-
-          </div>
-
-        </form>
+        </div>
 
       </div>
+    );
+  }
 
-    </div>
 
-  )}
-      {confirmationPopup && (
+  /* =====================================================
+     RENDER
+  ===================================================== */
+
+  return (
+
+    <>
+
+      {/* ===================================================
+         CREATE CASH BOOK POPUP
+      =================================================== */}
+
+      {showCreateCashBook && (
+
         <div className="settings-popup-overlay">
+
+          <div className="settings-create-cashbook-popup">
+
+            <div className="settings-create-cashbook-header">
+
+              <div>
+
+                <h2>
+                  Create Cash Book
+                </h2>
+
+                <p>
+                  Create a new cash book for your family.
+                </p>
+
+              </div>
+
+
+              <button
+                type="button"
+                className="settings-popup-close"
+                onClick={() => {
+
+                  if (
+                    !creatingCashBook
+                  ) {
+
+                    setShowCreateCashBook(
+                      false
+                    );
+
+                    setCreateCashBookError("");
+
+                  }
+
+                }}
+                disabled={
+                  creatingCashBook
+                }
+              >
+                ×
+              </button>
+
+            </div>
+
+
+            {createCashBookError && (
+
+              <div className="settings-message settings-message--error">
+                {createCashBookError}
+              </div>
+
+            )}
+
+
+            <form
+              className="settings-create-cashbook-form"
+              onSubmit={
+                handleCreateCashBook
+              }
+              autoComplete="off"
+            >
+
+              <div className="settings-create-field">
+
+                <label htmlFor="create-cashbook-name">
+                  Cash Book Name
+                </label>
+
+                <input
+                  id="create-cashbook-name"
+                  type="text"
+                  value={
+                    newCashBookName
+                  }
+                  disabled={
+                    creatingCashBook
+                  }
+                  required
+                  placeholder="e.g. Parekh Family Cash Book"
+                  onChange={(event) => {
+
+                    setCreateCashBookError("");
+
+                    setNewCashBookName(
+                      event.target.value
+                    );
+
+                  }}
+                />
+
+              </div>
+
+
+              <div className="settings-create-field">
+
+                <label htmlFor="create-cashbook-description">
+                  Description
+                </label>
+
+                <textarea
+                  id="create-cashbook-description"
+                  value={
+                    newCashBookDescription
+                  }
+                  disabled={
+                    creatingCashBook
+                  }
+                  placeholder="Optional description"
+                  rows={3}
+                  onChange={(event) => {
+
+                    setCreateCashBookError("");
+
+                    setNewCashBookDescription(
+                      event.target.value
+                    );
+
+                  }}
+                />
+
+              </div>
+
+
+              <div className="settings-create-field">
+
+                <label htmlFor="create-cashbook-owner">
+                  Owner Name
+                </label>
+
+                <input
+                  id="create-cashbook-owner"
+                  type="text"
+                  value={
+                    newCashBookOwnerName
+                  }
+                  disabled={
+                    creatingCashBook
+                  }
+                  required
+                  placeholder="Owner name"
+                  onChange={(event) => {
+
+                    setCreateCashBookError("");
+
+                    setNewCashBookOwnerName(
+                      event.target.value
+                    );
+
+                  }}
+                />
+
+              </div>
+
+
+              <div className="settings-create-field">
+
+                <label htmlFor="create-cashbook-currency">
+                  Currency
+                </label>
+
+                <select
+                  id="create-cashbook-currency"
+                  value={
+                    newCashBookCurrency
+                  }
+                  disabled={
+                    creatingCashBook
+                  }
+                  onChange={(event) => {
+
+                    setCreateCashBookError("");
+
+                    setNewCashBookCurrency(
+                      event.target.value
+                    );
+
+                  }}
+                >
+
+                  {CURRENCY_OPTIONS.map(
+                    (option) => (
+
+                      <option
+                        key={
+                          option.value
+                        }
+                        value={
+                          option.value
+                        }
+                      >
+                        {option.label}
+                      </option>
+
+                    )
+                  )}
+
+                </select>
+
+              </div>
+
+
+              <div className="settings-create-field">
+
+                <label htmlFor="create-cashbook-opening-balance">
+                  Opening Balance
+                </label>
+
+                <input
+                  id="create-cashbook-opening-balance"
+                  type="number"
+                  value={
+                    newCashBookOpeningBalance
+                  }
+                  disabled={
+                    creatingCashBook
+                  }
+                  onChange={(event) => {
+
+                    setCreateCashBookError("");
+
+                    setNewCashBookOpeningBalance(
+                      Number(
+                        event.target.value
+                      )
+                    );
+
+                  }}
+                />
+
+                <span className="settings-field-help">
+                  You can keep this as 0 if you're starting fresh.
+                </span>
+
+              </div>
+
+
+              <div className="settings-create-cashbook-actions">
+
+                <button
+                  type="button"
+                  className="settings-confirmation-cancel"
+                  disabled={
+                    creatingCashBook
+                  }
+                  onClick={() => {
+
+                    setShowCreateCashBook(
+                      false
+                    );
+
+                    setCreateCashBookError("");
+
+                  }}
+                >
+                  Cancel
+                </button>
+
+
+                <button
+                  type="submit"
+                  className="settings-create-cashbook-submit"
+                  disabled={
+                    creatingCashBook
+                  }
+                >
+                  {creatingCashBook
+                    ? "Creating..."
+                    : "Create Cash Book"}
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      {/* ===================================================
+         MASTER DATA ADD / EDIT POPUP
+      =================================================== */}
+
+      {masterDataPopup && (
+
+        <div className="settings-popup-overlay">
+
           <div className="settings-confirmation-popup">
 
             <div className="settings-confirmation-icon">
-              {confirmationPopup.type === "delete"
-                ? "🗑️"
-                : "🚪"}
+              {masterDataPopup.type ===
+              "category"
+                ? "🏷️"
+                : "💳"}
             </div>
 
+
             <h3>
-              {confirmationPopup.type === "delete"
-                ? "Delete Cash Book?"
-                : "Leave Cash Book?"}
+
+              {masterDataPopup.mode ===
+              "create"
+                ? `Add ${getMasterDataTitle(masterDataPopup.type)}`
+                : `Rename ${getMasterDataTitle(masterDataPopup.type)}`}
+
             </h3>
 
+
             <p>
-              {confirmationPopup.type === "delete"
-                ? `Are you sure you want to delete "${confirmationPopup.group.name}"? This action cannot be undone.`
-                : `Are you sure you want to leave "${confirmationPopup.group.name}"? You will no longer have access to this cash book unless you are invited again.`}
+
+              {masterDataPopup.mode ===
+              "create"
+                ? `Add a new ${getMasterDataTitle(masterDataPopup.type).toLowerCase()} to this Cash Book.`
+                : `Update the name of this ${getMasterDataTitle(masterDataPopup.type).toLowerCase()}.`}
+
             </p>
+
+
+            {masterDataError && (
+
+              <div
+                className="settings-message settings-message--error"
+                style={{
+                  marginTop:
+                    "16px",
+                  marginBottom:
+                    "0",
+                  textAlign:
+                    "left",
+                }}
+              >
+                {masterDataError}
+              </div>
+
+            )}
+
+
+            <form
+              onSubmit={
+                handleSaveMasterData
+              }
+              style={{
+                marginTop:
+                  "18px",
+                textAlign:
+                  "left",
+              }}
+            >
+
+              <div className="settings-create-field">
+
+                <label htmlFor="master-data-name">
+
+                  {getMasterDataTitle(
+                    masterDataPopup.type
+                  )} Name
+
+                </label>
+
+
+                <input
+                  id="master-data-name"
+                  type="text"
+                  value={
+                    masterDataName
+                  }
+                  autoFocus
+                  required
+                  disabled={
+                    masterDataSaving
+                  }
+                  placeholder={
+                    masterDataPopup.type ===
+                    "category"
+                      ? "e.g. Grocery"
+                      : "e.g. UPI"
+                  }
+                  onChange={(event) => {
+
+                    setMasterDataError("");
+
+                    setMasterDataName(
+                      event.target.value
+                    );
+
+                  }}
+                />
+
+              </div>
+
+
+              <div className="settings-confirmation-actions">
+
+                <button
+                  type="button"
+                  className="settings-confirmation-cancel"
+                  disabled={
+                    masterDataSaving
+                  }
+                  onClick={() => {
+
+                    setMasterDataPopup(
+                      null
+                    );
+
+                    setMasterDataName("");
+
+                    setMasterDataError("");
+
+                  }}
+                >
+                  Cancel
+                </button>
+
+
+                <button
+                  type="submit"
+                  className="settings-create-cashbook-submit"
+                  disabled={
+                    masterDataSaving
+                  }
+                >
+                  {masterDataSaving
+                    ? "Saving..."
+                    : masterDataPopup.mode ===
+                        "create"
+                      ? "Add"
+                      : "Save"}
+                </button>
+
+              </div>
+
+            </form>
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      {/* ===================================================
+         MASTER DATA DELETE POPUP
+      =================================================== */}
+
+      {masterDataDeletePopup && (
+
+        <div className="settings-popup-overlay">
+
+          <div className="settings-confirmation-popup">
+
+            <div className="settings-confirmation-icon">
+              🗑️
+            </div>
+
+
+            <h3>
+              Delete{" "}
+              {getMasterDataTitle(
+                masterDataDeletePopup.type
+              )}?
+            </h3>
+
+
+            <p>
+              Are you sure you want to delete
+              {" "}
+              "{masterDataDeletePopup.item.name}"?
+              This item will no longer appear when
+              creating new transactions.
+            </p>
+
+
+            {masterDataError && (
+
+              <div className="settings-message settings-message--error">
+                {masterDataError}
+              </div>
+
+            )}
+
 
             <div className="settings-confirmation-actions">
 
               <button
                 type="button"
                 className="settings-confirmation-cancel"
-                onClick={() => setConfirmationPopup(null)}
+                disabled={
+                  masterDataSaving
+                }
+                onClick={() =>
+                  setMasterDataDeletePopup(
+                    null
+                  )
+                }
               >
                 Cancel
               </button>
 
+
               <button
                 type="button"
-                className={
-                  confirmationPopup.type === "delete"
-                    ? "settings-confirmation-danger"
-                    : "settings-confirmation-leave"
+                className="settings-confirmation-danger"
+                disabled={
+                  masterDataSaving
                 }
-                onClick={async () => {
-                  const group = confirmationPopup.group;
-                  const type = confirmationPopup.type;
-
-                  setConfirmationPopup(null);
-
-                  if (type === "delete") {
-                    await executeDeleteGroup(group);
-                  } else {
-                    await handleLeaveGroup(group);
-                  }
-                }}
+                onClick={
+                  executeDeleteMasterData
+                }
               >
-                {confirmationPopup.type === "delete"
-                  ? "Delete"
-                  : "Leave"}
+                {masterDataSaving
+                  ? "Deleting..."
+                  : "Delete"}
               </button>
 
             </div>
 
           </div>
+
         </div>
+
       )}
+
+
+      {/* ===================================================
+         CASH BOOK DELETE / LEAVE POPUP
+      =================================================== */}
+
+      {confirmationPopup && (
+
+        <div className="settings-popup-overlay">
+
+          <div className="settings-confirmation-popup">
+
+            <div className="settings-confirmation-icon">
+
+              {confirmationPopup.type ===
+              "delete"
+                ? "🗑️"
+                : "🚪"}
+
+            </div>
+
+
+            <h3>
+
+              {confirmationPopup.type ===
+              "delete"
+                ? "Delete Cash Book?"
+                : "Leave Cash Book?"}
+
+            </h3>
+
+
+            <p>
+
+              {confirmationPopup.type ===
+              "delete"
+                ? `Are you sure you want to delete "${confirmationPopup.group.name}"? This action cannot be undone.`
+                : `Are you sure you want to leave "${confirmationPopup.group.name}"? You will no longer have access to this cash book unless you are invited again.`}
+
+            </p>
+
+
+            <div className="settings-confirmation-actions">
+
+              <button
+                type="button"
+                className="settings-confirmation-cancel"
+                onClick={() =>
+                  setConfirmationPopup(
+                    null
+                  )
+                }
+              >
+                Cancel
+              </button>
+
+
+              <button
+                type="button"
+                className={
+                  confirmationPopup.type ===
+                  "delete"
+                    ? "settings-confirmation-danger"
+                    : "settings-confirmation-leave"
+                }
+                onClick={async () => {
+
+                  const group =
+                    confirmationPopup.group;
+
+                  const type =
+                    confirmationPopup.type;
+
+                  setConfirmationPopup(
+                    null
+                  );
+
+                  if (
+                    type ===
+                    "delete"
+                  ) {
+
+                    await executeDeleteGroup(
+                      group
+                    );
+
+                  } else {
+
+                    await handleLeaveGroup(
+                      group
+                    );
+
+                  }
+
+                }}
+              >
+
+                {confirmationPopup.type ===
+                "delete"
+                  ? "Delete"
+                  : "Leave"}
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      )}
+
+
+      {/* ===================================================
+         MAIN SETTINGS PAGE
+      =================================================== */}
 
       <div className="settings-page">
 
+
         <div className="settings-header">
+
           <div>
-            <h1>Settings</h1>
+
+            <h1>
+              Settings
+            </h1>
 
             <p>
               Manage your account and application preferences.
             </p>
+
           </div>
+
         </div>
+
 
         <div className="settings-layout">
 
+
+          {/* =================================================
+             SIDEBAR
+          ================================================= */}
+
           <aside className="settings-sidebar">
+
 
             <button
               type="button"
-              className={`settings-nav-item ${activeSection === "profile"
+              className={`settings-nav-item ${
+                activeSection ===
+                "profile"
                   ? "settings-nav-item--active"
                   : ""
-                }`}
-              onClick={() => handleSectionChange("profile")}
+              }`}
+              onClick={() =>
+                handleSectionChange(
+                  "profile"
+                )
+              }
             >
+
               <span className="settings-nav-icon">
                 👤
               </span>
 
               <span className="settings-nav-text">
-                <strong>Profile</strong>
+
+                <strong>
+                  Profile
+                </strong>
 
                 <small>
                   Personal information
                 </small>
+
               </span>
+
             </button>
+
 
             <button
               type="button"
-              className={`settings-nav-item ${activeSection === "cashbooks"
+              className={`settings-nav-item ${
+                activeSection ===
+                "cashbooks"
                   ? "settings-nav-item--active"
                   : ""
-                }`}
+              }`}
               onClick={() =>
-                handleSectionChange("cashbooks")
+                handleSectionChange(
+                  "cashbooks"
+                )
               }
             >
+
               <span className="settings-nav-icon">
                 📖
               </span>
 
               <span className="settings-nav-text">
+
                 <strong>
                   Cash Books
                 </strong>
@@ -1300,24 +3047,67 @@ async function handleCreateCashBook(
                 <small>
                   Manage your cash books
                 </small>
+
               </span>
+
             </button>
+
 
             <button
               type="button"
-              className={`settings-nav-item ${activeSection === "security"
+              className={`settings-nav-item ${
+                activeSection ===
+                "masterdata"
                   ? "settings-nav-item--active"
                   : ""
-                }`}
+              }`}
               onClick={() =>
-                handleSectionChange("security")
+                handleSectionChange(
+                  "masterdata"
+                )
               }
             >
+
+              <span className="settings-nav-icon">
+                🏷️
+              </span>
+
+              <span className="settings-nav-text">
+
+                <strong>
+                  Categories & Modes
+                </strong>
+
+                <small>
+                  Manage master data
+                </small>
+
+              </span>
+
+            </button>
+
+
+            <button
+              type="button"
+              className={`settings-nav-item ${
+                activeSection ===
+                "security"
+                  ? "settings-nav-item--active"
+                  : ""
+              }`}
+              onClick={() =>
+                handleSectionChange(
+                  "security"
+                )
+              }
+            >
+
               <span className="settings-nav-icon">
                 🔒
               </span>
 
               <span className="settings-nav-text">
+
                 <strong>
                   Security
                 </strong>
@@ -1325,24 +3115,33 @@ async function handleCreateCashBook(
                 <small>
                   Account security
                 </small>
+
               </span>
+
             </button>
+
 
             <button
               type="button"
-              className={`settings-nav-item ${activeSection === "preferences"
+              className={`settings-nav-item ${
+                activeSection ===
+                "preferences"
                   ? "settings-nav-item--active"
                   : ""
-                }`}
+              }`}
               onClick={() =>
-                handleSectionChange("preferences")
+                handleSectionChange(
+                  "preferences"
+                )
               }
             >
+
               <span className="settings-nav-icon">
                 ⚙️
               </span>
 
               <span className="settings-nav-text">
+
                 <strong>
                   Preferences
                 </strong>
@@ -1350,26 +3149,45 @@ async function handleCreateCashBook(
                 <small>
                   Application preferences
                 </small>
+
               </span>
+
             </button>
 
           </aside>
 
+
+          {/* =================================================
+             CONTENT
+          ================================================= */}
+
           <main className="settings-card">
 
-            {activeSection === "profile" &&
+            {activeSection ===
+              "profile" &&
               renderProfileSection()}
 
-            {activeSection === "cashbooks" &&
+
+            {activeSection ===
+              "cashbooks" &&
               renderCashBooksSection()}
 
-            {activeSection === "security" &&
+
+            {activeSection ===
+              "masterdata" &&
+              renderMasterDataSection()}
+
+
+            {activeSection ===
+              "security" &&
               renderComingSoon(
                 "Security",
                 "Manage your account security and authentication settings."
               )}
 
-            {activeSection === "preferences" &&
+
+            {activeSection ===
+              "preferences" &&
               renderComingSoon(
                 "Preferences",
                 "Manage your Family Cash Book application preferences."
@@ -1380,8 +3198,10 @@ async function handleCreateCashBook(
         </div>
 
       </div>
+
     </>
   );
 };
+
 
 export default SettingsPage;
