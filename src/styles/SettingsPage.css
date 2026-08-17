@@ -1151,11 +1151,16 @@
 }
 
 .settings-confirmation-cancel {
-  border: 1px solid #d1d5db;
-
-  background: #ffffff;
-
-  color: #475569;
+    height: auto;
+    padding: 0 13px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .settings-confirmation-cancel:hover {
@@ -1218,4 +1223,107 @@
   .settings-confirmation-actions button {
     width: 100%;
   }
+}
+
+.settings-section-heading--cashbooks {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.settings-create-cashbook-button {
+  border: none;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.settings-create-cashbook-button:hover {
+  opacity: 0.9;
+}
+
+.settings-create-cashbook-popup {
+  width: min(560px, calc(100vw - 2rem));
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  border-radius: 12px;
+  padding: 1.5rem;
+  background: white;
+  box-sizing: border-box;
+}
+
+.settings-create-cashbook-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.settings-create-cashbook-header h2 {
+  margin: 0;
+}
+
+.settings-create-cashbook-header p {
+  margin: 0.35rem 0 0;
+}
+
+.settings-popup-close {
+  border: none;
+  background: transparent;
+  font-size: 1.6rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.settings-create-cashbook-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.settings-create-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.settings-create-field label {
+  font-weight: 600;
+}
+
+.settings-create-field input,
+.settings-create-field textarea,
+.settings-create-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+  font: inherit;
+}
+
+.settings-create-field textarea {
+  resize: vertical;
+}
+
+.settings-create-cashbook-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.settings-create-cashbook-submit {
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1.1rem;
+  cursor: pointer;
+  font-weight: 600;
+  background: #2563eb;
+  color: #ffffff;
 }

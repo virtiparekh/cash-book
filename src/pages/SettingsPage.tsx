@@ -16,6 +16,22 @@ import {
 import { useCashBookGroups } from "../hooks/useCashBookGroups";
 
 import type { CashBookGroup } from "../types/cashBook";
+import {
+  DEFAULT_CURRENCY,
+  DEFAULT_OPENING_BALANCE,
+} from "../constants/app";
+
+import {
+  CURRENCY_OPTIONS,
+} from "../constants/currencies";
+
+import {
+  createCashBookGroup,
+} from "../services/cashBookService";
+
+import {
+  validateCashBook,
+} from "../utils/cashBookValidation";
 
 type SettingsSection = "profile" | "cashbooks" | "security" | "preferences";
 
@@ -56,6 +72,52 @@ const SettingsPage = () => {
     loadProfile();
   }, []);
 
+  const [
+  showCreateCashBook,
+  setShowCreateCashBook,
+] = useState(false);
+
+const [
+  creatingCashBook,
+  setCreatingCashBook,
+] = useState(false);
+
+const [
+  createCashBookError,
+  setCreateCashBookError,
+] = useState("");
+
+const [
+  newCashBookName,
+  setNewCashBookName,
+] = useState("");
+
+const [
+  newCashBookDescription,
+  setNewCashBookDescription,
+] = useState("");
+
+const [
+  newCashBookOwnerName,
+  setNewCashBookOwnerName,
+] = useState(
+  profile?.full_name ?? ""
+);
+
+const [
+  newCashBookCurrency,
+  setNewCashBookCurrency,
+] = useState(
+  DEFAULT_CURRENCY
+);
+
+const [
+  newCashBookOpeningBalance,
+  setNewCashBookOpeningBalance,
+] = useState(
+  DEFAULT_OPENING_BALANCE
+);
+
   const [confirmationPopup, setConfirmationPopup] = useState<{
     type: "delete" | "leave";
     group: CashBookGroup;
@@ -95,6 +157,136 @@ const SettingsPage = () => {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+
+  if (profile?.full_name) {
+
+    setNewCashBookOwnerName(
+      profile.full_name
+    );
+
+  }
+
+}, [
+  profile?.full_name,
+]);
+
+async function handleCreateCashBook(
+  event: React.FormEvent<HTMLFormElement>
+) {
+
+  event.preventDefault();
+
+  if (creatingCashBook) {
+    return;
+  }
+
+  setCreateCashBookError("");
+
+  const validationError =
+    validateCashBook(
+      newCashBookName,
+      newCashBookOwnerName,
+      newCashBookOpeningBalance
+    );
+
+  if (validationError) {
+
+    setCreateCashBookError(
+      validationError
+    );
+
+    return;
+  }
+
+  try {
+
+    setCreatingCashBook(true);
+
+    // const groupId =
+      await createCashBookGroup({
+
+        name:
+          newCashBookName.trim(),
+
+        description:
+          newCashBookDescription.trim(),
+
+        currencyCode:
+          newCashBookCurrency,
+
+        openingBalance:
+          newCashBookOpeningBalance,
+
+        ownerName:
+          newCashBookOwnerName.trim(),
+
+      });
+
+    /*
+     * Refresh Cash Books.
+     *
+     * This also updates selectedCashBook
+     * through useCashBookGroups.
+     */
+    await reloadGroups();
+
+    /*
+     * Close modal.
+     */
+    setShowCreateCashBook(false);
+
+    /*
+     * Clear form.
+     */
+    setNewCashBookName("");
+    setNewCashBookDescription("");
+
+    setNewCashBookOwnerName(
+      profile?.full_name ?? ""
+    );
+
+    setNewCashBookCurrency(
+      DEFAULT_CURRENCY
+    );
+
+    setNewCashBookOpeningBalance(
+      DEFAULT_OPENING_BALANCE
+    );
+
+    setCreateCashBookError("");
+
+    /*
+     * Optional success message.
+     */
+    setSuccessMessage(
+      "Cash Book created successfully."
+    );
+
+    window.setTimeout(() => {
+      setSuccessMessage("");
+    }, 3000);
+
+  } catch (error: unknown) {
+
+    console.error(
+      "Unable to create Cash Book.",
+      error
+    );
+
+    setCreateCashBookError(
+      error instanceof Error
+        ? error.message
+        : "Unable to create Cash Book."
+    );
+
+  } finally {
+
+    setCreatingCashBook(false);
+
+  }
+}
 
   async function handleSaveProfile() {
     setError("");
@@ -475,15 +667,28 @@ const SettingsPage = () => {
     return (
       <div className="settings-section-content">
 
-        <div className="settings-section-heading">
+        <div className="settings-section-heading settings-section-heading--cashbooks">
 
-          <h2>Cash Books</h2>
+  <div>
+    <h2>Cash Books</h2>
 
-          <p>
-            Manage the cash books you belong to.
-          </p>
+    <p>
+      Manage the cash books you belong to.
+    </p>
+  </div>
 
-        </div>
+  <button
+    type="button"
+    className="settings-create-cashbook-button"
+    onClick={() => {
+      setShowCreateCashBook(true);
+      setCreateCashBookError("");
+    }}
+  >
+    + Create Cash Book
+  </button>
+
+</div>
 
         {error && (
           <div className="settings-message settings-message--error">
@@ -739,6 +944,240 @@ const SettingsPage = () => {
 
   return (
     <>
+  {showCreateCashBook && (
+
+    <div className="settings-popup-overlay">
+
+      <div className="settings-create-cashbook-popup">
+
+        <div className="settings-create-cashbook-header">
+
+          <div>
+
+            <h2>
+              Create Cash Book
+            </h2>
+
+            <p>
+              Create a new cash book for your family.
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            className="settings-popup-close"
+            onClick={() => {
+              if (!creatingCashBook) {
+                setShowCreateCashBook(false);
+                setCreateCashBookError("");
+              }
+            }}
+            disabled={creatingCashBook}
+          >
+            ×
+          </button>
+
+        </div>
+
+        {createCashBookError && (
+
+          <div className="settings-message settings-message--error">
+            {createCashBookError}
+          </div>
+
+        )}
+
+        <form
+          className="settings-create-cashbook-form"
+          onSubmit={handleCreateCashBook}
+          autoComplete="off"
+        >
+
+          <div className="settings-create-field">
+
+            <label htmlFor="create-cashbook-name">
+              Cash Book Name
+            </label>
+
+            <input
+              id="create-cashbook-name"
+              type="text"
+              value={newCashBookName}
+              disabled={creatingCashBook}
+              required
+              placeholder="e.g. Parekh Family Cash Book"
+              onChange={(event) => {
+
+                setCreateCashBookError("");
+
+                setNewCashBookName(
+                  event.target.value
+                );
+
+              }}
+            />
+
+          </div>
+
+
+          <div className="settings-create-field">
+
+            <label htmlFor="create-cashbook-description">
+              Description
+            </label>
+
+            <textarea
+              id="create-cashbook-description"
+              value={newCashBookDescription}
+              disabled={creatingCashBook}
+              placeholder="Optional description"
+              rows={3}
+              onChange={(event) => {
+
+                setCreateCashBookError("");
+
+                setNewCashBookDescription(
+                  event.target.value
+                );
+
+              }}
+            />
+
+          </div>
+
+
+          <div className="settings-create-field">
+
+            <label htmlFor="create-cashbook-owner">
+              Owner Name
+            </label>
+
+            <input
+              id="create-cashbook-owner"
+              type="text"
+              value={newCashBookOwnerName}
+              disabled={creatingCashBook}
+              required
+              placeholder="Owner name"
+              onChange={(event) => {
+
+                setCreateCashBookError("");
+
+                setNewCashBookOwnerName(
+                  event.target.value
+                );
+
+              }}
+            />
+
+          </div>
+
+
+          <div className="settings-create-field">
+
+            <label htmlFor="create-cashbook-currency">
+              Currency
+            </label>
+
+            <select
+              id="create-cashbook-currency"
+              value={newCashBookCurrency}
+              disabled={creatingCashBook}
+              onChange={(event) => {
+
+                setCreateCashBookError("");
+
+                setNewCashBookCurrency(
+                  event.target.value
+                );
+
+              }}
+            >
+
+              {CURRENCY_OPTIONS.map(
+                (option) => (
+
+                  <option
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </option>
+
+                )
+              )}
+
+            </select>
+
+          </div>
+
+
+          <div className="settings-create-field">
+
+            <label htmlFor="create-cashbook-opening-balance">
+              Opening Balance
+            </label>
+
+            <input
+              id="create-cashbook-opening-balance"
+              type="number"
+              value={newCashBookOpeningBalance}
+              disabled={creatingCashBook}
+              onChange={(event) => {
+
+                setCreateCashBookError("");
+
+                setNewCashBookOpeningBalance(
+                  Number(event.target.value)
+                );
+
+              }}
+            />
+
+            <span className="settings-field-help">
+              You can keep this as 0 if you're starting fresh.
+            </span>
+
+          </div>
+
+
+          <div className="settings-create-cashbook-actions">
+
+            <button
+              type="button"
+              className="settings-confirmation-cancel"
+              disabled={creatingCashBook}
+              onClick={() => {
+
+                setShowCreateCashBook(false);
+                setCreateCashBookError("");
+
+              }}
+            >
+              Cancel
+            </button>
+
+
+            <button
+              type="submit"
+              className="settings-create-cashbook-submit"
+              disabled={creatingCashBook}
+            >
+              {creatingCashBook
+                ? "Creating..."
+                : "Create Cash Book"}
+            </button>
+
+          </div>
+
+        </form>
+
+      </div>
+
+    </div>
+
+  )}
       {confirmationPopup && (
         <div className="settings-popup-overlay">
           <div className="settings-confirmation-popup">

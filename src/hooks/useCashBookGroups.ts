@@ -32,6 +32,44 @@ export function useCashBookGroups() {
             const loadedGroups =
                 await loadMyCashBookGroups();
 
+            // setGroups(loadedGroups);
+
+            // if (loadedGroups.length === 0) {
+
+            //     setSelectedCashBook(null);
+
+            // } else {
+
+            //     const selectedStillExists =
+            //         selectedCashBook?.id &&
+            //         loadedGroups.some(
+            //             (group) =>
+            //                 group.id === selectedCashBook.id
+            //         );
+
+            //     if (!selectedStillExists) {
+
+            //         setSelectedCashBook(
+            //             loadedGroups[0]
+            //         );
+            //     }
+            //     else {
+
+            //         const updatedSelectedCashBook =
+            //             loadedGroups.find(
+            //                 (group) =>
+            //                     group.id === selectedCashBook?.id
+            //             );
+
+            //         if (updatedSelectedCashBook) {
+
+            //             setSelectedCashBook(
+            //                 updatedSelectedCashBook
+            //             );
+
+            //         }
+
+            //     }
             setGroups(loadedGroups);
 
             if (loadedGroups.length === 0) {
@@ -40,20 +78,28 @@ export function useCashBookGroups() {
 
             } else {
 
-                const selectedStillExists =
-                    selectedCashBook &&
-                    loadedGroups.some(
-                        (group) =>
-                            group.id === selectedCashBook.id
+                const updatedSelectedCashBook =
+                    selectedCashBook
+                        ? loadedGroups.find(
+                            (group) =>
+                                group.id === selectedCashBook.id
+                        )
+                        : null;
+
+                if (updatedSelectedCashBook) {
+
+                    setSelectedCashBook(
+                        updatedSelectedCashBook
                     );
 
-                if (!selectedStillExists) {
+                } else {
 
                     setSelectedCashBook(
                         loadedGroups[0]
                     );
 
                 }
+
             }
 
         } catch (err) {
