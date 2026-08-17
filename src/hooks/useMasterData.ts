@@ -1,121 +1,162 @@
-import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabase";
-import { useCashBook } from "./useCashBook";
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  loadCategories,
+  loadPaymentModes,
+} from "../services/masterDataService";
+
+import {
+  useCashBook,
+} from "./useCashBook";
+
 
 export type SelectOption = {
   value: string;
   label: string;
 };
 
+
 export function useMasterData(
   type: "cash-in" | "cash-out"
 ) {
-  const { selectedCashBook } =
-    useCashBook();
 
-  const [categoryOptions,
-    setCategoryOptions] =
-    useState<SelectOption[]>([]);
+  const {
+    selectedCashBook,
+  } = useCashBook();
 
-  const [paymentModeOptions,
-    setPaymentModeOptions] =
-    useState<SelectOption[]>([]);
+
+  const [
+    categoryOptions,
+    setCategoryOptions,
+  ] = useState<SelectOption[]>([]);
+
+
+  const [
+    paymentModeOptions,
+    setPaymentModeOptions,
+  ] = useState<SelectOption[]>([]);
+
+
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
+
+
+  const reloadMasterData =
+    useCallback(
+      async () => {
+
+        if (!selectedCashBook) {
+
+          setCategoryOptions([]);
+          setPaymentModeOptions([]);
+
+          return;
+
+        }
+
+
+        try {
+
+          setLoading(true);
+
+
+          const entryType =
+            type === "cash-in"
+              ? "cash_in"
+              : "cash_out";
+
+
+          const [
+            categories,
+            paymentModes,
+          ] = await Promise.all([
+
+            loadCategories(
+              selectedCashBook.id,
+              entryType
+            ),
+
+            loadPaymentModes(
+              selectedCashBook.id,
+              entryType
+            ),
+
+          ]);
+
+
+          setCategoryOptions(
+
+            categories.map(
+              (item) => ({
+                value: item.id,
+                label: item.name,
+              })
+            )
+
+          );
+
+
+          setPaymentModeOptions(
+
+            paymentModes.map(
+              (item) => ({
+                value: item.id,
+                label: item.name,
+              })
+            )
+
+          );
+
+        }
+
+        catch (error) {
+
+          console.error(
+            "Unable to load master data.",
+            error
+          );
+
+        }
+
+        finally {
+
+          setLoading(false);
+
+        }
+
+      },
+      [
+        selectedCashBook,
+        type,
+      ]
+    );
+
 
   useEffect(() => {
 
-    const loadData = async () => {
-
-      if (!selectedCashBook) {
-        return;
-      }
-
-      const entryType =
-        type === "cash-in"
-          ? "cash_in"
-          : "cash_out";
-
-      //---------------- Categories ----------------
-
-      const {
-        data: categories,
-        error: categoryError,
-      } = await supabase
-        .from("categories")
-        .select("id,name")
-        .eq(
-          "group_id",
-          selectedCashBook.id
-        )
-        .eq(
-          "entry_type",
-          entryType
-        )
-        .eq(
-          "is_active",
-          true
-        )
-        .order("name");
-
-      if (categoryError) {
-        console.error(categoryError);
-      }
-
-      //---------------- Payment ----------------
-
-      const {
-        data: paymentModes,
-        error: paymentError,
-      } = await supabase
-        .from("payment_modes")
-        .select("id,name")
-        .eq(
-          "group_id",
-          selectedCashBook.id
-        )
-        .eq(
-          "applicable_entry_type",
-          ["both"]
-        )
-        .eq(
-          "is_active",
-          true
-        )
-        .order("name");
-
-      if (paymentError) {
-        console.error(paymentError);
-      }
-
-      setCategoryOptions(
-        (categories ?? []).map(
-          (item) => ({
-            value: item.id,
-            label: item.name,
-          })
-        )
-      );
-
-      setPaymentModeOptions(
-        (paymentModes ?? []).map(
-          (item) => ({
-            value: item.id,
-            label: item.name,
-          })
-        )
-      );
-
-    };
-
-    void loadData();
+    void reloadMasterData();
 
   }, [
-    selectedCashBook,
-    type,
+    reloadMasterData,
   ]);
 
+
   return {
+
     categoryOptions,
+
     paymentModeOptions,
+
+    loading,
+
+    reloadMasterData,
+
   };
 
 }

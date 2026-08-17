@@ -6,8 +6,7 @@ import {
 import Input
   from "../../common/Input/Input";
 
-import Select
-  from "../../common/Select/Select";
+import MasterDataSelect from "../../common/MasterDataSelect/MasterDataSelect";
 
 import TextArea
   from "../../common/TextArea/TextArea";
@@ -28,8 +27,15 @@ type Option = {
 type Props = {
 
   type:
-    | "cash-in"
-    | "cash-out";
+  | "cash-in"
+  | "cash-out";
+
+  selectedType:
+  | "cash-in"
+  | "cash-out";
+
+  onTypeChange:
+  (type: "cash-in" | "cash-out") => void;
 
   amount: string;
 
@@ -50,28 +56,38 @@ type Props = {
   paymentModeOptions: Option[];
 
   onAmountChange:
-    (value: string) => void;
+  (value: string) => void;
 
   onDateChange:
-    (value: string) => void;
+  (value: string) => void;
 
   onCategoryChange:
-    (value: string) => void;
+  (value: string) => void;
 
   onPaymentModeChange:
-    (value: string) => void;
+  (value: string) => void;
 
   onRemarksChange:
-    (value: string) => void;
+  (value: string) => void;
 
   onCancel: () => void;
 
   onSubmit:
-    (event: React.FormEvent) => void;
+  (event: React.FormEvent) => void;
+
+  onCreateCategory:
+  (name: string) => Promise<Option>;
+
+  onCreatePaymentMode:
+  (name: string) => Promise<Option>;
 };
 
 
 function TransactionForm({
+
+  selectedType,
+
+  onTypeChange,
 
   amount,
 
@@ -104,6 +120,9 @@ function TransactionForm({
   onCancel,
 
   onSubmit,
+
+  onCreateCategory,
+  onCreatePaymentMode
 
 }: Props) {
 
@@ -183,7 +202,39 @@ function TransactionForm({
 
 
       <div className="drawer-form-content">
+        <div className="transaction-type-switch">
 
+          <button
+            type="button"
+            className={
+              selectedType === "cash-in"
+                ? "transaction-type-btn cash-in active"
+                : "transaction-type-btn cash-in"
+            }
+            disabled={saving}
+            onClick={() =>
+              onTypeChange("cash-in")
+            }
+          >
+            Cash In
+          </button>
+
+          <button
+            type="button"
+            className={
+              selectedType === "cash-out"
+                ? "transaction-type-btn cash-out active"
+                : "transaction-type-btn cash-out"
+            }
+            disabled={saving}
+            onClick={() =>
+              onTypeChange("cash-out")
+            }
+          >
+            Cash Out
+          </button>
+
+        </div>
 
         <Input
 
@@ -231,49 +282,67 @@ function TransactionForm({
         />
 
 
-        <Select
+        <MasterDataSelect
 
           label="Category"
 
-          required
-
           value={categoryId}
 
-          options={
-            categoryOptions
-          }
+          options={categoryOptions}
+
+          placeholder="Search or Select"
 
           disabled={saving}
 
-          onChange={(event) =>
-            onCategoryChange(
-              event.target.value
-            )
+          required
+
+          addLabel="Add New Category"
+
+          popupTitle="Add New Category"
+
+          inputLabel="Category Name"
+
+          inputPlaceholder="e.g. Grocery, Medical, Education"
+
+          onChange={
+            onCategoryChange
+          }
+
+          onCreate={
+            onCreateCategory
           }
 
         />
 
 
-        <Select
+        <MasterDataSelect
 
           label="Payment Mode"
 
-          required
+          value={paymentModeId}
 
-          value={
-            paymentModeId
-          }
+          options={paymentModeOptions}
 
-          options={
-            paymentModeOptions
-          }
+          placeholder="Search or Select"
 
           disabled={saving}
 
-          onChange={(event) =>
-            onPaymentModeChange(
-              event.target.value
-            )
+          required
+
+          addLabel="Add New Payment Mode"
+
+          popupTitle="Add New Payment Mode"
+
+          inputLabel="Payment Mode Name"
+
+          inputPlaceholder="e.g. Net Banking, Credit Card"
+
+          onChange={
+            onPaymentModeChange
+          }
+
+          onCreate={
+            onCreatePaymentMode
           }
 
         />

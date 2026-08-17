@@ -29,21 +29,26 @@ import type {
   Transaction,
 } from "../../../types/transaction";
 
+import {
+  createCategory,
+  createPaymentMode,
+} from "../../../services/masterDataService";
+
 type Props = {
   open: boolean;
 
   type:
-    | "cash-in"
-    | "cash-out";
+  | "cash-in"
+  | "cash-out";
 
   transaction:
-    | Transaction
-    | null;
+  | Transaction
+  | null;
 
   onClose: () => void;
 
   onTransactionSaved:
-    () => Promise<void>;
+  () => Promise<void>;
 };
 
 function TransactionDrawer({
@@ -91,14 +96,24 @@ function TransactionDrawer({
     setError,
   ] = useState("");
 
+  const [
+    selectedType,
+    setSelectedType,
+  ] = useState<
+    "cash-in" | "cash-out"
+  >(type);
+
   const {
     categoryOptions,
     paymentModeOptions,
-  } = useMasterData(type);
+    reloadMasterData,
+  } = useMasterData(selectedType);
 
   const {
     selectedCashBook,
   } = useCashBook();
+
+  
 
   const currentMember =
     useCurrentMember();
@@ -119,6 +134,7 @@ function TransactionDrawer({
      * CREATE MODE
      */
     if (!transaction) {
+      setSelectedType(type);
 
       resetForm();
 
@@ -270,6 +286,94 @@ function TransactionDrawer({
     );
   }
 
+  /*
+ * =========================================================
+ * Create Category
+ * =========================================================
+ */
+
+  async function handleCreateCategory(
+    name: string
+  ) {
+
+    if (!selectedCashBook) {
+
+      throw new Error(
+        "Cash Book not selected."
+      );
+
+    }
+
+
+    const entryType =
+      selectedType === "cash-in"
+        ? "cash_in"
+        : "cash_out";
+
+
+    const created =
+      await createCategory(
+        selectedCashBook.id,
+        name,
+        entryType
+      );
+
+
+    /*
+     * Refresh dropdown options.
+     */
+
+    await reloadMasterData();
+
+
+    return {
+      value: created.id,
+      label: created.name,
+    };
+
+  }
+
+
+  /*
+   * =========================================================
+   * Create Payment Mode
+   * =========================================================
+   */
+
+  async function handleCreatePaymentMode(
+    name: string
+  ) {
+
+    if (!selectedCashBook) {
+
+      throw new Error(
+        "Cash Book not selected."
+      );
+
+    }
+
+
+    const created =
+      await createPaymentMode(
+        selectedCashBook.id,
+        name
+      );
+
+
+    /*
+     * Refresh dropdown options.
+     */
+
+    await reloadMasterData();
+
+
+    return {
+      value: created.id,
+      label: created.name,
+    };
+
+  }
+
   async function handleSubmit(
     event: React.FormEvent
   ) {
@@ -369,7 +473,7 @@ function TransactionDrawer({
 
         const timePart =
           existingTime &&
-          existingTime.length >= 8
+            existingTime.length >= 8
             ? existingTime
             : getCurrentTime();
 
@@ -382,7 +486,7 @@ function TransactionDrawer({
             transaction.id,
 
           entryType:
-            type === "cash-in"
+            selectedType === "cash-in"
               ? "cash_in"
               : "cash_out",
 
@@ -432,7 +536,7 @@ function TransactionDrawer({
             currentMember.profileId,
 
           entryType:
-            type === "cash-in"
+            selectedType === "cash-in"
               ? "cash_in"
               : "cash_out",
 
@@ -525,9 +629,9 @@ function TransactionDrawer({
 
               ? "Edit Transaction"
 
-              : type === "cash-in"
-                ? "Cash In"
-                : "Cash Out"}
+              : selectedType === "cash-in"
+                ? "Add Cash In Entry"
+                : "Add Cash Out Entry"}
 
           </h2>
 
@@ -550,9 +654,31 @@ function TransactionDrawer({
 
         <TransactionForm
 
-          type={
-            type
+            type={selectedType}
+
+          selectedType={
+            selectedType
           }
+
+          onTypeChange={
+  (newType) => {
+
+    setSelectedType(
+      newType
+    );
+
+    /*
+     * Clear category because
+     * Cash In and Cash Out can
+     * have different categories.
+     */
+    setCategoryId("");
+    setPaymentModeId("");
+
+    setError("");
+
+  }
+}
 
           amount={
             amount
@@ -632,6 +758,14 @@ function TransactionDrawer({
 
           onSubmit={
             handleSubmit
+          }
+
+          onCreateCategory={
+            handleCreateCategory
+          }
+
+          onCreatePaymentMode={
+            handleCreatePaymentMode
           }
 
         />
