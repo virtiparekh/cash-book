@@ -894,14 +894,14 @@ const SettingsPage = () => {
   }
 
 
-  function getMasterDataItems(
-    type: MasterDataType
-  ) {
+  // function getMasterDataItems(
+  //   type: MasterDataType
+  // ) {
 
-    return type === "category"
-      ? categories
-      : paymentModes;
-  }
+  //   return type === "category"
+  //     ? categories
+  //     : paymentModes;
+  // }
 
 
   /* =====================================================
