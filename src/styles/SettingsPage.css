@@ -985,6 +985,11 @@
     color 0.15s ease;
 }
 
+.cashbook-action-button svg {
+  width: 17px;
+  height: 17px;
+}
+
 
 .cashbook-action-button:hover {
   background: #f8fafc;

@@ -109,6 +109,7 @@ function App() {
     groups,
     loading: groupsLoading,
     error,
+    reloadGroups,
   } = useCashBookGroups();
 
 
@@ -1022,9 +1023,7 @@ function App() {
         }
 
         onGroupCreated={() => {
-          /*
-           * Future refresh.
-           */
+          void reloadGroups();
         }}
 
       />
