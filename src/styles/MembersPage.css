@@ -1794,3 +1794,47 @@
     gap: 8px;
   }
 }
+
+.whatsapp-invitation-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    padding: 8px 12px;
+
+    border: 1px solid #25d366;
+    border-radius: 6px;
+
+    background: #25d366;
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.2s ease,
+        transform 0.1s ease;
+}
+
+.whatsapp-invitation-button:hover {
+    background: #1ebe5d;
+}
+
+.whatsapp-invitation-button:active {
+    transform: scale(0.98);
+}
+
+.whatsapp-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.invitation-share-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 12px;
+}

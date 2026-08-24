@@ -75,6 +75,10 @@ function MembersPage() {
         setInvitationLink
     ] = useState<string | null>(null);
 
+    const [
+        invitationMemberName,
+        setInvitationMemberName
+    ] = useState<string>("");
 
     const [
         invitationCopied,
@@ -996,7 +1000,7 @@ function MembersPage() {
 
 
             setInvitationLink(link);
-
+            setInvitationMemberName("");
             setInvitationCopied(false);
 
 
@@ -1070,7 +1074,37 @@ function MembersPage() {
 
     };
 
+    /*
+ * -------------------------------------------------
+ * Share Invitation via WhatsApp
+ * -------------------------------------------------
+ */
 
+    const handleWhatsAppInvitation = (
+        invitationLink: string,
+        memberName: string
+    ) => {
+
+        const message =
+            `Hi ${memberName},\n\n` +
+            `You have been invited to join ` +
+            `${selectedCashBook?.name ?? "our Family Cash Book"}.\n\n` +
+            `Please click the link below to accept the invitation:\n` +
+            `${invitationLink}\n\n` +
+            `Thank you.`;
+
+        const whatsappUrl =
+            `https://wa.me/?text=${encodeURIComponent(
+                message
+            )}`;
+
+        window.open(
+            whatsappUrl,
+            "_blank",
+            "noopener,noreferrer"
+        );
+
+    };
     /*
      * -------------------------------------------------
      * Format Invitation Date
@@ -1598,14 +1632,70 @@ function MembersPage() {
 
                                                 }}
                                             >
+                                                <svg
+                                                    viewBox="0 0 24 24"
+                                                    width="16"
+                                                    height="16"
+                                                    aria-hidden="true"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="2"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                >
+                                                    <rect
+                                                        x="9"
+                                                        y="9"
+                                                        width="11"
+                                                        height="11"
+                                                        rx="2"
+                                                    />
 
-                                                {copiedInvitationId ===
+                                                    <path
+                                                        d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                                                    />
+                                                </svg>
+
+                                                {/* {copiedInvitationId ===
                                                     invitation.id
 
-                                                    ? "✓ Copied"
+                                                    ? "✓"
 
-                                                    : "Copy Link"}
+                                                    : "Copy"} */}
 
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                className="whatsapp-invitation-button"
+                                                onClick={() => {
+
+                                                    const link =
+                                                        `${window.location.origin}${appPath(
+                                                            `/invite?token=${invitation.token}`
+                                                        )}`;
+
+                                                    handleWhatsAppInvitation(
+                                                        link,
+                                                        invitation.member_name
+                                                    );
+
+                                                }}
+                                                title="Send invitation via WhatsApp"
+                                            >
+                                                <span
+                                                    className="whatsapp-icon"
+                                                    aria-hidden="true"
+                                                >
+                                                    <svg
+                                                        viewBox="0 0 24 24"
+                                                        width="18"
+                                                        height="18"
+                                                        fill="currentColor"
+                                                    >
+                                                        <path d="M20.52 3.48A11.87 11.87 0 0 0 12.06 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.15 1.6 5.96L.05 24l6.28-1.65a11.86 11.86 0 0 0 5.72 1.46h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.17-3.43-8.43ZM12.06 21.78h-.01a9.88 9.88 0 0 1-5.03-1.38l-.36-.21-3.73.98.99-3.64-.23-.37a9.88 9.88 0 0 1-1.51-5.26c0-5.47 4.45-9.92 9.93-9.92 2.65 0 5.14 1.03 7.01 2.91a9.88 9.88 0 0 1 2.91 7.02c-.01 5.47-4.46 9.92-9.97 9.92Zm5.44-7.43c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.46-.88-.78-1.47-1.74-1.64-2.04-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.49 0 1.47 1.07 2.89 1.22 3.09.15.2 2.1 3.21 5.09 4.5.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
+                                                    </svg>
+                                                </span>
                                             </button>
 
 
@@ -1907,6 +1997,41 @@ function MembersPage() {
                                     {invitationCopied
                                         ? "Copied!"
                                         : "Copy Link"}
+
+                                </button>
+
+                            </div>
+
+                            <div className="invitation-share-actions">
+
+                                <button
+                                    type="button"
+                                    className="whatsapp-invitation-button"
+                                    onClick={() => {
+
+                                        handleWhatsAppInvitation(
+                                            invitationLink,
+                                            "there"
+                                        );
+
+                                    }}
+                                >
+
+                                    <span
+                                        className="whatsapp-icon"
+                                        aria-hidden="true"
+                                    >
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            width="18"
+                                            height="18"
+                                            fill="currentColor"
+                                        >
+                                            <path d="M20.52 3.48A11.87 11.87 0 0 0 12.06 0C5.5 0 .16 5.34.16 11.9c0 2.1.55 4.15 1.6 5.96L.05 24l6.28-1.65a11.86 11.86 0 0 0 5.72 1.46h.01c6.55 0 11.89-5.34 11.89-11.9 0-3.18-1.24-6.17-3.43-8.43ZM12.06 21.78h-.01a9.88 9.88 0 0 1-5.03-1.38l-.36-.21-3.73.98.99-3.64-.23-.37a9.88 9.88 0 0 1-1.51-5.26c0-5.47 4.45-9.92 9.93-9.92 2.65 0 5.14 1.03 7.01 2.91a9.88 9.88 0 0 1 2.91 7.02c-.01 5.47-4.46 9.92-9.97 9.92Zm5.44-7.43c-.3-.15-1.77-.87-2.04-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.46-.88-.78-1.47-1.74-1.64-2.04-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.61-.92-2.21-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.49 0 1.47 1.07 2.89 1.22 3.09.15.2 2.1 3.21 5.09 4.5.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35Z" />
+                                        </svg>
+                                    </span>
+
+                                    Send via WhatsApp
 
                                 </button>
 
