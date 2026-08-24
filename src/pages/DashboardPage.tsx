@@ -63,11 +63,14 @@ import Popup
   from "../components/common/Popup/Popup";
 
 import Button from "../components/common/Button/Button";
+import type { CashBookGroup } from "../types/cashBook";
 
 type DashboardPageProps = {
 
   userEmail: string;
-
+  selectedCashBook: CashBookGroup;
+  cashBooks: CashBookGroup[];
+  onCashBookChange: (CashBookId: string) => void;
   onLogout: () => void;
 
 };
@@ -76,7 +79,9 @@ type DashboardPageProps = {
 function DashboardPage({
 
   userEmail,
-
+  selectedCashBook,
+  cashBooks,
+  onCashBookChange,
   onLogout,
 
 }: DashboardPageProps) {
@@ -196,9 +201,9 @@ function DashboardPage({
    * -------------------------------------------------
    */
 
-  const {
-    selectedCashBook,
-  } = useCashBook();
+  // const {
+  //   selectedCashBook,
+  // } = useCashBook();
 
 
   /*
@@ -1125,6 +1130,10 @@ function DashboardPage({
         selectedCashBook?.name ??
         ""
       }
+
+      cashBooks={cashBooks}
+      selectedCashBookId={selectedCashBook?.id ?? ""}
+      onCashBookChange={onCashBookChange}
 
       onLogout={
         onLogout

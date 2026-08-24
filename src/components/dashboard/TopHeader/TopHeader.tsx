@@ -1,27 +1,31 @@
 import "./TopHeader.css";
 
+import type { CashBookGroup } from "../../../types/cashBook";
+
 type TopHeaderProps = {
   userName: string;
   cashBookName: string;
+  selectedCashBookId: string;
+  cashBooks: CashBookGroup[];
+  onCashBookChange: (cashBookId: string) => void;
   onLogout: () => void;
-
   onMenuClick: () => void;
-  // sidebarOpen: boolean;
 };
 
 function TopHeader({
   userName,
   cashBookName,
+  selectedCashBookId,
+  cashBooks,
+  onCashBookChange,
   onLogout,
   onMenuClick,
-  // sidebarOpen,
 }: TopHeaderProps) {
+
   return (
     <header className="top-header">
 
-      {/* -----------------------------------------
-          Left
-      ------------------------------------------ */}
+      {/* LEFT */}
 
       <div className="top-header__left">
 
@@ -45,27 +49,38 @@ function TopHeader({
       </div>
 
 
-      {/* -----------------------------------------
-          Center
-      ------------------------------------------ */}
+      {/* CENTER */}
 
       <div className="top-header__center">
 
         <select
           className="top-header__select"
-          defaultValue={cashBookName}
+          value={selectedCashBookId}
+          onChange={(event) =>
+            onCashBookChange(
+              event.target.value
+            )
+          }
+          aria-label="Select Cash Book"
         >
-          <option value={cashBookName}>
-            {cashBookName}
-          </option>
+
+          {cashBooks.map((cashBook) => (
+
+            <option
+              key={cashBook.id}
+              value={cashBook.id}
+            >
+              {cashBook.name}
+            </option>
+
+          ))}
+
         </select>
 
       </div>
 
 
-      {/* -----------------------------------------
-          Right
-      ------------------------------------------ */}
+      {/* RIGHT */}
 
       <div className="top-header__right">
 

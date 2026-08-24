@@ -165,9 +165,7 @@
   color: #94a3b8;
 }
 
-.settings-nav-item--active
-  .settings-nav-text
-  small {
+.settings-nav-item--active .settings-nav-text small {
   color: #60a5fa;
 }
 
@@ -566,6 +564,114 @@
 }
 
 
+/* =====================================================
+   MASTER DATA COLLAPSE TOGGLE
+===================================================== */
+
+.master-data-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.master-data-card-title > div:first-child {
+  min-width: 0;
+}
+
+.master-data-mobile-toggle {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+
+  flex: 0 0 38px;
+
+  padding: 0;
+  margin: 0;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+
+  background: #ffffff;
+  color: #374151;
+
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.master-data-mobile-toggle:hover {
+  background: #f3f4f6;
+}
+
+.master-data-mobile-toggle:active {
+  background: #e5e7eb;
+}
+
+.master-data-mobile-toggle:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+
+/* =====================================================
+   MASTER DATA HEADER
+===================================================== */
+
+.master-data-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.master-data-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 640px) {
+
+  .master-data-card-header {
+    align-items: center;
+  }
+
+  .master-data-card-title {
+    gap: 8px;
+  }
+
+  .master-data-card-title h3 {
+    font-size: 16px;
+  }
+
+  .master-data-card-title p {
+    font-size: 12px;
+  }
+
+  .master-data-mobile-toggle {
+    width: 36px;
+    height: 36px;
+    flex-basis: 36px;
+    font-size: 21px;
+  }
+
+}
 /* =========================================================
    Mobile
 ========================================================= */
@@ -699,7 +805,6 @@
 
     height: 42px;
   }
-
 }
 
 
@@ -1170,16 +1275,16 @@
 }
 
 .settings-confirmation-cancel {
-    height: auto;
-    padding: 0 13px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #475569;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  height: auto;
+  padding: 0 13px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .settings-confirmation-cancel:hover {
@@ -1484,7 +1589,7 @@
 }
 
 
-.master-data-item-info > span {
+.master-data-item-info>span {
   display: block;
 
   overflow: hidden;
@@ -1765,4 +1870,149 @@
     gap: 14px;
   }
 
+}
+
+/* =========================================================
+   Master Data - Expand / Collapse
+========================================================= */
+
+.master-data-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.master-data-card-title>div {
+  min-width: 0;
+}
+
+.master-data-mobile-toggle {
+  display: none;
+
+  width: 34px;
+  height: 34px;
+
+  flex: 0 0 34px;
+
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  color: #475569;
+
+  font-size: 20px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+.master-data-mobile-toggle:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+}
+
+
+/* =========================================================
+   Master Data - Search
+========================================================= */
+
+.master-data-search-box {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+
+  margin-bottom: 12px;
+}
+
+.master-data-search-box input {
+  width: 100%;
+  height: 40px;
+
+  padding:
+    0 38px 0 38px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #111827;
+
+  font-size: 13px;
+
+  outline: none;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.master-data-search-box input:focus {
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.master-data-search-icon {
+  position: absolute;
+
+  left: 12px;
+
+  font-size: 14px;
+
+  pointer-events: none;
+}
+
+.master-data-search-clear {
+  position: absolute;
+
+  right: 8px;
+
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+
+  border-radius: 6px;
+
+  background: transparent;
+
+  color: #64748b;
+
+  font-size: 18px;
+
+  cursor: pointer;
+}
+
+.master-data-search-clear:hover {
+  background: #f1f5f9;
+
+  color: #111827;
+}
+
+
+/* =========================================================
+   Master Data - Card Body
+========================================================= */
+
+.master-data-card-body {
+  width: 100%;
+}
+
+.master-data-card-body--closed {
+  display: none;
 }

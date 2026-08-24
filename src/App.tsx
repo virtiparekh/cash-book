@@ -124,6 +124,25 @@ function App() {
     setCurrentMember,
   } = useCashBook();
 
+  const handleCashBookChange = (
+  cashBookId: string
+) => {
+
+  const cashBook =
+    groups.find(
+      (group) =>
+        group.id === cashBookId
+    );
+
+  if (cashBook) {
+
+    setSelectedCashBook(
+      cashBook
+    );
+
+  }
+
+};
 
   /*
    * -------------------------------------------------
@@ -1059,7 +1078,9 @@ function App() {
       userEmail={
         user.email ?? ""
       }
-
+      selectedCashBook={selectedCashBook}
+      cashBooks={groups}
+      onCashBookChange={handleCashBookChange}
       onLogout={() => {
         void signOut();
       }}

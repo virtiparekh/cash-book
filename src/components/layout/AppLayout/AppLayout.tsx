@@ -8,20 +8,45 @@ import TopHeader
 import Sidebar
   from "../../common/Sidebar/Sidebar";
 
+import type {
+  CashBookGroup,
+} from "../../../types/cashBook";
+
+
 type Props = {
   children: React.ReactNode;
+
   userName: string;
+
   cashBookName: string;
+
+  cashBooks: CashBookGroup[];
+
+  selectedCashBookId: string;
+
+  onCashBookChange: (
+    cashBookId: string
+  ) => void;
+
   onLogout: () => void;
+
   activeItem?: string;
-  onNavigate?: (item: string) => void;
+
+  onNavigate?: (
+    item: string
+  ) => void;
+
   // isAdmin?: boolean;
 };
+
 
 function AppLayout({
   children,
   userName,
   cashBookName,
+  cashBooks,
+  selectedCashBookId,
+  onCashBookChange,
   onLogout,
   activeItem = "Dashboard",
   onNavigate,
@@ -30,6 +55,7 @@ function AppLayout({
 
   const [sidebarOpen, setSidebarOpen] =
     useState(false);
+
 
   const handleNavigate = (
     item: string
@@ -40,38 +66,84 @@ function AppLayout({
     if (onNavigate) {
       onNavigate(item);
     }
+
   };
+
 
   return (
     <>
+
       <TopHeader
-        userName={userName}
-        cashBookName={cashBookName}
-        onLogout={onLogout}
-        onMenuClick={() =>
-          setSidebarOpen(!sidebarOpen)
+
+        userName={
+          userName
         }
+
+        cashBookName={
+          cashBookName
+        }
+
+        cashBooks={
+          cashBooks
+        }
+
+        selectedCashBookId={
+          selectedCashBookId
+        }
+
+        onCashBookChange={
+          onCashBookChange
+        }
+
+        onLogout={
+          onLogout
+        }
+
+        onMenuClick={() =>
+          setSidebarOpen(
+            !sidebarOpen
+          )
+        }
+
       />
+
 
       <div className="layout-body">
 
         <Sidebar
-          isOpen={sidebarOpen}
+
+          isOpen={
+            sidebarOpen
+          }
+
           onClose={() =>
             setSidebarOpen(false)
           }
-          activeItem={activeItem}
+
+          activeItem={
+            activeItem
+          }
+
           // isAdmin={isAdmin}
-          onNavigate={handleNavigate}
+
+          onNavigate={
+            handleNavigate
+          }
+
         />
 
+
         <main className="layout-content">
+
           {children}
+
         </main>
 
       </div>
+
     </>
   );
 }
+
 
 export default AppLayout;

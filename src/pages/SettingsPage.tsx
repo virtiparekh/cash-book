@@ -1,4 +1,8 @@
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+  type FormEvent,
+} from "react";
 
 import {
   getMyProfile,
@@ -36,6 +40,8 @@ import {
 } from "../services/masterDataService";
 
 import "./../styles/SettingsPage.css";
+
+import { supabase } from "../lib/supabase";
 
 
 type SettingsSection =
@@ -78,51 +84,75 @@ const SettingsPage = () => {
      PROFILE
   ===================================================== */
 
-  const [profile, setProfile] =
-    useState<UserProfile | null>(null);
+  const [
+    profile,
+    setProfile,
+  ] = useState<UserProfile | null>(null);
 
-  const [fullName, setFullName] =
-    useState("");
+  const [
+    fullName,
+    setFullName,
+  ] = useState("");
 
-  const [contactNo, setContactNo] =
-    useState("");
+  const [
+    contactNo,
+    setContactNo,
+  ] = useState("");
 
-  const [email, setEmail] =
-    useState("");
+  const [
+    email,
+    setEmail,
+  ] = useState("");
 
-  const [loading, setLoading] =
-    useState(true);
+  const [
+    loading,
+    setLoading,
+  ] = useState(true);
 
-  const [saving, setSaving] =
-    useState(false);
+  const [
+    saving,
+    setSaving,
+  ] = useState(false);
 
 
   /* =====================================================
      COMMON MESSAGES
   ===================================================== */
 
-  const [error, setError] =
-    useState("");
+  const [
+    error,
+    setError,
+  ] = useState("");
 
-  const [successMessage, setSuccessMessage] =
-    useState("");
+  const [
+    successMessage,
+    setSuccessMessage,
+  ] = useState("");
 
 
   /* =====================================================
      CASH BOOK EDITING
   ===================================================== */
 
-  const [editingGroupId, setEditingGroupId] =
-    useState<string | null>(null);
+  const [
+    editingGroupId,
+    setEditingGroupId,
+  ] = useState<string | null>(null);
 
-  const [editingGroupName, setEditingGroupName] =
-    useState("");
+  const [
+    editingGroupName,
+    setEditingGroupName,
+  ] = useState("");
 
-  const [savingGroupId, setSavingGroupId] =
-    useState<string | null>(null);
+  const [
+    savingGroupId,
+    setSavingGroupId,
+  ] = useState<string | null>(null);
 
-  const [processingGroupId, setProcessingGroupId] =
-    useState<string | null>(null);
+  const [
+    processingGroupId,
+    setProcessingGroupId,
+  ] = useState<string | null>(null);
 
 
   /* =====================================================
@@ -212,6 +242,33 @@ const SettingsPage = () => {
     setMasterDataSuccess,
   ] = useState("");
 
+  /*
+   * Mobile / card expand-collapse.
+   * Both are kept open by default on desktop.
+   */
+  const [
+    categoriesExpanded,
+    setCategoriesExpanded,
+  ] = useState(true);
+
+  const [
+    paymentModesExpanded,
+    setPaymentModesExpanded,
+  ] = useState(true);
+
+  /*
+   * Search fields.
+   */
+  const [
+    categorySearch,
+    setCategorySearch,
+  ] = useState("");
+
+  const [
+    paymentModeSearch,
+    setPaymentModeSearch,
+  ] = useState("");
+
 
   /* =====================================================
      MASTER DATA POPUP
@@ -255,66 +312,61 @@ const SettingsPage = () => {
   ===================================================== */
 
   useEffect(() => {
-    loadProfile();
-  }, []);
 
+    async function loadProfile() {
 
-  async function loadProfile() {
+      try {
 
-    try {
+        setLoading(true);
+        setError("");
 
-      setLoading(true);
-      setError("");
+        const data =
+          await getMyProfile();
 
-      const data =
-        await getMyProfile();
+        setProfile(data);
 
-      setProfile(data);
+        setFullName(
+          data.full_name
+        );
 
-      setFullName(
-        data.full_name
-      );
+        setContactNo(
+          data.contact_no
+        );
 
-      setContactNo(
-        data.contact_no
-      );
+        const {
+          data: {
+            user,
+          },
+        } =
+          await supabase.auth.getUser();
 
-      const {
-        supabase,
-      } = await import(
-        "../lib/supabase"
-      );
+        setEmail(
+          user?.email ?? ""
+        );
 
-      const {
-        data: {
-          user,
-        },
-      } =
-        await supabase.auth.getUser();
+      } catch (err: unknown) {
 
-      setEmail(
-        user?.email ?? ""
-      );
+        console.error(
+          "Error loading profile:",
+          err
+        );
 
-    } catch (err: unknown) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to load your profile."
+        );
 
-      console.error(
-        "Error loading profile:",
-        err
-      );
+      } finally {
 
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load your profile."
-      );
+        setLoading(false);
 
-    } finally {
-
-      setLoading(false);
-
+      }
     }
-  }
+
+    loadProfile();
+
+  }, []);
 
 
   /* =====================================================
@@ -338,12 +390,6 @@ const SettingsPage = () => {
 
   /* =====================================================
      LOAD MASTER DATA
-     
-     IMPORTANT:
-     This is the useEffect you were asking about.
-     
-     It runs whenever the first/available Cash Book
-     changes and loads Categories + Payment Modes.
   ===================================================== */
 
   useEffect(() => {
@@ -357,13 +403,6 @@ const SettingsPage = () => {
 
         return;
       }
-
-      /*
-       * Use the first available Cash Book.
-       *
-       * Your existing groups contain the user's
-       * Cash Book membership and role.
-       */
 
       const group =
         groups[0];
@@ -424,11 +463,39 @@ const SettingsPage = () => {
 
 
   /* =====================================================
+     FILTER MASTER DATA
+  ===================================================== */
+
+  const filteredCategories =
+    categories.filter((category) =>
+      category.name
+        .toLowerCase()
+        .includes(
+          categorySearch
+            .trim()
+            .toLowerCase()
+        )
+    );
+
+
+  const filteredPaymentModes =
+    paymentModes.filter((paymentMode) =>
+      paymentMode.name
+        .toLowerCase()
+        .includes(
+          paymentModeSearch
+            .trim()
+            .toLowerCase()
+        )
+    );
+
+
+  /* =====================================================
      CREATE CASH BOOK
   ===================================================== */
 
   async function handleCreateCashBook(
-    event: React.FormEvent<HTMLFormElement>
+    event: FormEvent<HTMLFormElement>
   ) {
 
     event.preventDefault();
@@ -483,7 +550,6 @@ const SettingsPage = () => {
       setShowCreateCashBook(false);
 
       setNewCashBookName("");
-
       setNewCashBookDescription("");
 
       setNewCashBookOwnerName(
@@ -505,9 +571,7 @@ const SettingsPage = () => {
       );
 
       window.setTimeout(() => {
-
         setSuccessMessage("");
-
       }, 3000);
 
     } catch (err: unknown) {
@@ -595,9 +659,7 @@ const SettingsPage = () => {
       );
 
       window.setTimeout(() => {
-
         setSuccessMessage("");
-
       }, 3000);
 
     } catch (err: unknown) {
@@ -673,9 +735,7 @@ const SettingsPage = () => {
       );
 
       window.setTimeout(() => {
-
         setSuccessMessage("");
-
       }, 3000);
 
     } catch (err: unknown) {
@@ -727,9 +787,7 @@ const SettingsPage = () => {
       );
 
       window.setTimeout(() => {
-
         setSuccessMessage("");
-
       }, 3000);
 
     } catch (err: unknown) {
@@ -783,9 +841,7 @@ const SettingsPage = () => {
       );
 
       window.setTimeout(() => {
-
         setSuccessMessage("");
-
       }, 3000);
 
     } catch (err: unknown) {
@@ -846,9 +902,7 @@ const SettingsPage = () => {
     }
 
     const words =
-      trimmedName.split(
-        /\s+/
-      );
+      trimmedName.split(/\s+/);
 
     if (
       words.length === 1
@@ -861,16 +915,14 @@ const SettingsPage = () => {
     }
 
     return (
-      words[0]
-        .charAt(0) +
-      words[words.length - 1]
-        .charAt(0)
+      words[0].charAt(0) +
+      words[words.length - 1].charAt(0)
     ).toUpperCase();
   }
 
 
   /* =====================================================
-     MASTER DATA HELPERS
+     CURRENT GROUP
   ===================================================== */
 
   function getCurrentGroup():
@@ -884,6 +936,10 @@ const SettingsPage = () => {
   }
 
 
+  /* =====================================================
+     MASTER DATA TITLE
+  ===================================================== */
+
   function getMasterDataTitle(
     type: MasterDataType
   ) {
@@ -892,16 +948,6 @@ const SettingsPage = () => {
       ? "Category"
       : "Payment Mode";
   }
-
-
-  // function getMasterDataItems(
-  //   type: MasterDataType
-  // ) {
-
-  //   return type === "category"
-  //     ? categories
-  //     : paymentModes;
-  // }
 
 
   /* =====================================================
@@ -994,7 +1040,7 @@ const SettingsPage = () => {
   ===================================================== */
 
   async function handleSaveMasterData(
-    event: React.FormEvent<HTMLFormElement>
+    event: FormEvent<HTMLFormElement>
   ) {
 
     event.preventDefault();
@@ -1044,30 +1090,22 @@ const SettingsPage = () => {
 
     try {
 
-      setMasterDataSaving(
-        true
-      );
-
+      setMasterDataSaving(true);
       setMasterDataError("");
 
+      const popupType =
+        masterDataPopup.type;
+
+      const popupMode =
+        masterDataPopup.mode;
+
       if (
-        masterDataPopup.mode ===
-        "create"
+        popupMode === "create"
       ) {
 
         if (
-          masterDataPopup.type ===
-          "category"
+          popupType === "category"
         ) {
-
-          /*
-           * Categories support cash_in /
-           * cash_out entry types.
-           *
-           * For Settings, create it as
-           * "both" so it is available
-           * for both transaction types.
-           */
 
           const created =
             await createCategory(
@@ -1111,34 +1149,23 @@ const SettingsPage = () => {
           );
         }
 
-        setMasterDataPopup(
-          null
-        );
-
+        setMasterDataPopup(null);
         setMasterDataName("");
 
         setMasterDataSuccess(
-          `${getMasterDataTitle(masterDataPopup.type)} added successfully.`
+          `${getMasterDataTitle(popupType)} added successfully.`
         );
 
       } else {
 
-        /*
-         * Rename using Supabase directly.
-         *
-         * The existing RLS policies allow
-         * admins to update master data.
-         */
-
-        const {
-          supabase,
-        } = await import(
-          "../lib/supabase"
-        );
+        if (!masterDataPopup.item) {
+          throw new Error(
+            "Master data item not found."
+          );
+        }
 
         const table =
-          masterDataPopup.type ===
-          "category"
+          popupType === "category"
             ? "categories"
             : "payment_modes";
 
@@ -1152,7 +1179,7 @@ const SettingsPage = () => {
           })
           .eq(
             "id",
-            masterDataPopup.item!.id
+            masterDataPopup.item.id
           )
           .select("id,name")
           .single();
@@ -1163,13 +1190,12 @@ const SettingsPage = () => {
 
         if (!data) {
           throw new Error(
-            `Unable to rename ${getMasterDataTitle(masterDataPopup.type).toLowerCase()}.`
+            `Unable to rename ${getMasterDataTitle(popupType).toLowerCase()}.`
           );
         }
 
         if (
-          masterDataPopup.type ===
-          "category"
+          popupType === "category"
         ) {
 
           setCategories(
@@ -1178,7 +1204,10 @@ const SettingsPage = () => {
                 .map(
                   (item) =>
                     item.id === data.id
-                      ? data
+                      ? {
+                        ...item,
+                        name: data.name,
+                      }
                       : item
                 )
                 .sort(
@@ -1197,7 +1226,10 @@ const SettingsPage = () => {
                 .map(
                   (item) =>
                     item.id === data.id
-                      ? data
+                      ? {
+                        ...item,
+                        name: data.name,
+                      }
                       : item
                 )
                 .sort(
@@ -1209,21 +1241,16 @@ const SettingsPage = () => {
           );
         }
 
-        setMasterDataPopup(
-          null
-        );
-
+        setMasterDataPopup(null);
         setMasterDataName("");
 
         setMasterDataSuccess(
-          `${getMasterDataTitle(masterDataPopup.type)} renamed successfully.`
+          `${getMasterDataTitle(popupType)} renamed successfully.`
         );
       }
 
       window.setTimeout(() => {
-
         setMasterDataSuccess("");
-
       }, 3000);
 
     } catch (err: unknown) {
@@ -1233,20 +1260,18 @@ const SettingsPage = () => {
         err
       );
 
-      /*
-       * Handle duplicate names nicely.
-       */
-
       if (
         typeof err === "object" &&
         err !== null &&
         "code" in err &&
         (err as { code?: string }).code ===
-          "23505"
+        "23505"
       ) {
 
         setMasterDataError(
-          `A ${getMasterDataTitle(masterDataPopup.type).toLowerCase()} with this name already exists.`
+          `A ${getMasterDataTitle(
+            masterDataPopup.type
+          ).toLowerCase()} with this name already exists.`
         );
 
       } else {
@@ -1254,16 +1279,15 @@ const SettingsPage = () => {
         setMasterDataError(
           err instanceof Error
             ? err.message
-            : `Unable to save ${getMasterDataTitle(masterDataPopup.type).toLowerCase()}.`
+            : `Unable to save ${getMasterDataTitle(
+              masterDataPopup.type
+            ).toLowerCase()}.`
         );
-
       }
 
     } finally {
 
-      setMasterDataSaving(
-        false
-      );
+      setMasterDataSaving(false);
 
     }
   }
@@ -1271,9 +1295,6 @@ const SettingsPage = () => {
 
   /* =====================================================
      DELETE MASTER DATA
-     
-     We use soft delete by setting
-     is_active = false.
   ===================================================== */
 
   async function executeDeleteMasterData() {
@@ -1299,26 +1320,15 @@ const SettingsPage = () => {
       group.role !== "admin"
     ) {
 
-      setMasterDataDeletePopup(
-        null
-      );
+      setMasterDataDeletePopup(null);
 
       return;
     }
 
     try {
 
-      setMasterDataSaving(
-        true
-      );
-
+      setMasterDataSaving(true);
       setMasterDataError("");
-
-      const {
-        supabase,
-      } = await import(
-        "../lib/supabase"
-      );
 
       const table =
         type === "category"
@@ -1364,18 +1374,14 @@ const SettingsPage = () => {
         );
       }
 
-      setMasterDataDeletePopup(
-        null
-      );
+      setMasterDataDeletePopup(null);
 
       setMasterDataSuccess(
         `"${item.name}" deleted successfully.`
       );
 
       window.setTimeout(() => {
-
         setMasterDataSuccess("");
-
       }, 3000);
 
     } catch (err: unknown) {
@@ -1388,18 +1394,16 @@ const SettingsPage = () => {
       setMasterDataError(
         err instanceof Error
           ? err.message
-          : `Unable to delete ${getMasterDataTitle(type).toLowerCase()}.`
+          : `Unable to delete ${getMasterDataTitle(
+            type
+          ).toLowerCase()}.`
       );
 
-      setMasterDataDeletePopup(
-        null
-      );
+      setMasterDataDeletePopup(null);
 
     } finally {
 
-      setMasterDataSaving(
-        false
-      );
+      setMasterDataSaving(false);
 
     }
   }
@@ -1427,9 +1431,7 @@ const SettingsPage = () => {
 
         <div className="settings-section-heading">
 
-          <h2>
-            Profile
-          </h2>
+          <h2>Profile</h2>
 
           <p>
             Manage your personal information and contact details.
@@ -1452,9 +1454,7 @@ const SettingsPage = () => {
             ) : (
 
               <span>
-                {getInitials(
-                  fullName
-                )}
+                {getInitials(fullName)}
               </span>
 
             )}
@@ -1465,8 +1465,7 @@ const SettingsPage = () => {
           <div className="profile-avatar-info">
 
             <h3>
-              {fullName ||
-                "Your Profile"}
+              {fullName || "Your Profile"}
             </h3>
 
             <p>
@@ -1562,9 +1561,7 @@ const SettingsPage = () => {
                     ""
                   );
 
-                setContactNo(
-                  value
-                );
+                setContactNo(value);
 
               }}
               placeholder="10-digit mobile number"
@@ -1583,16 +1580,12 @@ const SettingsPage = () => {
             <button
               type="button"
               className="settings-save-button"
-              onClick={
-                handleSaveProfile
-              }
+              onClick={handleSaveProfile}
               disabled={saving}
             >
-
               {saving
                 ? "Saving..."
                 : "Save Changes"}
-
             </button>
 
           </div>
@@ -1618,9 +1611,7 @@ const SettingsPage = () => {
 
           <div>
 
-            <h2>
-              Cash Books
-            </h2>
+            <h2>Cash Books</h2>
 
             <p>
               Manage the cash books you belong to.
@@ -1634,10 +1625,7 @@ const SettingsPage = () => {
             className="settings-create-cashbook-button"
             onClick={() => {
 
-              setShowCreateCashBook(
-                true
-              );
-
+              setShowCreateCashBook(true);
               setCreateCashBookError("");
 
             }}
@@ -1680,9 +1668,7 @@ const SettingsPage = () => {
               📖
             </div>
 
-            <h3>
-              No Cash Books
-            </h3>
+            <h3>No Cash Books</h3>
 
             <p>
               You are not currently a member of any cash book.
@@ -1697,16 +1683,13 @@ const SettingsPage = () => {
             {groups.map((group) => {
 
               const isEditing =
-                editingGroupId ===
-                group.id;
+                editingGroupId === group.id;
 
               const isSaving =
-                savingGroupId ===
-                group.id;
+                savingGroupId === group.id;
 
               const isProcessing =
-                processingGroupId ===
-                group.id;
+                processingGroupId === group.id;
 
               return (
 
@@ -1727,9 +1710,7 @@ const SettingsPage = () => {
 
                         <input
                           type="text"
-                          value={
-                            editingGroupName
-                          }
+                          value={editingGroupName}
                           onChange={(event) =>
                             setEditingGroupName(
                               event.target.value
@@ -1737,9 +1718,7 @@ const SettingsPage = () => {
                           }
                           className="cashbook-name-input"
                           autoFocus
-                          disabled={
-                            isSaving
-                          }
+                          disabled={isSaving}
                         />
 
                       ) : (
@@ -1762,8 +1741,7 @@ const SettingsPage = () => {
                         </span>
 
                         <span>
-                          {group.role ===
-                          "admin"
+                          {group.role === "admin"
                             ? "Admin"
                             : "Member"}
                         </span>
@@ -1777,8 +1755,7 @@ const SettingsPage = () => {
 
                   <div className="cashbook-settings-actions">
 
-                    {group.role ===
-                    "admin" ? (
+                    {group.role === "admin" ? (
 
                       isEditing ? (
 
@@ -1807,13 +1784,9 @@ const SettingsPage = () => {
                             type="button"
                             className="cashbook-action-button"
                             onClick={() =>
-                              setEditingGroupId(
-                                null
-                              )
+                              setEditingGroupId(null)
                             }
-                            disabled={
-                              isSaving
-                            }
+                            disabled={isSaving}
                           >
                             Cancel
                           </button>
@@ -1841,9 +1814,7 @@ const SettingsPage = () => {
                               setSuccessMessage("");
 
                             }}
-                            disabled={
-                              isProcessing
-                            }
+                            disabled={isProcessing}
                           >
                             Edit
                           </button>
@@ -1854,14 +1825,11 @@ const SettingsPage = () => {
                             className="cashbook-action-button cashbook-action-button--danger"
                             onClick={() =>
                               setConfirmationPopup({
-                                type:
-                                  "delete",
+                                type: "delete",
                                 group,
                               })
                             }
-                            disabled={
-                              isProcessing
-                            }
+                            disabled={isProcessing}
                           >
                             {isProcessing
                               ? "Deleting..."
@@ -1879,14 +1847,11 @@ const SettingsPage = () => {
                         className="cashbook-action-button cashbook-action-button--danger"
                         onClick={() =>
                           setConfirmationPopup({
-                            type:
-                              "leave",
+                            type: "leave",
                             group,
                           })
                         }
-                        disabled={
-                          isProcessing
-                        }
+                        disabled={isProcessing}
                       >
                         {isProcessing
                           ? "Leaving..."
@@ -1994,7 +1959,6 @@ const SettingsPage = () => {
 
               <div className="master-data-management">
 
-
                 {/* =================================================
                    CATEGORIES
                 ================================================= */}
@@ -2003,16 +1967,46 @@ const SettingsPage = () => {
 
                   <div className="master-data-card-header">
 
-                    <div>
+                    <div className="master-data-card-title">
 
-                      <h3>
-                        Categories
-                      </h3>
+                      <div>
 
-                      <p>
-                        Transaction categories available in this
-                        Cash Book.
-                      </p>
+                        <h3>
+                          Categories
+                        </h3>
+
+                        <p>
+                          {categories.length}{" "}
+                          {categories.length === 1
+                            ? "category"
+                            : "categories"}
+                        </p>
+
+                      </div>
+
+
+                      <button
+                        type="button"
+                        className="master-data-mobile-toggle"
+                        onClick={() =>
+                          setCategoriesExpanded(
+                            (previous) =>
+                              !previous
+                          )
+                        }
+                        aria-expanded={
+                          categoriesExpanded
+                        }
+                        aria-label={
+                          categoriesExpanded
+                            ? "Collapse categories"
+                            : "Expand categories"
+                        }
+                      >
+                        {categoriesExpanded
+                          ? "⌃"
+                          : "⌄"}
+                      </button>
 
                     </div>
 
@@ -2021,7 +2015,7 @@ const SettingsPage = () => {
 
                       <button
                         type="button"
-                        className="settings-create-cashbook-button"
+                        className="master-data-add-button"
                         onClick={() =>
                           handleAddMasterData(
                             "category"
@@ -2036,80 +2030,127 @@ const SettingsPage = () => {
                   </div>
 
 
-                  {categories.length ===
-                  0 ? (
+                  {!categoriesExpanded && (
 
-                    <div className="master-data-management-empty">
-                      No categories found.
-                    </div>
+                    <div className="master-data-card-body">
 
-                  ) : (
+                      <div className="master-data-search-box">
 
-                    <div className="master-data-list">
+                        <span className="master-data-search-icon">
+                          🔍
+                        </span>
 
-                      {categories.map(
-                        (item) => (
+                        <input
+                          type="text"
+                          value={categorySearch}
+                          onChange={(event) =>
+                            setCategorySearch(
+                              event.target.value
+                            )
+                          }
+                          placeholder="Search categories..."
+                          aria-label="Search categories"
+                        />
 
-                          <div
-                            key={
-                              item.id
+                        {categorySearch && (
+
+                          <button
+                            type="button"
+                            className="master-data-search-clear"
+                            onClick={() =>
+                              setCategorySearch("")
                             }
-                            className="master-data-item"
+                            aria-label="Clear category search"
                           >
+                            ×
+                          </button>
 
-                            <div className="master-data-item-info">
+                        )}
 
-                              <div className="master-data-item-icon">
-                                🏷️
-                              </div>
-
-                              <span>
-                                {item.name}
-                              </span>
-
-                            </div>
+                      </div>
 
 
-                            {isAdmin && (
+                      <div className="master-data-list">
 
-                              <div className="master-data-item-actions">
+                        {categories.length === 0 ? (
 
-                                <button
-                                  type="button"
-                                  className="cashbook-action-button"
-                                  onClick={() =>
-                                    handleEditMasterData(
-                                      "category",
-                                      item
-                                    )
-                                  }
-                                >
-                                  Edit
-                                </button>
-
-
-                                <button
-                                  type="button"
-                                  className="cashbook-action-button cashbook-action-button--danger"
-                                  onClick={() =>
-                                    setMasterDataDeletePopup({
-                                      type:
-                                        "category",
-                                      item,
-                                    })
-                                  }
-                                >
-                                  Delete
-                                </button>
-
-                              </div>
-
-                            )}
-
+                          <div className="master-data-empty">
+                            No categories available.
                           </div>
 
-                        )
-                      )}
+                        ) : filteredCategories.length === 0 ? (
+
+                          <div className="master-data-empty">
+                            No categories match "
+                            {categorySearch}".
+                          </div>
+
+                        ) : (
+
+                          filteredCategories.map(
+                            (item) => (
+
+                              <div
+                                key={item.id}
+                                className="master-data-item"
+                              >
+
+                                <div className="master-data-item-info">
+
+                                  <div className="master-data-item-icon">
+                                    🏷️
+                                  </div>
+
+                                  <span>
+                                    {item.name}
+                                  </span>
+
+                                </div>
+
+
+                                {isAdmin && (
+
+                                  <div className="master-data-item-actions">
+
+                                    <button
+                                      type="button"
+                                      className="cashbook-action-button"
+                                      onClick={() =>
+                                        handleEditMasterData(
+                                          "category",
+                                          item
+                                        )
+                                      }
+                                    >
+                                      Edit
+                                    </button>
+
+
+                                    <button
+                                      type="button"
+                                      className="cashbook-action-button cashbook-action-button--danger"
+                                      onClick={() =>
+                                        setMasterDataDeletePopup({
+                                          type: "category",
+                                          item,
+                                        })
+                                      }
+                                    >
+                                      Delete
+                                    </button>
+
+                                  </div>
+
+                                )}
+
+                              </div>
+
+                            )
+                          )
+
+                        )}
+
+                      </div>
 
                     </div>
 
@@ -2126,15 +2167,46 @@ const SettingsPage = () => {
 
                   <div className="master-data-card-header">
 
-                    <div>
+                    <div className="master-data-card-title">
 
-                      <h3>
-                        Payment Modes
-                      </h3>
+                      <div>
 
-                      <p>
-                        Payment methods available for transactions.
-                      </p>
+                        <h3>
+                          Payment Modes
+                        </h3>
+
+                        <p>
+                          {paymentModes.length}{" "}
+                          {paymentModes.length === 1
+                            ? "payment mode"
+                            : "payment modes"}
+                        </p>
+
+                      </div>
+
+
+                      <button
+                        type="button"
+                        className="master-data-mobile-toggle"
+                        onClick={() =>
+                          setPaymentModesExpanded(
+                            (previous) =>
+                              !previous
+                          )
+                        }
+                        aria-expanded={
+                          paymentModesExpanded
+                        }
+                        aria-label={
+                          paymentModesExpanded
+                            ? "Collapse payment modes"
+                            : "Expand payment modes"
+                        }
+                      >
+                        {paymentModesExpanded
+                          ? "⌃"
+                          : "⌄"}
+                      </button>
 
                     </div>
 
@@ -2143,7 +2215,7 @@ const SettingsPage = () => {
 
                       <button
                         type="button"
-                        className="settings-create-cashbook-button"
+                        className="master-data-add-button"
                         onClick={() =>
                           handleAddMasterData(
                             "paymentMode"
@@ -2158,80 +2230,127 @@ const SettingsPage = () => {
                   </div>
 
 
-                  {paymentModes.length ===
-                  0 ? (
+                  {!paymentModesExpanded && (
 
-                    <div className="master-data-empty">
-                      No payment modes found.
-                    </div>
+                    <div className="master-data-card-body">
 
-                  ) : (
+                      <div className="master-data-search-box">
 
-                    <div className="master-data-list">
+                        <span className="master-data-search-icon">
+                          🔍
+                        </span>
 
-                      {paymentModes.map(
-                        (item) => (
+                        <input
+                          type="text"
+                          value={paymentModeSearch}
+                          onChange={(event) =>
+                            setPaymentModeSearch(
+                              event.target.value
+                            )
+                          }
+                          placeholder="Search payment modes..."
+                          aria-label="Search payment modes"
+                        />
 
-                          <div
-                            key={
-                              item.id
+                        {paymentModeSearch && (
+
+                          <button
+                            type="button"
+                            className="master-data-search-clear"
+                            onClick={() =>
+                              setPaymentModeSearch("")
                             }
-                            className="master-data-item"
+                            aria-label="Clear payment mode search"
                           >
+                            ×
+                          </button>
 
-                            <div className="master-data-item-info">
+                        )}
 
-                              <div className="master-data-item-icon">
-                                💳
-                              </div>
-
-                              <span>
-                                {item.name}
-                              </span>
-
-                            </div>
+                      </div>
 
 
-                            {isAdmin && (
+                      <div className="master-data-list">
 
-                              <div className="master-data-item-actions">
+                        {paymentModes.length === 0 ? (
 
-                                <button
-                                  type="button"
-                                  className="cashbook-action-button"
-                                  onClick={() =>
-                                    handleEditMasterData(
-                                      "paymentMode",
-                                      item
-                                    )
-                                  }
-                                >
-                                  Edit
-                                </button>
-
-
-                                <button
-                                  type="button"
-                                  className="cashbook-action-button cashbook-action-button--danger"
-                                  onClick={() =>
-                                    setMasterDataDeletePopup({
-                                      type:
-                                        "paymentMode",
-                                      item,
-                                    })
-                                  }
-                                >
-                                  Delete
-                                </button>
-
-                              </div>
-
-                            )}
-
+                          <div className="master-data-empty">
+                            No payment modes available.
                           </div>
 
-                        )
-                      )}
+                        ) : filteredPaymentModes.length === 0 ? (
+
+                          <div className="master-data-empty">
+                            No payment modes match "
+                            {paymentModeSearch}".
+                          </div>
+
+                        ) : (
+
+                          filteredPaymentModes.map(
+                            (item) => (
+
+                              <div
+                                key={item.id}
+                                className="master-data-item"
+                              >
+
+                                <div className="master-data-item-info">
+
+                                  <div className="master-data-item-icon">
+                                    💳
+                                  </div>
+
+                                  <span>
+                                    {item.name}
+                                  </span>
+
+                                </div>
+
+
+                                {isAdmin && (
+
+                                  <div className="master-data-item-actions">
+
+                                    <button
+                                      type="button"
+                                      className="cashbook-action-button"
+                                      onClick={() =>
+                                        handleEditMasterData(
+                                          "paymentMode",
+                                          item
+                                        )
+                                      }
+                                    >
+                                      Edit
+                                    </button>
+
+
+                                    <button
+                                      type="button"
+                                      className="cashbook-action-button cashbook-action-button--danger"
+                                      onClick={() =>
+                                        setMasterDataDeletePopup({
+                                          type: "paymentMode",
+                                          item,
+                                        })
+                                      }
+                                    >
+                                      Delete
+                                    </button>
+
+                                  </div>
+
+                                )}
+
+                              </div>
+
+                            )
+                          )
+
+                        )}
+
+                      </div>
 
                     </div>
 
@@ -2337,22 +2456,15 @@ const SettingsPage = () => {
                 className="settings-popup-close"
                 onClick={() => {
 
-                  if (
-                    !creatingCashBook
-                  ) {
+                  if (!creatingCashBook) {
 
-                    setShowCreateCashBook(
-                      false
-                    );
-
+                    setShowCreateCashBook(false);
                     setCreateCashBookError("");
 
                   }
 
                 }}
-                disabled={
-                  creatingCashBook
-                }
+                disabled={creatingCashBook}
               >
                 ×
               </button>
@@ -2371,9 +2483,7 @@ const SettingsPage = () => {
 
             <form
               className="settings-create-cashbook-form"
-              onSubmit={
-                handleCreateCashBook
-              }
+              onSubmit={handleCreateCashBook}
               autoComplete="off"
             >
 
@@ -2386,12 +2496,8 @@ const SettingsPage = () => {
                 <input
                   id="create-cashbook-name"
                   type="text"
-                  value={
-                    newCashBookName
-                  }
-                  disabled={
-                    creatingCashBook
-                  }
+                  value={newCashBookName}
+                  disabled={creatingCashBook}
                   required
                   placeholder="e.g. Parekh Family Cash Book"
                   onChange={(event) => {
@@ -2416,12 +2522,8 @@ const SettingsPage = () => {
 
                 <textarea
                   id="create-cashbook-description"
-                  value={
-                    newCashBookDescription
-                  }
-                  disabled={
-                    creatingCashBook
-                  }
+                  value={newCashBookDescription}
+                  disabled={creatingCashBook}
                   placeholder="Optional description"
                   rows={3}
                   onChange={(event) => {
@@ -2447,12 +2549,8 @@ const SettingsPage = () => {
                 <input
                   id="create-cashbook-owner"
                   type="text"
-                  value={
-                    newCashBookOwnerName
-                  }
-                  disabled={
-                    creatingCashBook
-                  }
+                  value={newCashBookOwnerName}
+                  disabled={creatingCashBook}
                   required
                   placeholder="Owner name"
                   onChange={(event) => {
@@ -2477,12 +2575,8 @@ const SettingsPage = () => {
 
                 <select
                   id="create-cashbook-currency"
-                  value={
-                    newCashBookCurrency
-                  }
-                  disabled={
-                    creatingCashBook
-                  }
+                  value={newCashBookCurrency}
+                  disabled={creatingCashBook}
                   onChange={(event) => {
 
                     setCreateCashBookError("");
@@ -2498,12 +2592,8 @@ const SettingsPage = () => {
                     (option) => (
 
                       <option
-                        key={
-                          option.value
-                        }
-                        value={
-                          option.value
-                        }
+                        key={option.value}
+                        value={option.value}
                       >
                         {option.label}
                       </option>
@@ -2525,12 +2615,8 @@ const SettingsPage = () => {
                 <input
                   id="create-cashbook-opening-balance"
                   type="number"
-                  value={
-                    newCashBookOpeningBalance
-                  }
-                  disabled={
-                    creatingCashBook
-                  }
+                  value={newCashBookOpeningBalance}
+                  disabled={creatingCashBook}
                   onChange={(event) => {
 
                     setCreateCashBookError("");
@@ -2556,15 +2642,10 @@ const SettingsPage = () => {
                 <button
                   type="button"
                   className="settings-confirmation-cancel"
-                  disabled={
-                    creatingCashBook
-                  }
+                  disabled={creatingCashBook}
                   onClick={() => {
 
-                    setShowCreateCashBook(
-                      false
-                    );
-
+                    setShowCreateCashBook(false);
                     setCreateCashBookError("");
 
                   }}
@@ -2576,9 +2657,7 @@ const SettingsPage = () => {
                 <button
                   type="submit"
                   className="settings-create-cashbook-submit"
-                  disabled={
-                    creatingCashBook
-                  }
+                  disabled={creatingCashBook}
                 >
                   {creatingCashBook
                     ? "Creating..."
@@ -2607,8 +2686,7 @@ const SettingsPage = () => {
           <div className="settings-confirmation-popup">
 
             <div className="settings-confirmation-icon">
-              {masterDataPopup.type ===
-              "category"
+              {masterDataPopup.type === "category"
                 ? "🏷️"
                 : "💳"}
             </div>
@@ -2616,20 +2694,26 @@ const SettingsPage = () => {
 
             <h3>
 
-              {masterDataPopup.mode ===
-              "create"
-                ? `Add ${getMasterDataTitle(masterDataPopup.type)}`
-                : `Rename ${getMasterDataTitle(masterDataPopup.type)}`}
+              {masterDataPopup.mode === "create"
+                ? `Add ${getMasterDataTitle(
+                  masterDataPopup.type
+                )}`
+                : `Rename ${getMasterDataTitle(
+                  masterDataPopup.type
+                )}`}
 
             </h3>
 
 
             <p>
 
-              {masterDataPopup.mode ===
-              "create"
-                ? `Add a new ${getMasterDataTitle(masterDataPopup.type).toLowerCase()} to this Cash Book.`
-                : `Update the name of this ${getMasterDataTitle(masterDataPopup.type).toLowerCase()}.`}
+              {masterDataPopup.mode === "create"
+                ? `Add a new ${getMasterDataTitle(
+                  masterDataPopup.type
+                ).toLowerCase()} to this Cash Book.`
+                : `Update the name of this ${getMasterDataTitle(
+                  masterDataPopup.type
+                ).toLowerCase()}.`}
 
             </p>
 
@@ -2639,12 +2723,9 @@ const SettingsPage = () => {
               <div
                 className="settings-message settings-message--error"
                 style={{
-                  marginTop:
-                    "16px",
-                  marginBottom:
-                    "0",
-                  textAlign:
-                    "left",
+                  marginTop: "16px",
+                  marginBottom: "0",
+                  textAlign: "left",
                 }}
               >
                 {masterDataError}
@@ -2654,14 +2735,10 @@ const SettingsPage = () => {
 
 
             <form
-              onSubmit={
-                handleSaveMasterData
-              }
+              onSubmit={handleSaveMasterData}
               style={{
-                marginTop:
-                  "18px",
-                textAlign:
-                  "left",
+                marginTop: "18px",
+                textAlign: "left",
               }}
             >
 
@@ -2671,7 +2748,8 @@ const SettingsPage = () => {
 
                   {getMasterDataTitle(
                     masterDataPopup.type
-                  )} Name
+                  )}{" "}
+                  Name
 
                 </label>
 
@@ -2679,17 +2757,12 @@ const SettingsPage = () => {
                 <input
                   id="master-data-name"
                   type="text"
-                  value={
-                    masterDataName
-                  }
+                  value={masterDataName}
                   autoFocus
                   required
-                  disabled={
-                    masterDataSaving
-                  }
+                  disabled={masterDataSaving}
                   placeholder={
-                    masterDataPopup.type ===
-                    "category"
+                    masterDataPopup.type === "category"
                       ? "e.g. Grocery"
                       : "e.g. UPI"
                   }
@@ -2712,17 +2785,11 @@ const SettingsPage = () => {
                 <button
                   type="button"
                   className="settings-confirmation-cancel"
-                  disabled={
-                    masterDataSaving
-                  }
+                  disabled={masterDataSaving}
                   onClick={() => {
 
-                    setMasterDataPopup(
-                      null
-                    );
-
+                    setMasterDataPopup(null);
                     setMasterDataName("");
-
                     setMasterDataError("");
 
                   }}
@@ -2734,14 +2801,11 @@ const SettingsPage = () => {
                 <button
                   type="submit"
                   className="settings-create-cashbook-submit"
-                  disabled={
-                    masterDataSaving
-                  }
+                  disabled={masterDataSaving}
                 >
                   {masterDataSaving
                     ? "Saving..."
-                    : masterDataPopup.mode ===
-                        "create"
+                    : masterDataPopup.mode === "create"
                       ? "Add"
                       : "Save"}
                 </button>
@@ -2781,8 +2845,7 @@ const SettingsPage = () => {
 
 
             <p>
-              Are you sure you want to delete
-              {" "}
+              Are you sure you want to delete{" "}
               "{masterDataDeletePopup.item.name}"?
               This item will no longer appear when
               creating new transactions.
@@ -2803,13 +2866,9 @@ const SettingsPage = () => {
               <button
                 type="button"
                 className="settings-confirmation-cancel"
-                disabled={
-                  masterDataSaving
-                }
+                disabled={masterDataSaving}
                 onClick={() =>
-                  setMasterDataDeletePopup(
-                    null
-                  )
+                  setMasterDataDeletePopup(null)
                 }
               >
                 Cancel
@@ -2819,9 +2878,7 @@ const SettingsPage = () => {
               <button
                 type="button"
                 className="settings-confirmation-danger"
-                disabled={
-                  masterDataSaving
-                }
+                disabled={masterDataSaving}
                 onClick={
                   executeDeleteMasterData
                 }
@@ -2852,8 +2909,7 @@ const SettingsPage = () => {
 
             <div className="settings-confirmation-icon">
 
-              {confirmationPopup.type ===
-              "delete"
+              {confirmationPopup.type === "delete"
                 ? "🗑️"
                 : "🚪"}
 
@@ -2862,8 +2918,7 @@ const SettingsPage = () => {
 
             <h3>
 
-              {confirmationPopup.type ===
-              "delete"
+              {confirmationPopup.type === "delete"
                 ? "Delete Cash Book?"
                 : "Leave Cash Book?"}
 
@@ -2872,8 +2927,7 @@ const SettingsPage = () => {
 
             <p>
 
-              {confirmationPopup.type ===
-              "delete"
+              {confirmationPopup.type === "delete"
                 ? `Are you sure you want to delete "${confirmationPopup.group.name}"? This action cannot be undone.`
                 : `Are you sure you want to leave "${confirmationPopup.group.name}"? You will no longer have access to this cash book unless you are invited again.`}
 
@@ -2886,9 +2940,7 @@ const SettingsPage = () => {
                 type="button"
                 className="settings-confirmation-cancel"
                 onClick={() =>
-                  setConfirmationPopup(
-                    null
-                  )
+                  setConfirmationPopup(null)
                 }
               >
                 Cancel
@@ -2898,8 +2950,7 @@ const SettingsPage = () => {
               <button
                 type="button"
                 className={
-                  confirmationPopup.type ===
-                  "delete"
+                  confirmationPopup.type === "delete"
                     ? "settings-confirmation-danger"
                     : "settings-confirmation-leave"
                 }
@@ -2911,14 +2962,9 @@ const SettingsPage = () => {
                   const type =
                     confirmationPopup.type;
 
-                  setConfirmationPopup(
-                    null
-                  );
+                  setConfirmationPopup(null);
 
-                  if (
-                    type ===
-                    "delete"
-                  ) {
+                  if (type === "delete") {
 
                     await executeDeleteGroup(
                       group
@@ -2935,8 +2981,7 @@ const SettingsPage = () => {
                 }}
               >
 
-                {confirmationPopup.type ===
-                "delete"
+                {confirmationPopup.type === "delete"
                   ? "Delete"
                   : "Leave"}
 
@@ -2957,7 +3002,6 @@ const SettingsPage = () => {
 
       <div className="settings-page">
 
-
         <div className="settings-header">
 
           <div>
@@ -2977,22 +3021,18 @@ const SettingsPage = () => {
 
         <div className="settings-layout">
 
-
           {/* =================================================
              SIDEBAR
           ================================================= */}
 
           <aside className="settings-sidebar">
 
-
             <button
               type="button"
-              className={`settings-nav-item ${
-                activeSection ===
-                "profile"
+              className={`settings-nav-item ${activeSection === "profile"
                   ? "settings-nav-item--active"
                   : ""
-              }`}
+                }`}
               onClick={() =>
                 handleSectionChange(
                   "profile"
@@ -3021,12 +3061,10 @@ const SettingsPage = () => {
 
             <button
               type="button"
-              className={`settings-nav-item ${
-                activeSection ===
-                "cashbooks"
+              className={`settings-nav-item ${activeSection === "cashbooks"
                   ? "settings-nav-item--active"
                   : ""
-              }`}
+                }`}
               onClick={() =>
                 handleSectionChange(
                   "cashbooks"
@@ -3055,12 +3093,10 @@ const SettingsPage = () => {
 
             <button
               type="button"
-              className={`settings-nav-item ${
-                activeSection ===
-                "masterdata"
+              className={`settings-nav-item ${activeSection === "masterdata"
                   ? "settings-nav-item--active"
                   : ""
-              }`}
+                }`}
               onClick={() =>
                 handleSectionChange(
                   "masterdata"
@@ -3089,12 +3125,10 @@ const SettingsPage = () => {
 
             <button
               type="button"
-              className={`settings-nav-item ${
-                activeSection ===
-                "security"
+              className={`settings-nav-item ${activeSection === "security"
                   ? "settings-nav-item--active"
                   : ""
-              }`}
+                }`}
               onClick={() =>
                 handleSectionChange(
                   "security"
@@ -3123,12 +3157,10 @@ const SettingsPage = () => {
 
             <button
               type="button"
-              className={`settings-nav-item ${
-                activeSection ===
-                "preferences"
+              className={`settings-nav-item ${activeSection === "preferences"
                   ? "settings-nav-item--active"
                   : ""
-              }`}
+                }`}
               onClick={() =>
                 handleSectionChange(
                   "preferences"
@@ -3163,31 +3195,26 @@ const SettingsPage = () => {
 
           <main className="settings-card">
 
-            {activeSection ===
-              "profile" &&
+            {activeSection === "profile" &&
               renderProfileSection()}
 
 
-            {activeSection ===
-              "cashbooks" &&
+            {activeSection === "cashbooks" &&
               renderCashBooksSection()}
 
 
-            {activeSection ===
-              "masterdata" &&
+            {activeSection === "masterdata" &&
               renderMasterDataSection()}
 
 
-            {activeSection ===
-              "security" &&
+            {activeSection === "security" &&
               renderComingSoon(
                 "Security",
                 "Manage your account security and authentication settings."
               )}
 
 
-            {activeSection ===
-              "preferences" &&
+            {activeSection === "preferences" &&
               renderComingSoon(
                 "Preferences",
                 "Manage your Family Cash Book application preferences."
