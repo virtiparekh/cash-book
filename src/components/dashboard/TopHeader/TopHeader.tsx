@@ -14,7 +14,7 @@ type TopHeaderProps = {
 
 function TopHeader({
   userName,
-  cashBookName,
+  // cashBookName,
   selectedCashBookId,
   cashBooks,
   onCashBookChange,

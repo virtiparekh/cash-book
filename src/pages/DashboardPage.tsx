@@ -3,8 +3,8 @@ import "./../styles/DashboardPage.css";
 import FinancialSummary
   from "../components/dashboard/FinancialSummary/FinancialSummary";
 
-import { useCashBook }
-  from "../hooks/useCashBook";
+// import { useCashBook }
+//   from "../hooks/useCashBook";
 
 import DashboardHeader
   from "../components/dashboard/DashboardHeader/DashboardHeader";
