@@ -52,19 +52,12 @@ import {
  */
 
 type PopupState = {
-
     open: boolean;
-
     variant: "error" | "success";
-
     title: string;
-
     message: string;
-
     confirmAction?: () => void;
-
     confirmButtonText?: string;
-
 } | null;
 
 
@@ -75,10 +68,10 @@ function MembersPage() {
         setInvitationLink
     ] = useState<string | null>(null);
 
-    const [
-        invitationMemberName,
-        setInvitationMemberName
-    ] = useState<string>("");
+    // const [
+    //     invitationMemberName,
+    //     setInvitationMemberName
+    // ] = useState<string>("");
 
     const [
         invitationCopied,
@@ -86,10 +79,10 @@ function MembersPage() {
     ] = useState(false);
 
 
-    const [
-        copiedInvitationId,
-        setCopiedInvitationId
-    ] = useState<string | null>(null);
+    // const [
+    //     copiedInvitationId,
+    //     setCopiedInvitationId
+    // ] = useState<string | null>(null);
 
 
     const {
@@ -166,6 +159,7 @@ function MembersPage() {
 
     const [
         inviteLoading,
+        setInviteLoading,
     ] = useState(false);
 
 
@@ -981,8 +975,9 @@ function MembersPage() {
 
         }
 
-
         try {
+
+            setInviteLoading(true);
 
             const invitation =
                 await createGroupInvitation(
@@ -992,17 +987,14 @@ function MembersPage() {
                     phone
                 );
 
-
             const link =
                 `${window.location.origin}${appPath(
                     `/invite?token=${invitation.token}`
                 )}`;
 
-
             setInvitationLink(link);
-            setInvitationMemberName("");
-            setInvitationCopied(false);
 
+            setInvitationCopied(false);
 
             await refreshInvitations();
 
@@ -1013,13 +1005,16 @@ function MembersPage() {
                 error
             );
 
-
             showErrorPopup(
                 "Invitation Error",
                 error instanceof Error
                     ? error.message
                     : "Unable to create invitation."
             );
+
+        } finally {
+
+            setInviteLoading(false);
 
         }
 
@@ -1602,18 +1597,18 @@ function MembersPage() {
                                                         );
 
 
-                                                        setCopiedInvitationId(
-                                                            invitation.id
-                                                        );
+                                                        // setCopiedInvitationId(
+                                                        //     invitation.id
+                                                        // );
 
 
-                                                        setTimeout(() => {
+                                                        // setTimeout(() => {
 
-                                                            setCopiedInvitationId(
-                                                                null
-                                                            );
+                                                        //     setCopiedInvitationId(
+                                                        //         null
+                                                        //     );
 
-                                                        }, 2000);
+                                                        // }, 2000);
 
                                                     } catch (error) {
 
