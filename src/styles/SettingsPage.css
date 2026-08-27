@@ -879,12 +879,26 @@
 
 .cashbook-settings-info {
   display: flex;
-
+  transition: background-color 0.15s ease, border-color 0.15s ease;
   align-items: center;
-
+  border-radius: 10px;
   gap: 12px;
-
+  cursor: pointer;
   min-width: 0;
+}
+
+.cashbook-settings-item:hover {
+  background: #eff6ff;
+}
+
+.cashbook-settings-item--selected {
+  background: #eff6ff;
+  border-color: #dbeafe;
+}
+
+.cashbook-settings-item--selected:hover {
+  background: #eff6ff;
+  border-color: #dbeafe;
 }
 
 
@@ -983,6 +997,10 @@
     background-color 0.15s ease,
     border-color 0.15s ease,
     color 0.15s ease;
+}
+
+.cashbook-action-button-edit {
+    color: #2563eb;
 }
 
 .cashbook-action-button svg {
@@ -1149,16 +1167,12 @@
 
   .cashbook-settings-actions {
     width: 100%;
-
-    display: grid;
-
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+    flex-direction: row-reverse;
   }
 
 
   .cashbook-action-button {
-    width: 100%;
+    width: 40px;
   }
 
 
@@ -2020,4 +2034,414 @@
 
 .master-data-card-body--closed {
   display: none;
+}
+
+/* =========================================================
+   DUPLICATE CASH BOOK POPUP
+========================================================= */
+
+.duplicate-cashbook-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.45);
+}
+
+
+.duplicate-cashbook-modal {
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100vh - 40px);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: #ffffff;
+  border-radius: 12px;
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.20);
+}
+
+
+/* =========================================================
+   HEADER
+========================================================= */
+
+.duplicate-cashbook-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 20px 24px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+.duplicate-cashbook-header h2 {
+  margin: 0;
+
+  font-size: 20px;
+  font-weight: 600;
+}
+
+
+.duplicate-cashbook-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 32px;
+  height: 32px;
+
+  padding: 0;
+
+  border: none;
+  border-radius: 6px;
+
+  background: transparent;
+
+  font-size: 24px;
+  line-height: 1;
+
+  cursor: pointer;
+}
+
+
+.duplicate-cashbook-close:hover {
+  background: #f3f4f6;
+}
+
+
+.duplicate-cashbook-close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+
+/* =========================================================
+   INFORMATION BAR
+========================================================= */
+
+.duplicate-cashbook-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  margin: 18px 24px 0;
+  padding: 12px 14px;
+
+  border-radius: 8px;
+
+  background: #f5f7fa;
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+
+.duplicate-cashbook-info-icon {
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 20px;
+  height: 20px;
+
+  border: 1px solid currentColor;
+  border-radius: 50%;
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   BODY
+========================================================= */
+
+.duplicate-cashbook-body {
+  padding: 20px 24px;
+
+  overflow-y: auto;
+}
+
+
+.duplicate-cashbook-step {
+  padding: 0;
+}
+
+
+.duplicate-cashbook-step + .duplicate-cashbook-step {
+  margin-top: 24px;
+  padding-top: 24px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+
+.duplicate-cashbook-step h3 {
+  margin: 0 0 14px;
+
+  font-size: 15px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   NAME FIELD
+========================================================= */
+
+.duplicate-cashbook-step label:not(.duplicate-cashbook-option) {
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
+.required {
+  margin-left: 2px;
+
+  color: #dc2626;
+}
+
+
+#duplicate-cashbook-name {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 10px 12px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  font: inherit;
+  font-size: 14px;
+
+  outline: none;
+}
+
+
+#duplicate-cashbook-name:focus {
+  border-color: #6b7280;
+
+  box-shadow:
+    0 0 0 2px rgba(107, 114, 128, 0.12);
+}
+
+
+#duplicate-cashbook-name:disabled {
+  background: #f3f4f6;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   CHECKBOX OPTIONS
+========================================================= */
+
+.duplicate-cashbook-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  min-height: 42px;
+
+  padding: 8px 10px;
+
+  border-radius: 7px;
+
+  cursor: pointer;
+
+  font-size: 14px;
+}
+
+
+.duplicate-cashbook-option:hover {
+  background: #f8fafc;
+}
+
+
+.duplicate-cashbook-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+
+  margin: 0;
+
+  cursor: pointer;
+}
+
+
+.duplicate-cashbook-option input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   ERROR
+========================================================= */
+
+.duplicate-cashbook-error {
+  margin-top: 14px;
+  padding: 10px 12px;
+
+  border: 1px solid #fecaca;
+  border-radius: 7px;
+
+  background: #fef2f2;
+
+  color: #b91c1c;
+
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.duplicate-cashbook-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+
+  padding: 16px 24px;
+
+  border-top: 1px solid #e5e7eb;
+
+  background: #ffffff;
+}
+
+
+.duplicate-cashbook-cancel-button,
+.duplicate-cashbook-submit-button {
+  min-height: 38px;
+
+  padding: 8px 16px;
+
+  border-radius: 7px;
+
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+}
+
+
+.duplicate-cashbook-cancel-button {
+  border: 1px solid #d1d5db;
+
+  background: #ffffff;
+
+  color: #374151;
+}
+
+
+.duplicate-cashbook-cancel-button:hover {
+  background: #f9fafb;
+}
+
+
+.duplicate-cashbook-submit-button {
+  border: 1px solid #374151;
+
+  background: #374151;
+
+  color: #ffffff;
+}
+
+
+.duplicate-cashbook-submit-button:hover {
+  background: #1f2937;
+}
+
+
+.duplicate-cashbook-cancel-button:disabled,
+.duplicate-cashbook-submit-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 600px) {
+
+  .duplicate-cashbook-overlay {
+    align-items: flex-end;
+
+    padding: 0;
+  }
+
+
+  .duplicate-cashbook-modal {
+    max-width: none;
+    max-height: 92vh;
+
+    border-radius: 16px 16px 0 0;
+  }
+
+
+  .duplicate-cashbook-header {
+    padding: 16px 18px;
+  }
+
+
+  .duplicate-cashbook-header h2 {
+    font-size: 18px;
+  }
+
+
+  .duplicate-cashbook-info {
+    margin: 14px 18px 0;
+  }
+
+
+  .duplicate-cashbook-body {
+    padding: 18px;
+  }
+
+
+  .duplicate-cashbook-step + .duplicate-cashbook-step {
+    margin-top: 20px;
+    padding-top: 20px;
+  }
+
+
+  .duplicate-cashbook-footer {
+    padding: 14px 18px;
+
+    flex-direction: column-reverse;
+  }
+
+
+  .duplicate-cashbook-cancel-button,
+  .duplicate-cashbook-submit-button {
+    width: 100%;
+
+    min-height: 42px;
+  }
+
 }

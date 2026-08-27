@@ -27,7 +27,7 @@ import {
 
 import { CURRENCY_OPTIONS } from "../constants/currencies";
 
-import { createCashBookGroup } from "../services/cashBookService";
+import { createCashBookGroup, duplicateCashBookGroup } from "../services/cashBookService";
 
 import { validateCashBook } from "../utils/cashBookValidation";
 
@@ -42,6 +42,8 @@ import {
 import "./../styles/SettingsPage.css";
 
 import { supabase } from "../lib/supabase";
+
+import { useCashBook } from "../hooks/useCashBook";
 
 
 type SettingsSection =
@@ -63,6 +65,20 @@ const SettingsPage = () => {
      SECTION
   ===================================================== */
 
+  const [duplicateCashBook, setDuplicateCashBook] = useState<{
+    group: CashBookGroup;
+    newName: string;
+    copyMembers: boolean;
+    copyCategories: boolean;
+    copyPaymentModes: boolean;
+  } | null>(null);
+
+  const [duplicateCashBookError, setDuplicateCashBookError] =
+    useState("");
+
+  const [duplicatingCashBook, setDuplicatingCashBook] =
+    useState(false);
+
   const [
     activeSection,
     setActiveSection,
@@ -78,6 +94,11 @@ const SettingsPage = () => {
     loading: groupsLoading,
     reloadGroups,
   } = useCashBookGroups();
+
+  const {
+    selectedCashBook,
+    setSelectedCashBook,
+  } = useCashBook();
 
 
   /* =====================================================
@@ -389,23 +410,21 @@ const SettingsPage = () => {
 
 
   /* =====================================================
-     LOAD MASTER DATA
-  ===================================================== */
+   LOAD MASTER DATA
+===================================================== */
 
   useEffect(() => {
 
     async function loadMasterData() {
 
-      if (!groups.length) {
+      if (!selectedCashBook?.id) {
 
         setCategories([]);
         setPaymentModes([]);
+        setMasterDataError("");
 
         return;
       }
-
-      const group =
-        groups[0];
 
       try {
 
@@ -418,11 +437,11 @@ const SettingsPage = () => {
         ] = await Promise.all([
 
           loadCategories(
-            group.id
+            selectedCashBook.id
           ),
 
           loadPaymentModes(
-            group.id
+            selectedCashBook.id
           ),
 
         ]);
@@ -448,6 +467,9 @@ const SettingsPage = () => {
             : "Unable to load categories and payment modes."
         );
 
+        setCategories([]);
+        setPaymentModes([]);
+
       } finally {
 
         setMasterDataLoading(false);
@@ -458,9 +480,8 @@ const SettingsPage = () => {
     loadMasterData();
 
   }, [
-    groups,
+    selectedCashBook?.id,
   ]);
-
 
   /* =====================================================
      FILTER MASTER DATA
@@ -1601,6 +1622,68 @@ const SettingsPage = () => {
      CASH BOOKS SECTION
   ===================================================== */
 
+  const handleDuplicateCashBook = async () => {
+
+    if (!duplicateCashBook) {
+      return;
+    }
+
+    const newName =
+      duplicateCashBook.newName.trim();
+
+    if (!newName) {
+
+      setDuplicateCashBookError(
+        "Please enter a name for the new Cash Book."
+      );
+
+      return;
+    }
+
+    setDuplicatingCashBook(true);
+
+    setDuplicateCashBookError("");
+    setError("");
+    setSuccessMessage("");
+
+    try {
+
+      await duplicateCashBookGroup(
+        duplicateCashBook.group.id,
+        newName,
+        duplicateCashBook.copyMembers,
+        duplicateCashBook.copyCategories,
+        duplicateCashBook.copyPaymentModes
+      );
+
+      await reloadGroups();
+
+      setDuplicateCashBook(null);
+
+      setSuccessMessage(
+        `"${newName}" was created successfully.`
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Unable to duplicate Cash Book:",
+        error
+      );
+
+      setDuplicateCashBookError(
+        error instanceof Error
+          ? error.message
+          : "Unable to duplicate the Cash Book."
+      );
+
+    } finally {
+
+      setDuplicatingCashBook(false);
+
+    }
+  };
+
   function renderCashBooksSection() {
 
     return (
@@ -1653,6 +1736,195 @@ const SettingsPage = () => {
 
         )}
 
+        {duplicateCashBook && (
+          <div className="duplicate-cashbook-overlay">
+            <div className="duplicate-cashbook-modal">
+
+              {/* Header */}
+              <div className="duplicate-cashbook-header">
+                <h2>
+                  Duplicate {duplicateCashBook.group.name}
+                </h2>
+
+                <button
+                  type="button"
+                  className="duplicate-cashbook-close"
+                  onClick={() => {
+                    if (!duplicatingCashBook) {
+                      setDuplicateCashBook(null);
+                    }
+                  }}
+                  disabled={duplicatingCashBook}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Information */}
+              <div className="duplicate-cashbook-info">
+                <span className="duplicate-cashbook-info-icon">
+                  i
+                </span>
+
+                <span>
+                  Create new book with same settings as{" "}
+                  <strong>
+                    {duplicateCashBook.group.name}
+                  </strong>
+                </span>
+              </div>
+
+              <div className="duplicate-cashbook-body">
+
+                {/* Step 1 */}
+                <section className="duplicate-cashbook-step">
+
+                  <h3>
+                    Step 1: Choose New Book Name
+                  </h3>
+
+                  <label htmlFor="duplicate-cashbook-name">
+                    Enter new book name{" "}
+                    <span className="required">*</span>
+                  </label>
+
+                  <input
+                    id="duplicate-cashbook-name"
+                    type="text"
+                    value={duplicateCashBook.newName}
+                    onChange={(event) =>
+                      setDuplicateCashBook((current) =>
+                        current
+                          ? {
+                            ...current,
+                            newName: event.target.value,
+                          }
+                          : current
+                      )
+                    }
+                    placeholder="Enter new book name"
+                    disabled={duplicatingCashBook}
+                    autoFocus
+                  />
+
+                </section>
+
+                {/* Step 2 */}
+                <section className="duplicate-cashbook-step">
+
+                  <h3>
+                    Step 2: Choose settings to duplicate
+                  </h3>
+
+                  {/* Members & Roles */}
+                  <label className="duplicate-cashbook-option">
+                    <input
+                      type="checkbox"
+                      checked={duplicateCashBook.copyMembers}
+                      onChange={(event) =>
+                        setDuplicateCashBook((current) =>
+                          current
+                            ? {
+                              ...current,
+                              copyMembers: event.target.checked,
+                            }
+                            : current
+                        )
+                      }
+                      disabled={duplicatingCashBook}
+                    />
+
+                    <span>
+                      Members &amp; Roles
+                    </span>
+                  </label>
+
+                  {/* Categories */}
+                  <label className="duplicate-cashbook-option">
+                    <input
+                      type="checkbox"
+                      checked={duplicateCashBook.copyCategories}
+                      onChange={(event) =>
+                        setDuplicateCashBook((current) =>
+                          current
+                            ? {
+                              ...current,
+                              copyCategories: event.target.checked,
+                            }
+                            : current
+                        )
+                      }
+                      disabled={duplicatingCashBook}
+                    />
+
+                    <span>
+                      Categories
+                    </span>
+                  </label>
+
+                  {/* Payment Modes */}
+                  <label className="duplicate-cashbook-option">
+                    <input
+                      type="checkbox"
+                      checked={duplicateCashBook.copyPaymentModes}
+                      onChange={(event) =>
+                        setDuplicateCashBook((current) =>
+                          current
+                            ? {
+                              ...current,
+                              copyPaymentModes: event.target.checked,
+                            }
+                            : current
+                        )
+                      }
+                      disabled={duplicatingCashBook}
+                    />
+
+                    <span>
+                      Payment Modes
+                    </span>
+                  </label>
+
+                  {duplicateCashBookError && (
+                    <div className="duplicate-cashbook-error">
+                      {duplicateCashBookError}
+                    </div>
+                  )}
+
+                </section>
+
+              </div>
+
+              {/* Footer */}
+              <div className="duplicate-cashbook-footer">
+
+                <button
+                  type="button"
+                  className="duplicate-cashbook-cancel-button"
+                  onClick={() => setDuplicateCashBook(null)}
+                  disabled={duplicatingCashBook}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  className="duplicate-cashbook-submit-button"
+                  onClick={handleDuplicateCashBook}
+                  disabled={duplicatingCashBook}
+                >
+                  {duplicatingCashBook
+                    ? "Creating..."
+                    : "Add New Book"}
+                </button>
+
+              </div>
+
+            </div>
+          </div>
+        )}
+
 
         {groupsLoading ? (
 
@@ -1698,7 +1970,26 @@ const SettingsPage = () => {
                   className="cashbook-settings-item"
                 >
 
-                  <div className="cashbook-settings-info">
+                  <div
+                    className={`cashbook-settings-info ${selectedCashBook?.id === group.id
+                        ? "cashbook-settings-info--selected"
+                        : ""
+                      }`}
+                    onClick={() => {
+                      setSelectedCashBook(group);
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      if (
+                        event.key === "Enter" ||
+                        event.key === " "
+                      ) {
+                        event.preventDefault();
+                        setSelectedCashBook(group);
+                      }
+                    }}
+                  >
 
                     <div className="cashbook-settings-icon">
                       📖
@@ -1799,7 +2090,50 @@ const SettingsPage = () => {
 
                           <button
                             type="button"
-                            className="cashbook-action-button"
+                            className="cashbook-action-button cashbook-action-button--edit"
+                            onClick={() => {
+                              setDuplicateCashBook({
+                                group,
+                                newName: `${group.name} Copy`,
+                                copyMembers: true,
+                                copyCategories: true,
+                                copyPaymentModes: true,
+                              });
+
+                              setDuplicateCashBookError("");
+                              setError("");
+                              setSuccessMessage("");
+                            }}
+                            disabled={isProcessing}
+                          >
+                            <svg
+                              viewBox="0 0 24 24"
+                              width="16"
+                              height="16"
+                              aria-hidden="true"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <rect
+                                x="9"
+                                y="9"
+                                width="11"
+                                height="11"
+                                rx="2"
+                              />
+
+                              <path
+                                d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"
+                              />
+                            </svg>
+                          </button>
+
+                          <button
+                            type="button"
+                            className="cashbook-action-button cashbook-action-button-edit"
                             onClick={() => {
 
                               setEditingGroupId(
@@ -1816,7 +2150,26 @@ const SettingsPage = () => {
                             }}
                             disabled={isProcessing}
                           >
-                            Edit
+                            <svg
+                              viewBox="0 0 24 24"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M12 20h9"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+
+                              <path
+                                d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
                           </button>
 
 
@@ -1830,10 +2183,31 @@ const SettingsPage = () => {
                               })
                             }
                             disabled={isProcessing}
+                            aria-label="Delete Cash Book"
+                            title="Delete Cash Book"
                           >
-                            {isProcessing
-                              ? "Deleting..."
-                              : "Delete"}
+                            {isProcessing ? (
+                              "Deleting..."
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M3 6h18" />
+                                <path d="M8 6V4h8v2" />
+                                <path d="M19 6l-1 14H6L5 6" />
+                                <path d="M10 11v5" />
+                                <path d="M14 11v5" />
+                              </svg>
+                            )}
                           </button>
 
                         </>
