@@ -467,7 +467,7 @@ function LoginPage({
 
               <div className="login-bottom-text">
 
-                © 2026 Family Cash Book
+                © 2026 Expense Tracker
 
               </div>
 

@@ -2983,7 +2983,7 @@ const SettingsPage = () => {
                   value={newCashBookName}
                   disabled={creatingCashBook}
                   required
-                  placeholder="e.g. Parekh Family Cash Book"
+                  placeholder="e.g. Parekh Expense Tracker"
                   onChange={(event) => {
 
                     setCreateCashBookError("");
@@ -3701,7 +3701,7 @@ const SettingsPage = () => {
             {activeSection === "preferences" &&
               renderComingSoon(
                 "Preferences",
-                "Manage your Family Cash Book application preferences."
+                "Manage your Expense Tracker application preferences."
               )}
 
           </main>

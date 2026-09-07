@@ -1083,7 +1083,7 @@ function MembersPage() {
         const message =
             `Hi ${memberName},\n\n` +
             `You have been invited to join ` +
-            `${selectedCashBook?.name ?? "our Family Cash Book"}.\n\n` +
+            `${selectedCashBook?.name ?? "our Expense Tracker"}.\n\n` +
             `Please click the link below to accept the invitation:\n` +
             `${invitationLink}\n\n` +
             `Thank you.`;

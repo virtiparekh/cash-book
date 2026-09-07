@@ -224,3 +224,41 @@ export async function leaveCashBookGroup(
     }
 }
 
+/* =========================================================
+   Get Group Members
+========================================================= */
+
+export type GroupMemberOption = {
+    id: string;
+    member_name: string;
+};
+
+
+export async function getGroupMembers(
+    groupId: string
+): Promise<GroupMemberOption[]> {
+
+    const {
+        data,
+        error,
+    } = await supabase
+        .from("group_members")
+        .select(`
+            id,
+            member_name
+        `)
+        .eq("group_id", groupId)
+        .eq("is_active", true)
+        .order("member_name");
+
+    if (error) {
+        throw error;
+    }
+
+    if (!data) {
+        return [];
+    }
+
+    return data;
+}
+

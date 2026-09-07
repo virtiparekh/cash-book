@@ -43,7 +43,7 @@ function TopHeader({
         </div>
 
         <div className="top-header__brand">
-          Family Cash Book
+          Expense Tracker
         </div>
 
       </div>

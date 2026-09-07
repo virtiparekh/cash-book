@@ -99,7 +99,7 @@ export default function AppRoutes() {
       >
 
         <p>
-          Loading Family Cash Book...
+          Loading Expense Tracker...
         </p>
 
       </main>

@@ -46,7 +46,7 @@ function Logo({
 
       <div>
         <div className="logo-title">
-          Family Cash Book
+          Expense Tracker
         </div>
 
         {showSubtitle && (

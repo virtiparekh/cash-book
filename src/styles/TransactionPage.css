@@ -1,0 +1,629 @@
+.transactions-page {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+
+/* =====================================================
+   PAGE HEADER
+===================================================== */
+
+.transactions-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.transactions-page-header h1 {
+    margin: 0;
+}
+
+.transactions-page-header p {
+    margin: 6px 0 0;
+}
+
+
+/* =====================================================
+   CURRENT CASH BOOK
+===================================================== */
+
+.transactions-current-cashbook {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 20px;
+    padding: 8px 12px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+}
+
+.transactions-current-cashbook span {
+    font-size: 13px;
+}
+
+.transactions-current-cashbook strong {
+    font-size: 14px;
+}
+
+
+/* =====================================================
+   TABS
+===================================================== */
+
+.transactions-tabs {
+    display: flex;
+    align-items: stretch;
+
+    width: 100%;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    margin-bottom: 24px;
+}
+
+.transactions-tab {
+    appearance: none;
+
+    border: 0;
+    border-bottom: 2px solid transparent;
+
+    background: transparent;
+
+    padding: 12px 18px;
+
+    font: inherit;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease,
+        background-color 0.15s ease;
+}
+
+.transactions-tab:hover {
+    background: #f8fafc;
+}
+
+.transactions-tab--active {
+    border-bottom-color: #2563eb;
+}
+
+
+/* =====================================================
+   TAB CONTENT
+===================================================== */
+
+.transactions-tab-content {
+    width: 100%;
+}
+
+.transactions-placeholder,
+.recurring-transactions-placeholder {
+    width: 100%;
+}
+
+
+/* =====================================================
+   RECURRING HEADER
+===================================================== */
+
+.recurring-transactions-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 20px;
+
+    margin-bottom: 24px;
+}
+
+.recurring-transactions-header h2 {
+    margin: 0;
+}
+
+.recurring-transactions-header p {
+    margin: 6px 0 0;
+}
+
+
+/* =====================================================
+   ADD BUTTON
+===================================================== */
+
+.recurring-add-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto;
+
+    min-height: 38px;
+
+    padding: 0 16px;
+
+    border: 1px solid transparent;
+    border-radius: 8px;
+
+    font: inherit;
+
+    cursor: pointer;
+
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+    background: #2563eb;
+    color: #ffffff;
+}
+
+
+/* =====================================================
+   EMPTY STATE
+===================================================== */
+
+.recurring-transactions-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 220px;
+
+    padding: 32px;
+
+    box-sizing: border-box;
+
+    border: 1px dashed #d1d5db;
+    border-radius: 12px;
+
+    text-align: center;
+}
+
+.recurring-transactions-empty h3 {
+    margin: 0 0 8px;
+}
+
+.recurring-transactions-empty p {
+    margin: 0;
+
+    max-width: 480px;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .transactions-page-header {
+        margin-bottom: 16px;
+    }
+
+
+    .transactions-current-cashbook {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+
+    .transactions-tabs {
+        overflow-x: auto;
+    }
+
+    .transactions-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+
+    .transactions-tab {
+        padding: 11px 14px;
+    }
+
+
+    .recurring-transactions-header {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+
+    .recurring-add-button {
+        width: 100%;
+    }
+
+
+    .recurring-transactions-empty {
+        min-height: 180px;
+        padding: 24px 16px;
+    }
+}
+
+/* =====================================================
+   RECURRING TRANSACTION LIST
+===================================================== */
+
+.recurring-transactions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.recurring-transaction-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 16px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+
+    box-sizing: border-box;
+}
+
+.recurring-transaction-card p {
+    margin: 6px 0 0;
+}
+
+
+/* =====================================================
+   MOBILE
+===================================================== */
+
+@media (max-width: 768px) {
+
+    .recurring-transaction-card {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+}
+
+/* =====================================================
+   RECURRING TRANSACTION FORM
+   ===================================================== */
+
+.recurring-transaction-form {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+
+/* =====================================================
+   FORM HEADER
+   ===================================================== */
+
+.recurring-form-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 22px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.recurring-form-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.recurring-form-header p {
+    margin: 5px 0 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.recurring-form-close-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: #64748b;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.recurring-form-close-button:hover {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+
+/* =====================================================
+   FORM BODY
+   ===================================================== */
+
+.recurring-form-body {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    padding: 22px;
+}
+
+
+/* =====================================================
+   FORM FIELD
+   ===================================================== */
+
+.recurring-form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.recurring-form-field > label {
+    color: #334155;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.recurring-form-field input,
+.recurring-form-field select,
+.recurring-form-field textarea {
+    width: 100%;
+    min-height: 42px;
+    padding: 9px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #0f172a;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+    outline: none;
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.recurring-form-field textarea {
+    min-height: 88px;
+    resize: vertical;
+}
+
+.recurring-form-field input:focus,
+.recurring-form-field select:focus,
+.recurring-form-field textarea:focus {
+    border-color: #93c5fd;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.10);
+}
+
+.recurring-form-field input::placeholder,
+.recurring-form-field textarea::placeholder {
+    color: #94a3b8;
+}
+
+
+/* =====================================================
+   ENTRY TYPE
+   ===================================================== */
+
+.recurring-entry-type-options {
+    display: flex;
+    gap: 8px;
+}
+
+.recurring-entry-type-button-cash-in, .recurring-entry-type-button-cash-out {
+    flex: 1;
+    min-height: 42px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.recurring-entry-type-button-cash-in {
+  color: #008f68;
+  background: #ffffff;
+  border: 1px solid #b8e7da;
+}
+
+
+.recurring-entry-type-button-cash-in--active {
+  color: #ffffff;
+  background: #009b73;
+  border-color: #009b73;
+}
+
+.recurring-entry-type-button-cash-out {
+  color: #dc2626;
+  background: #ffffff;
+  border: 1px solid #fecaca;
+}
+
+
+.recurring-entry-type-button-cash-out--active {
+  color: #ffffff;
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+
+/* =====================================================
+   WEEKDAY OPTIONS
+   ===================================================== */
+
+.recurring-weekday-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.recurring-weekday-button {
+    min-width: 48px;
+    min-height: 38px;
+    padding: 7px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #475569;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
+
+.recurring-weekday-button:hover {
+    background: #f8fafc;
+}
+
+.recurring-weekday-button--active {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #2563eb;
+}
+
+
+/* =====================================================
+   NEVER CHECKBOX
+   ===================================================== */
+
+.recurring-never-option {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    color: #475569 !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    cursor: pointer;
+}
+
+.recurring-never-option input {
+    width: 16px;
+    min-height: 16px;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    box-shadow: none;
+}
+
+
+/* =====================================================
+   FORM FOOTER
+   ===================================================== */
+.recurring-form-error {
+    margin-top: 16px;
+    padding: 10px 12px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 14px;
+}
+
+.recurring-form-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 22px;
+    border-top: 1px solid #e5e7eb;
+    background: #f8fafc;
+}
+
+.recurring-form-cancel-button,
+.recurring-form-save-button {
+    min-height: 40px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.recurring-form-cancel-button {
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+}
+
+.recurring-form-cancel-button:hover {
+    background: #f8fafc;
+}
+
+.recurring-form-save-button {
+    border: 1px solid #2563eb;
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.recurring-form-save-button:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+
+/* =====================================================
+   MOBILE
+   ===================================================== */
+
+@media (max-width: 768px) {
+
+    .recurring-form-header {
+        padding: 16px;
+    }
+
+    .recurring-form-body {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .recurring-form-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        padding: 14px 16px;
+    }
+
+    .recurring-form-cancel-button,
+    .recurring-form-save-button {
+        width: 100%;
+    }
+
+    .recurring-entry-type-options {
+        width: 100%;
+    }
+
+    .recurring-weekday-options {
+        gap: 6px;
+    }
+
+    .recurring-weekday-button {
+        flex: 1;
+        min-width: 42px;
+    }
+}

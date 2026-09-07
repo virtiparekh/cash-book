@@ -483,7 +483,7 @@ function App() {
       >
 
         <p>
-          Loading Family Cash Book...
+          Loading Expense Tracker...
         </p>
 
       </main>

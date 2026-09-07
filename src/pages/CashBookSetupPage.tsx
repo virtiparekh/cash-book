@@ -389,7 +389,7 @@ function CashBookSetupPage({
 
 
             <PageHeader
-              title="Create Your Family Cash Book"
+              title="Create Your Expense Tracker"
               subtitle="Track income, expenses and balances together with your family."
             />
 
@@ -430,7 +430,7 @@ function CashBookSetupPage({
               value={cashBookName}
               required={true}
               disabled={loading}
-              placeholder="e.g. Parekh Family Cash Book"
+              placeholder="e.g. Parekh Expense Tracker"
               onChange={(event) => {
 
                 setErrorMessage("");
