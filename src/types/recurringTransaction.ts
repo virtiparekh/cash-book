@@ -44,6 +44,7 @@ export type RecurringTransaction = {
     is_active: boolean;
 
     last_generated_date: string | null;
+    previous_due_date: string | null;
 
     created_at: string;
 

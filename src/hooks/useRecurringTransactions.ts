@@ -15,6 +15,7 @@ import {
     deleteRecurringTransaction,
     setRecurringTransactionActive,
     skipNextRecurringOccurrence,
+    undoSkipRecurringOccurrence,
 } from "../services/recurringTransactionService";
 
 import type {
@@ -213,7 +214,35 @@ export function useRecurringTransactions(
             [reloadRecurringTransactions]
         );
 
+    /* =====================================================
+       Undo SKIP NEXT
+    ===================================================== */
 
+    const undoSkipOccurrence = useCallback(
+        async (recurringTransactionId: string) => {
+            try {
+                setError(null);
+
+                await undoSkipRecurringOccurrence(
+                    recurringTransactionId
+                );
+
+                await reloadRecurringTransactions();
+            } catch (error) {
+                console.error(
+                    "Unable to undo skipped occurrence.",
+                    error
+                );
+
+                setError(
+                    error instanceof Error
+                        ? error.message
+                        : "Unable to undo skipped occurrence."
+                );
+            }
+        },
+        [reloadRecurringTransactions]
+    );
     return {
         recurringTransactions,
 
@@ -232,5 +261,7 @@ export function useRecurringTransactions(
         toggleRecurringTransaction,
 
         skipNextOccurrence,
+
+        undoSkipOccurrence,
     };
 }

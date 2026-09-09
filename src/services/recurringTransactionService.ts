@@ -45,6 +45,8 @@ type RecurringTransactionRow = {
 
     last_generated_date: string | null;
 
+    previous_due_date: string | null;
+
     created_at: string;
 
     updated_at: string;
@@ -81,6 +83,7 @@ export async function loadRecurringTransactions(
             end_date,
             is_active,
             last_generated_date,
+            previous_due_date,
             created_at,
             updated_at
         `)
@@ -260,6 +263,7 @@ export type UpdateRecurringTransactionInput = {
     endDate: string | null;
 
     isActive: boolean;
+    previousDueDate: string | null;
 };
 
 
@@ -284,6 +288,7 @@ export async function updateRecurringTransaction(
         nextDueDate,
         endDate,
         isActive,
+        previousDueDate,
     } = input;
 
 
@@ -320,6 +325,7 @@ export async function updateRecurringTransaction(
             end_date: endDate,
 
             is_active: isActive,
+            previous_due_date: previousDueDate,
 
             updated_at: new Date().toISOString(),
 
@@ -385,17 +391,66 @@ export async function skipNextRecurringOccurrence(
     recurringTransactionId: string,
     nextDueDate: string
 ): Promise<void> {
+    // First get the current next due date.
+    const { data, error: fetchError } = await supabase
+        .from("recurring_transactions")
+        .select("next_due_date")
+        .eq("id", recurringTransactionId)
+        .single();
 
-    const { error } = await supabase
+    if (fetchError) throw fetchError;
+
+    if (!data?.next_due_date) {
+        throw new Error(
+            "The current next occurrence date could not be found."
+        );
+    }
+
+    // Move the current date into previous_due_date
+    // and set the newly calculated date as next_due_date.
+    const { error: updateError } = await supabase
         .from("recurring_transactions")
         .update({
+            previous_due_date: data.next_due_date,
             next_due_date: nextDueDate,
             updated_at: new Date().toISOString(),
         })
         .eq("id", recurringTransactionId);
 
+    if (updateError) throw updateError;
+}
 
-    if (error) {
-        throw error;
+/* =====================================================
+   Undo SKIP NEXT OCCURRENCE
+===================================================== */
+export async function undoSkipRecurringOccurrence(
+    recurringTransactionId: string
+): Promise<void> {
+    // Get the previously skipped occurrence date.
+    const { data, error: fetchError } = await supabase
+        .from("recurring_transactions")
+        .select("previous_due_date")
+        .eq("id", recurringTransactionId)
+        .single();
+
+    if (fetchError) throw fetchError;
+
+    if (!data?.previous_due_date) {
+        throw new Error(
+            "There is no skipped occurrence available to undo."
+        );
     }
+
+    // Restore the previous occurrence date
+    // and clear the stored previous date.
+    const { error: updateError } = await supabase
+        .from("recurring_transactions")
+        .update({
+            next_due_date: data.previous_due_date,
+            previous_due_date: null,
+            updated_at: new Date().toISOString(),
+        })
+        .eq("id", recurringTransactionId);
+
+    if (updateError) throw updateError;
 }

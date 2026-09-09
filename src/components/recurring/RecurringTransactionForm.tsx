@@ -15,12 +15,14 @@ import {
     getGroupMembers,
 } from "../../services/groupService";
 
+import type { RecurringTransaction } from "../../types/recurringTransaction";
 import { calculateFirstOccurrence } from "../../utils/recurringDateUtils";
-import {createRecurringTransaction,} from "../../services/recurringTransactionService";
+import { createRecurringTransaction, updateRecurringTransaction, } from "../../services/recurringTransactionService";
 
 type RecurringTransactionFormProps = {
     onCancel: () => void;
     onSaved: () => void;
+    recurringTransaction?: RecurringTransaction | null;
 };
 
 type MemberOption = {
@@ -31,6 +33,7 @@ type MemberOption = {
 function RecurringTransactionForm({
     onCancel,
     onSaved,
+    recurringTransaction,
 }: RecurringTransactionFormProps) {
 
     const {
@@ -38,12 +41,9 @@ function RecurringTransactionForm({
     } = useCashBook();
 
 
-    const [
-        entryType,
-        setEntryType,
-    ] = useState<
-        "cash_in" | "cash_out"
-    >("cash_out");
+    const [entryType, setEntryType] = useState<"cash_in" | "cash_out">(
+        recurringTransaction?.entry_type ?? "cash_out"
+    );
 
     const [saving, setSaving] = useState(false);
     const [saveError, setSaveError] = useState("");
@@ -64,7 +64,7 @@ function RecurringTransactionForm({
             ? "cash-in"
             : "cash-out"
     );
-    
+
 
 
     /*
@@ -181,147 +181,296 @@ function RecurringTransactionForm({
         setMembersError,
     ] = useState<string>("");
 
+
     const handleSave = async () => {
-    setSaveError("");
+        setSaveError("");
+        if(saving) {
+            return;
+        }
 
-    if (!selectedCashBook?.id) {
-        setSaveError("Please select a Cash Book.");
-        return;
-    }
+        if (!selectedCashBook?.id) {
+            setSaveError("Please select a Cash Book.");
+            return;
+        }
 
-    if (!memberId) {
-        setSaveError("Please select a member.");
-        return;
-    }
+        if (!memberId) {
+            setSaveError("Please select a member.");
+            return;
+        }
 
-    if (!categoryId) {
-        setSaveError("Please select a category.");
-        return;
-    }
+        if (!categoryId) {
+            setSaveError("Please select a category.");
+            return;
+        }
 
-    if (!paymentModeId) {
-        setSaveError("Please select a payment mode.");
-        return;
-    }
+        if (!paymentModeId) {
+            setSaveError("Please select a payment mode.");
+            return;
+        }
 
-    if (!amount || Number(amount) <= 0) {
-        setSaveError("Please enter a valid amount.");
-        return;
-    }
+        if (!amount || Number(amount) <= 0) {
+            setSaveError("Please enter a valid amount.");
+            return;
+        }
 
-    if (!startDate) {
-        setSaveError("Please select a start date.");
-        return;
-    }
+        if (!startDate) {
+            setSaveError("Please select a start date.");
+            return;
+        }
 
-    if (
-        frequencyType === "weekly" &&
-        daysOfWeek.length === 0
-    ) {
-        setSaveError("Please select at least one weekday.");
-        return;
-    }
+        if (
+            frequencyType === "weekly" &&
+            daysOfWeek.length === 0
+        ) {
+            setSaveError("Please select at least one weekday.");
+            return;
+        }
 
-    if (
-        ["monthly", "quarterly"].includes(frequencyType) &&
-        !dayOfMonth
-    ) {
-        setSaveError("Please select a day of the month.");
-        return;
-    }
+        if (
+            ["monthly", "quarterly"].includes(frequencyType) &&
+            !dayOfMonth
+        ) {
+            setSaveError("Please select a day of the month.");
+            return;
+        }
 
-    if (
-        frequencyType === "yearly" &&
-        (!monthOfYear || !dayOfMonth)
-    ) {
-        setSaveError(
-            "Please select both month and day for yearly recurrence."
-        );
-        return;
-    }
+        if (
+            frequencyType === "yearly" &&
+            (!monthOfYear || !dayOfMonth)
+        ) {
+            setSaveError(
+                "Please select both month and day for yearly recurrence."
+            );
+            return;
+        }
 
-    if (
-        !neverEnds &&
-        endDate &&
-        endDate < startDate
-    ) {
-        setSaveError(
-            "End date cannot be earlier than the start date."
-        );
-        return;
-    }
+        if (
+            !neverEnds &&
+            endDate &&
+            endDate < startDate
+        ) {
+            setSaveError(
+                "End date cannot be earlier than the start date."
+            );
+            return;
+        }
 
-    try {
-        setSaving(true);
+        try {
+            setSaving(true);
 
-        const parsedDayOfMonth = dayOfMonth
-            ? Number(dayOfMonth)
-            : null;
+            const parsedDayOfMonth = dayOfMonth
+                ? Number(dayOfMonth)
+                : null;
 
-        const parsedMonthOfYear = monthOfYear
-            ? Number(monthOfYear)
-            : null;
+            const parsedMonthOfYear = monthOfYear
+                ? Number(monthOfYear)
+                : null;
 
-        const nextDueDate =
-            calculateFirstOccurrence(
-                frequencyType,
-                frequencyInterval,
-                startDate,
-                daysOfWeek,
-                parsedDayOfMonth,
-                parsedMonthOfYear
+            const hasRecurrenceScheduleChanged = (): boolean => {
+                if (!recurringTransaction) {
+                    return true;
+                }
+
+                const oldDaysOfWeek =
+                    recurringTransaction.days_of_week ?? [];
+
+                const newDaysOfWeek =
+                    frequencyType === "weekly"
+                        ? daysOfWeek
+                        : [];
+
+                const daysChanged =
+                    oldDaysOfWeek.length !== newDaysOfWeek.length ||
+                    oldDaysOfWeek.some(
+                        (day) => !newDaysOfWeek.includes(day)
+                    );
+
+                const oldDayOfMonth =
+                    recurringTransaction.day_of_month;
+
+                const newDayOfMonth =
+                    ["monthly", "quarterly", "yearly"].includes(
+                        frequencyType
+                    )
+                        ? parsedDayOfMonth
+                        : null;
+
+                const oldMonthOfYear =
+                    recurringTransaction.month_of_year;
+
+                const newMonthOfYear =
+                    frequencyType === "yearly"
+                        ? parsedMonthOfYear
+                        : null;
+
+                return (
+                    recurringTransaction.frequency_type !== frequencyType ||
+                    recurringTransaction.frequency_interval !==
+                        frequencyInterval ||
+                    daysChanged ||
+                    oldDayOfMonth !== newDayOfMonth ||
+                    oldMonthOfYear !== newMonthOfYear ||
+                    recurringTransaction.start_date !== startDate
+                );
+            };
+
+            const scheduleChanged =
+                hasRecurrenceScheduleChanged();
+
+            const nextDueDate =
+                recurringTransaction && !scheduleChanged
+                    ? recurringTransaction.next_due_date
+                    : calculateFirstOccurrence(
+                        frequencyType,
+                        frequencyInterval,
+                        startDate,
+                        daysOfWeek,
+                        parsedDayOfMonth,
+                        parsedMonthOfYear
+                    );
+
+            if (
+                !neverEnds &&
+                endDate &&
+                nextDueDate > endDate
+            ) {
+                setSaveError(
+                    "The end date must be on or after the next scheduled occurrence."
+                );
+                return;
+            }
+            if (recurringTransaction) {
+                await updateRecurringTransaction({
+                    recurringTransactionId: recurringTransaction.id,
+                    memberId: memberId,
+                    entryType: entryType,
+                    amount: Number(amount),
+                    categoryId: categoryId,
+                    paymentModeId: paymentModeId,
+                    notes: notes.trim() || null,
+                    frequencyType: frequencyType,
+                    frequencyInterval: frequencyInterval,
+                    daysOfWeek:
+                        frequencyType === "weekly"
+                            ? daysOfWeek
+                            : null,
+                    dayOfMonth:
+                        ["monthly", "quarterly", "yearly"].includes(
+                            frequencyType
+                        )
+                            ? parsedDayOfMonth
+                            : null,
+                    monthOfYear:
+                        frequencyType === "yearly"
+                            ? parsedMonthOfYear
+                            : null,
+                    startDate: startDate,
+                    nextDueDate: nextDueDate,
+                    endDate:
+                        neverEnds || !endDate
+                            ? null
+                            : endDate,
+                    isActive:recurringTransaction.is_active,
+                    previousDueDate:scheduleChanged
+                            ? null
+                            : recurringTransaction.previous_due_date,
+                });
+            } else {
+                await createRecurringTransaction({
+                    groupId: selectedCashBook.id,
+                    memberId: memberId,
+                    createdBy: null,
+                    entryType: entryType,
+                    amount: Number(amount),
+                    categoryId: categoryId,
+                    paymentModeId: paymentModeId,
+                    notes: notes.trim() || null,
+                    frequencyType: frequencyType,
+                    frequencyInterval: frequencyInterval,
+                    daysOfWeek:
+                        frequencyType === "weekly"
+                            ? daysOfWeek
+                            : null,
+                    dayOfMonth:
+                        ["monthly", "quarterly", "yearly"].includes(
+                            frequencyType
+                        )
+                            ? parsedDayOfMonth
+                            : null,
+                    monthOfYear:
+                        frequencyType === "yearly"
+                            ? parsedMonthOfYear
+                            : null,
+                    startDate: startDate,
+                    nextDueDate: nextDueDate,
+                    endDate:
+                        neverEnds || !endDate
+                            ? null
+                            : endDate,
+                });
+            }
+            onSaved();
+            onCancel();
+        } catch (error) {
+            console.error(
+                "Unable to save recurring transaction.",
+                error
             );
 
-        await createRecurringTransaction({
-            groupId: selectedCashBook.id,
-            memberId: memberId,
-            createdBy:null,
-            entryType: entryType,
-            amount: Number(amount),
-            categoryId: categoryId,
-            paymentModeId: paymentModeId,
-            notes: notes.trim() || null,
-            frequencyType: frequencyType,
-            frequencyInterval: frequencyInterval,
-            daysOfWeek:
-                frequencyType === "weekly"
-                    ? daysOfWeek
-                    : null,
-            dayOfMonth:
-                ["monthly", "quarterly", "yearly"].includes(
-                    frequencyType
-                )
-                    ? parsedDayOfMonth
-                    : null,
-            monthOfYear:
-                frequencyType === "yearly"
-                    ? parsedMonthOfYear
-                    : null,
-            startDate: startDate,
-            nextDueDate: nextDueDate,
-            endDate:
-                neverEnds || !endDate
-                    ? null
-                    : endDate,
-        });
-        onSaved();
-        onCancel();
-    } catch (error) {
-        console.error(
-            "Unable to save recurring transaction.",
-            error
+            setSaveError(
+                error instanceof Error
+                    ? error.message
+                    : "Unable to save recurring transaction."
+            );
+        } finally {
+            setSaving(false);
+        }
+    };
+
+
+    useEffect(() => {
+        if (!recurringTransaction) {
+            return;
+        }
+
+        setEntryType(recurringTransaction.entry_type);
+        setAmount(String(recurringTransaction.amount));
+        setMemberId(recurringTransaction.member_id);
+        setCategoryId(recurringTransaction.category_id);
+        setPaymentModeId(recurringTransaction.payment_mode_id);
+        setNotes(recurringTransaction.notes ?? "");
+
+        setFrequencyType(recurringTransaction.frequency_type);
+        setFrequencyInterval(
+            recurringTransaction.frequency_interval
         );
 
-        setSaveError(
-            error instanceof Error
-                ? error.message
-                : "Unable to save recurring transaction."
+        setDaysOfWeek(
+            recurringTransaction.days_of_week ?? []
         );
-    } finally {
-        setSaving(false);
-    }
-};
 
+        setDayOfMonth(
+            recurringTransaction.day_of_month
+                ? String(recurringTransaction.day_of_month)
+                : ""
+        );
+
+        setMonthOfYear(
+            recurringTransaction.month_of_year
+                ? String(recurringTransaction.month_of_year)
+                : ""
+        );
+
+        setStartDate(recurringTransaction.start_date);
+
+        setEndDate(
+            recurringTransaction.end_date ?? ""
+        );
+
+        setNeverEnds(
+            recurringTransaction.end_date === null
+        );
+    }, [recurringTransaction]);
 
     /*
      * -------------------------------------------------
@@ -420,15 +569,15 @@ function RecurringTransactionForm({
      * -------------------------------------------------
      */
 
-    useEffect(() => {
+    // useEffect(() => {
 
-        setCategoryId("");
+    //     setCategoryId("");
 
-        setPaymentModeId("");
+    //     setPaymentModeId("");
 
-    }, [
-        entryType,
-    ]);
+    // }, [
+    //     entryType,
+    // ]);
 
 
     return (
@@ -438,9 +587,11 @@ function RecurringTransactionForm({
 
                 <div>
 
-                    <h3>
-                        Add Recurring Transaction
-                    </h3>
+                    <h2>
+                        {recurringTransaction
+                            ? "Edit Recurring Transaction"
+                            : "New Recurring Transaction"}
+                    </h2>
 
                     <p>
                         Set up a transaction that repeats automatically.
@@ -481,9 +632,11 @@ function RecurringTransactionForm({
                                     ? "recurring-entry-type-button-cash-out recurring-entry-type-button-cash-out--active"
                                     : "recurring-entry-type-button-cash-out"
                             }
-                            onClick={() =>
-                                setEntryType("cash_out")
-                            }
+                            onClick={() => {
+                                setEntryType("cash_out");
+                                setCategoryId("");
+                                setPaymentModeId("");
+                            }}
                         >
                             Cash Out
                         </button>
@@ -496,9 +649,11 @@ function RecurringTransactionForm({
                                     ? "recurring-entry-type-button-cash-in recurring-entry-type-button-cash-in--active"
                                     : "recurring-entry-type-button-cash-in"
                             }
-                            onClick={() =>
+                            onClick={() => {
                                 setEntryType("cash_in")
-                            }
+                                setCategoryId("");
+                                setPaymentModeId("");
+                            }}
                         >
                             Cash In
                         </button>
@@ -528,6 +683,9 @@ function RecurringTransactionForm({
                                 event.target.value
                             )
                         }
+                        onWheel={(event) => {
+                            event.currentTarget.blur();
+                        }}
                         placeholder="Enter amount"
                     />
 
@@ -718,12 +876,12 @@ function RecurringTransactionForm({
                         onChange={(event) =>
                             setFrequencyType(
                                 event.target.value as
-                                    | "daily"
-                                    | "weekly"
-                                    | "monthly"
-                                    | "quarterly"
-                                    | "yearly"
-                                    | "custom"
+                                | "daily"
+                                | "weekly"
+                                | "monthly"
+                                | "quarterly"
+                                | "yearly"
+                                | "custom"
                             )
                         }
                     >
@@ -874,30 +1032,30 @@ function RecurringTransactionForm({
                 {(frequencyType === "monthly" ||
                     frequencyType === "quarterly") && (
 
-                    <div className="recurring-form-field">
+                        <div className="recurring-form-field">
 
-                        <label htmlFor="recurring-day-of-month">
-                            Day of Month
-                        </label>
+                            <label htmlFor="recurring-day-of-month">
+                                Day of Month
+                            </label>
 
 
-                        <input
-                            id="recurring-day-of-month"
-                            type="number"
-                            min="1"
-                            max="31"
-                            value={dayOfMonth}
-                            onChange={(event) =>
-                                setDayOfMonth(
-                                    event.target.value
-                                )
-                            }
-                            placeholder="1 - 31"
-                        />
+                            <input
+                                id="recurring-day-of-month"
+                                type="number"
+                                min="1"
+                                max="31"
+                                value={dayOfMonth}
+                                onChange={(event) =>
+                                    setDayOfMonth(
+                                        event.target.value
+                                    )
+                                }
+                                placeholder="1 - 31"
+                            />
 
-                    </div>
+                        </div>
 
-                )}
+                    )}
 
 
                 {/* Yearly Month */}
@@ -1074,10 +1232,10 @@ function RecurringTransactionForm({
             </div>
 
             {saveError && (
-    <div className="recurring-form-error">
-        {saveError}
-    </div>
-)}
+                <div className="recurring-form-error">
+                    {saveError}
+                </div>
+            )}
 
 
             <div className="recurring-form-footer">
@@ -1099,7 +1257,9 @@ function RecurringTransactionForm({
                 >
                     {saving
                         ? "Saving..."
-                        : "Save Recurring Transaction"}
+                        : recurringTransaction
+                            ? "Save Changes"
+                            : "Save"}
                 </button>
 
             </div>

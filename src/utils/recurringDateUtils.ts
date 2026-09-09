@@ -5,7 +5,7 @@ import type { RecurringFrequencyType } from "../types/recurringTransaction";
    DATE HELPERS
 ===================================================== */
 
-function parseDate(dateString: string): Date {
+export function parseDate(dateString: string): Date {
     const [year, month, day] = dateString
         .split("-")
         .map(Number);
@@ -18,7 +18,7 @@ function parseDate(dateString: string): Date {
 }
 
 
-function formatDate(date: Date): string {
+export function formatDate(date: Date): string {
     const year = date.getFullYear();
 
     const month = String(
