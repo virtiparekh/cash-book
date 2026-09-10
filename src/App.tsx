@@ -126,24 +126,24 @@ function App() {
   } = useCashBook();
 
   const handleCashBookChange = (
-  cashBookId: string
-) => {
+    cashBookId: string
+  ) => {
 
-  const cashBook =
-    groups.find(
-      (group) =>
-        group.id === cashBookId
-    );
+    const cashBook =
+      groups.find(
+        (group) =>
+          group.id === cashBookId
+      );
 
-  if (cashBook) {
+    if (cashBook) {
 
-    setSelectedCashBook(
-      cashBook
-    );
+      setSelectedCashBook(
+        cashBook
+      );
 
-  }
+    }
 
-};
+  };
 
   /*
    * -------------------------------------------------
@@ -626,8 +626,8 @@ function App() {
              * Normal login.
              */
 
-            window.location.href =
-              appPath("/dashboard");
+            window.location.replace(
+              appPath("/dashboard"));
 
           }}
 
@@ -716,8 +716,8 @@ function App() {
              * Normal signup.
              */
 
-            window.location.href =
-              appPath("/login");
+            window.location.replace(
+              appPath("/login"));
 
           }}
 
@@ -841,8 +841,8 @@ function App() {
     currentPath === "/"
   ) {
 
-    window.location.href =
-      appPath("/login");
+    window.location.replace(
+      appPath("/login"));
 
 
     return null;
@@ -870,8 +870,8 @@ function App() {
       currentPath !== "/signup"
     ) {
 
-      window.location.href =
-        appPath("/login");
+      window.location.replace(
+        appPath("/login"));
 
       return null;
 

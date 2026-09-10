@@ -101,7 +101,149 @@ function DashboardPage({
   const [
     activeItem,
     setActiveItem,
-  ] = useState("Dashboard");
+  ] = useState(() => {
+
+    const path =
+      window.location.pathname;
+
+    if (
+      path.endsWith("/transactions")
+    ) {
+      return "Transactions";
+    }
+
+    if (
+      path.endsWith("/members")
+    ) {
+      return "Members";
+    }
+
+    if (
+      path.endsWith("/reports")
+    ) {
+      return "Reports";
+    }
+
+    if (
+      path.endsWith("/settings")
+    ) {
+      return "Settings";
+    }
+
+    return "Dashboard";
+
+  });
+
+  const handlePageNavigation = (
+    item: string
+  ) => {
+
+    const pagePaths: Record<
+      string,
+      string
+    > = {
+      Dashboard: "/dashboard",
+      Transactions: "/transactions",
+      Members: "/members",
+      Reports: "/reports",
+      Settings: "/settings",
+    };
+
+    const pagePath =
+      pagePaths[item] ??
+      "/dashboard";
+
+    const fullPath =
+      `/cash-book${pagePath}`;
+
+    window.history.pushState(
+      {},
+      "",
+      fullPath
+    );
+
+    setActiveItem(item);
+
+  };
+
+  useEffect(() => {
+
+    const handlePopState = () => {
+
+      const path =
+        window.location.pathname;
+
+      if (
+        path.endsWith("/transactions")
+      ) {
+
+        setActiveItem(
+          "Transactions"
+        );
+
+        return;
+
+      }
+
+      if (
+        path.endsWith("/members")
+      ) {
+
+        setActiveItem(
+          "Members"
+        );
+
+        return;
+
+      }
+
+      if (
+        path.endsWith("/reports")
+      ) {
+
+        setActiveItem(
+          "Reports"
+        );
+
+        return;
+
+      }
+
+      if (
+        path.endsWith("/settings")
+      ) {
+
+        setActiveItem(
+          "Settings"
+        );
+
+        return;
+
+      }
+
+      setActiveItem(
+        "Dashboard"
+      );
+
+    };
+
+
+    window.addEventListener(
+      "popstate",
+      handlePopState
+    );
+
+
+    return () => {
+
+      window.removeEventListener(
+        "popstate",
+        handlePopState
+      );
+
+    };
+
+  }, []);
 
 
   /*
@@ -217,7 +359,7 @@ function DashboardPage({
     transactions,
 
     loading:
-      transactionsLoading,
+    transactionsLoading,
 
     reloadTransactions,
 
@@ -447,9 +589,9 @@ function DashboardPage({
 
         const matchesMember =
           filters.member ===
-            "All Members" ||
+          "All Members" ||
           transaction.member_name ===
-            filters.member;
+          filters.member;
 
 
         /*
@@ -460,9 +602,9 @@ function DashboardPage({
 
         const matchesCategory =
           filters.category ===
-            "All Categories" ||
+          "All Categories" ||
           transaction.category_name ===
-            filters.category;
+          filters.category;
 
 
         /*
@@ -473,9 +615,9 @@ function DashboardPage({
 
         const matchesPaymentMode =
           filters.paymentMode ===
-            "All Modes" ||
+          "All Modes" ||
           transaction.payment_mode_name ===
-            filters.paymentMode;
+          filters.paymentMode;
 
 
         /*
@@ -505,11 +647,11 @@ function DashboardPage({
 
           matchesDuration =
             transactionDate.getFullYear() ===
-              now.getFullYear() &&
+            now.getFullYear() &&
             transactionDate.getMonth() ===
-              now.getMonth() &&
+            now.getMonth() &&
             transactionDate.getDate() ===
-              now.getDate();
+            now.getDate();
 
         }
 
@@ -561,9 +703,9 @@ function DashboardPage({
 
           matchesDuration =
             transactionDate.getFullYear() ===
-              now.getFullYear() &&
+            now.getFullYear() &&
             transactionDate.getMonth() ===
-              now.getMonth();
+            now.getMonth();
 
         }
 
@@ -690,10 +832,10 @@ function DashboardPage({
     filteredTransactions.slice(
 
       (currentPage - 1) *
-        pageSize,
+      pageSize,
 
       currentPage *
-        pageSize
+      pageSize
 
     );
 
@@ -737,16 +879,16 @@ function DashboardPage({
     searchTerm.trim() !== "" ||
 
     filters.duration !==
-      "All Time" ||
+    "All Time" ||
 
     filters.member !==
-      "All Members" ||
+    "All Members" ||
 
     filters.category !==
-      "All Categories" ||
+    "All Categories" ||
 
     filters.paymentMode !==
-      "All Modes" ||
+    "All Modes" ||
 
     filters.fromDate !== "" ||
 
@@ -1153,7 +1295,7 @@ function DashboardPage({
         );
 
 
-        setActiveItem(
+        handlePageNavigation(
           item
         );
 
