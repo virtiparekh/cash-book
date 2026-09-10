@@ -16,6 +16,7 @@ import {
     setRecurringTransactionActive,
     skipNextRecurringOccurrence,
     undoSkipRecurringOccurrence,
+    generateDueRecurringTransactions,
 } from "../services/recurringTransactionService";
 
 import type {
@@ -86,14 +87,55 @@ export function useRecurringTransactions(
 
 
     /* =====================================================
-       INITIAL LOAD / GROUP CHANGE
-    ===================================================== */
+   INITIAL LOAD / GROUP CHANGE
+===================================================== */
 
     useEffect(() => {
 
-        void reloadRecurringTransactions();
+        if (!groupId) {
+            return;
+        }
 
-    }, [reloadRecurringTransactions]);
+        const initializeRecurringTransactions =
+            async () => {
+
+                try {
+
+                    /*
+                     * Generate any recurring transactions
+                     * that are currently due.
+                     */
+                    await generateDueRecurringTransactions(
+                        groupId
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Unable to generate due recurring transactions.",
+                        error
+                    );
+
+                    /*
+                     * Generation failure should not prevent
+                     * existing recurring rules from loading.
+                     */
+                }
+
+                /*
+                 * Load the latest recurring rules after
+                 * generation has completed.
+                 */
+                await reloadRecurringTransactions();
+
+            };
+
+        void initializeRecurringTransactions();
+
+    }, [
+        groupId,
+        reloadRecurringTransactions,
+    ]);
 
 
     /* =====================================================

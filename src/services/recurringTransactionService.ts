@@ -13,8 +13,8 @@ type RecurringTransactionRow = {
     member_id: string;
 
     entry_type:
-        | "cash_in"
-        | "cash_out";
+    | "cash_in"
+    | "cash_out";
 
     amount: number;
 
@@ -61,6 +61,24 @@ export async function loadRecurringTransactions(
     groupId: string
 ): Promise<RecurringTransaction[]> {
 
+    /*
+     * Keep ended recurring rules visible for 7 days
+     * after their end date.
+     *
+     * Example:
+     * End date = 2026-09-10
+     * Visible through = 2026-09-17
+     * Hidden from = 2026-09-18
+     */
+    const retentionDate = new Date();
+
+    retentionDate.setDate(
+        retentionDate.getDate() - 7
+    );
+
+    const retentionDateString =
+        retentionDate.toISOString().slice(0, 10);
+
     const { data, error } = await supabase
         .from("recurring_transactions")
         .select(`
@@ -88,6 +106,9 @@ export async function loadRecurringTransactions(
             updated_at
         `)
         .eq("group_id", groupId)
+        .or(
+            `end_date.is.null,end_date.gte.${retentionDateString}`
+        )
         .order("next_due_date", {
             ascending: true,
         });
@@ -118,8 +139,8 @@ export type CreateRecurringTransactionInput = {
     createdBy: string | null;
 
     entryType:
-        | "cash_in"
-        | "cash_out";
+    | "cash_in"
+    | "cash_out";
 
     amount: number;
 
@@ -235,8 +256,8 @@ export type UpdateRecurringTransactionInput = {
     memberId: string;
 
     entryType:
-        | "cash_in"
-        | "cash_out";
+    | "cash_in"
+    | "cash_out";
 
     amount: number;
 
@@ -453,4 +474,21 @@ export async function undoSkipRecurringOccurrence(
         .eq("id", recurringTransactionId);
 
     if (updateError) throw updateError;
+}
+
+export async function generateDueRecurringTransactions(
+    groupId: string
+): Promise<number> {
+    const { data, error } = await supabase.rpc(
+        "generate_due_recurring_transactions",
+        {
+            p_group_id: groupId,
+        }
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return Number(data ?? 0);
 }

@@ -171,7 +171,7 @@ function TransactionsPage() {
     useCashBook();
 
   const [activeTab, setActiveTab] =
-    useState<TransactionTab>("transactions");
+    useState<TransactionTab>("recurring");
 
   const [
     showRecurringForm,
@@ -375,7 +375,7 @@ function TransactionsPage() {
 
       <div className="transactions-tabs">
 
-        <button
+        {/* <button
           type="button"
           className={`transactions-tab ${activeTab === "transactions"
             ? "transactions-tab--active"
@@ -386,7 +386,7 @@ function TransactionsPage() {
           }
         >
           All Transactions
-        </button>
+        </button> */}
 
         <button
           type="button"
@@ -405,7 +405,7 @@ function TransactionsPage() {
 
       <div className="transactions-tab-content">
 
-        {activeTab === "transactions" && (
+        {/* {activeTab === "transactions" && (
           <div className="transactions-placeholder">
 
             <h2>
@@ -417,7 +417,7 @@ function TransactionsPage() {
             </p>
 
           </div>
-        )}
+        )} */}
 
         {activeTab === "recurring" && (
           <div className="recurring-transactions-placeholder">

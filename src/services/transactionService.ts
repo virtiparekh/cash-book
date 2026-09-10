@@ -22,6 +22,9 @@ type TransactionRow = {
   category_id: string;
 
   payment_mode_id: string;
+  recurring_transaction_id: string | null;
+
+  recurring_occurrence_date: string | null;
 
   categories:
     | {
@@ -64,6 +67,8 @@ export async function loadTransactions(
       entry_type,
       category_id,
       payment_mode_id,
+      recurring_transaction_id,
+      recurring_occurrence_date,
       categories!transactions_category_id_fkey(name),
       payment_modes!transactions_payment_mode_id_fkey(name),
       group_members!transactions_member_id_fkey(member_name)
@@ -140,6 +145,12 @@ export async function loadTransactions(
 
         payment_mode_id:
           row.payment_mode_id,
+
+        recurring_transaction_id:
+          row.recurring_transaction_id,
+
+        recurring_occurrence_date:
+          row.recurring_occurrence_date,
 
         category_name:
           category?.name ?? "",

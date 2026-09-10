@@ -100,7 +100,7 @@ function TransactionTable({
 
       </div> */}
 
-          {/* -----------------------------------------
+      {/* -----------------------------------------
           Pagination
       ------------------------------------------ */}
 
@@ -417,33 +417,46 @@ function TransactionTable({
 
                     <td>
 
-                      {transaction.notes &&
-                        transaction.notes.trim().length > 0 ? (
+                      <div className="transaction-remark-cell">
 
-                        <button
-                          type="button"
-                          className="transaction-remark-button"
-                          onClick={() =>
-                            onViewDetails(
-                              transaction
-                            )
-                          }
-                          title="View transaction details"
-                        >
-                          {
-                            formatRemark(
-                              transaction.notes
-                            )
-                          }
-                        </button>
+                        {transaction.notes &&
+                          transaction.notes.trim().length > 0 ? (
 
-                      ) : (
+                          <button
+                            type="button"
+                            className="transaction-remark-button"
+                            onClick={() =>
+                              onViewDetails(
+                                transaction
+                              )
+                            }
+                            title="View transaction details"
+                          >
+                            {
+                              formatRemark(
+                                transaction.notes
+                              )
+                            }
+                          </button>
 
-                        <span className="remark-empty">
-                          -
-                        </span>
+                        ) : (
 
-                      )}
+                          <span className="remark-empty">
+                            -
+                          </span>
+
+                        )}
+
+                        {transaction.recurring_transaction_id && (
+                          <span
+                            className="transaction-recurring-badge"
+                            title="Automatically generated from a recurring transaction"
+                          >
+                            Recurring
+                          </span>
+                        )}
+
+                      </div>
 
                     </td>
 

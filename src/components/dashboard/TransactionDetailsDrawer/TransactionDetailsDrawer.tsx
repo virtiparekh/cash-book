@@ -36,6 +36,17 @@ function TransactionDetailsDrawer({
     transaction.entry_type ===
     "cash_in";
 
+  const isRecurringTransaction =
+    Boolean(
+      transaction.recurring_transaction_id
+    );
+
+  const recurringOccurrenceDate =
+    transaction.recurring_occurrence_date
+      ? new Date(
+          `${transaction.recurring_occurrence_date}T00:00:00`
+        )
+      : null;
 
   const transactionDate =
     new Date(
@@ -137,6 +148,24 @@ function TransactionDetailsDrawer({
 
               </div>
 
+              {isRecurringTransaction && (
+                <div className="transaction-details-recurring-info">
+
+                  <span className="transaction-details-recurring-badge">
+                    Recurring Transaction
+                  </span>
+
+                  {recurringOccurrenceDate && (
+                    <span className="transaction-details-recurring-date">
+                      Occurrence:{" "}
+                      {formatDate(
+                        recurringOccurrenceDate
+                      )}
+                    </span>
+                  )}
+
+                </div>
+              )}
 
               <div
                 className="transaction-details-date"
