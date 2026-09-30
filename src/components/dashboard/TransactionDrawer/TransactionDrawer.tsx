@@ -51,6 +51,7 @@ type Props = {
   () => Promise<void>;
   onDraftChange?: (
     draft: {
+      type: "cash-in" | "cash-out";
       amount: string;
       transactionDate: string;
       categoryId: string;
@@ -239,6 +240,7 @@ function TransactionDrawer({
     }
 
     onDraftChange?.({
+      type:selectedType,
       amount,
       transactionDate,
       categoryId,
@@ -249,6 +251,7 @@ function TransactionDrawer({
   }, [
     open,
     transaction,
+    selectedType,
     amount,
     transactionDate,
     categoryId,
@@ -679,12 +682,15 @@ function TransactionDrawer({
     <>
 
       <div
-        className="drawer-overlay"
-        onClick={
-          saving ? undefined : () => {
-            onClose(true);
-        }}
-      />
+  className="drawer-overlay"
+  onClick={
+    saving
+      ? undefined
+      : (event) => {
+          event.stopPropagation();
+        }
+  }
+/>
 
       <aside
         className="transaction-drawer"

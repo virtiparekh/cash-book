@@ -1441,6 +1441,7 @@ function DashboardPage({
      */
   const handleTransactionDrawerDraftChange = (
     draft: {
+      type: "cash-in" | "cash-out";
       amount: string;
       transactionDate: string;
       categoryId: string;
@@ -1451,7 +1452,7 @@ function DashboardPage({
 
     const drawerDraft: TransactionDrawerDraft = {
       open: true,
-      type: transactionType,
+      type: draft.type,
       amount: draft.amount,
       transactionDate: draft.transactionDate,
       categoryId: draft.categoryId,
