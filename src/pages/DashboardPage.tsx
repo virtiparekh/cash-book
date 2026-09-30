@@ -389,10 +389,50 @@ function DashboardPage({
    * -------------------------------------------------
    */
 
+  const TRANSACTION_DRAWER_STORAGE_KEY = "family-cash-book-transaction-drawer";
+
+  const TRANSACTION_DRAWER_DRAFT_EXPIRY_MS =
+    30 * 60 * 1000;
+
+  type TransactionDrawerDraft = {
+    open: boolean;
+    type: "cash-in" | "cash-out";
+    amount: string;
+    transactionDate: string;
+    categoryId: string;
+    paymentModeId: string;
+    remarks: string;
+    savedAt: number;
+  };
   const [
     drawerOpen,
     setDrawerOpen,
-  ] = useState(false);
+  ] = useState(() => {
+
+    const saved =
+      localStorage.getItem(
+        TRANSACTION_DRAWER_STORAGE_KEY
+      );
+
+    if (!saved) {
+      return false;
+    }
+
+    try {
+
+      const parsed =
+        JSON.parse(saved);
+
+      return parsed.open === true;
+
+    }
+    catch {
+
+      return false;
+
+    }
+
+  });
 
 
   const [
@@ -401,7 +441,39 @@ function DashboardPage({
   ] = useState<
     "cash-in"
     | "cash-out"
-  >("cash-in");
+  >(() => {
+
+    const saved =
+      localStorage.getItem(
+        TRANSACTION_DRAWER_STORAGE_KEY
+      );
+
+    if (!saved) {
+      return "cash-in";
+    }
+
+    try {
+
+      const parsed =
+        JSON.parse(saved);
+
+      if (
+        parsed.type === "cash-in" ||
+        parsed.type === "cash-out"
+      ) {
+
+        return parsed.type;
+
+      }
+
+    }
+    catch {
+      // Use default below.
+    }
+
+    return "cash-in";
+
+  });
 
 
   const [
@@ -411,6 +483,96 @@ function DashboardPage({
     Transaction | null
   >(null);
 
+  useEffect(() => {
+
+    localStorage.setItem(
+      TRANSACTION_DRAWER_STORAGE_KEY,
+      JSON.stringify({
+        open: drawerOpen,
+        type: transactionType,
+      })
+    );
+
+  }, [
+    drawerOpen,
+    transactionType,
+  ]);
+
+  /*
+     * -------------------------------------------------
+     * Transaction Details Drawer Draft
+     * -------------------------------------------------
+     */
+
+  const [
+    restoredTransactionDraft,
+    setRestoredTransactionDraft,
+  ] =
+    useState<TransactionDrawerDraft | null>(
+      () => {
+
+        const saved =
+          localStorage.getItem(
+            TRANSACTION_DRAWER_STORAGE_KEY
+          );
+
+        if (!saved) {
+          return null;
+        }
+
+        try {
+
+          const parsed =
+            JSON.parse(
+              saved
+            ) as TransactionDrawerDraft;
+
+          if (
+            !parsed.savedAt ||
+            Date.now() -
+            parsed.savedAt >
+            TRANSACTION_DRAWER_DRAFT_EXPIRY_MS
+          ) {
+
+            localStorage.removeItem(
+              TRANSACTION_DRAWER_STORAGE_KEY
+            );
+
+            return null;
+
+          }
+
+          if (
+            parsed.open !== true ||
+            (
+              parsed.type !== "cash-in" &&
+              parsed.type !== "cash-out"
+            )
+          ) {
+
+            localStorage.removeItem(
+              TRANSACTION_DRAWER_STORAGE_KEY
+            );
+
+            return null;
+
+          }
+
+          return parsed;
+
+        }
+        catch {
+
+          localStorage.removeItem(
+            TRANSACTION_DRAWER_STORAGE_KEY
+          );
+
+          return null;
+
+        }
+
+      }
+    );
 
   /*
    * -------------------------------------------------
@@ -963,6 +1125,13 @@ function DashboardPage({
    */
 
   const handleCashIn = () => {
+    localStorage.removeItem(
+      TRANSACTION_DRAWER_STORAGE_KEY
+    );
+
+    setRestoredTransactionDraft(
+      null
+    );
 
     setEditingTransaction(
       null
@@ -988,6 +1157,14 @@ function DashboardPage({
    */
 
   const handleCashOut = () => {
+
+    localStorage.removeItem(
+      TRANSACTION_DRAWER_STORAGE_KEY
+    );
+
+    setRestoredTransactionDraft(
+      null
+    );
 
     setEditingTransaction(
       null
@@ -1017,6 +1194,14 @@ function DashboardPage({
   ) => {
 
     setDetailsTransaction(
+      null
+    );
+
+    localStorage.removeItem(
+      TRANSACTION_DRAWER_STORAGE_KEY
+    );
+
+    setRestoredTransactionDraft(
       null
     );
 
@@ -1225,19 +1410,62 @@ function DashboardPage({
    * -------------------------------------------------
    */
 
-  const handleDrawerClose = () => {
+  const handleDrawerClose = (keepDraft: boolean = false) => {
 
     setDrawerOpen(
       false
     );
 
-
     setEditingTransaction(
       null
     );
 
+    if (!keepDraft) {
+
+    localStorage.removeItem(
+      TRANSACTION_DRAWER_STORAGE_KEY
+    );
+
+    setRestoredTransactionDraft(
+      null
+    );
+
+  }
+
   };
 
+  /*
+     * -------------------------------------------------
+     * Draft Details Drawer
+     * -------------------------------------------------
+     */
+  const handleTransactionDrawerDraftChange = (
+    draft: {
+      amount: string;
+      transactionDate: string;
+      categoryId: string;
+      paymentModeId: string;
+      remarks: string;
+    }
+  ) => {
+
+    const drawerDraft: TransactionDrawerDraft = {
+      open: true,
+      type: transactionType,
+      amount: draft.amount,
+      transactionDate: draft.transactionDate,
+      categoryId: draft.categoryId,
+      paymentModeId: draft.paymentModeId,
+      remarks: draft.remarks,
+      savedAt: Date.now(),
+    };
+
+    localStorage.setItem(
+      TRANSACTION_DRAWER_STORAGE_KEY,
+      JSON.stringify(drawerDraft)
+    );
+
+  };
 
   /*
    * -------------------------------------------------
@@ -1622,8 +1850,16 @@ function DashboardPage({
               editingTransaction
             }
 
+            restoredDraft={
+              restoredTransactionDraft
+            }
+
             onClose={
               handleDrawerClose
+            }
+
+            onDraftChange={
+              handleTransactionDrawerDraftChange
             }
 
             onTransactionSaved={
@@ -1632,6 +1868,14 @@ function DashboardPage({
                 await reloadTransactions();
 
                 await refreshSummary();
+
+                localStorage.removeItem(
+                  TRANSACTION_DRAWER_STORAGE_KEY
+                );
+
+                setRestoredTransactionDraft(
+                  null
+                );
 
               }
             }

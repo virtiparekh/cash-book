@@ -780,7 +780,7 @@ function SignupPage({
 
 
                             <div className="signup-bottom-text">
-                                © 2026 Expense Tracker
+                                © 2026 Expense Tracker - Virti
                             </div>
 
                         </div>

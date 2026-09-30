@@ -45,10 +45,27 @@ type Props = {
   | Transaction
   | null;
 
-  onClose: () => void;
+  onClose: (keepDraft?: boolean) => void;
 
   onTransactionSaved:
   () => Promise<void>;
+  onDraftChange?: (
+    draft: {
+      amount: string;
+      transactionDate: string;
+      categoryId: string;
+      paymentModeId: string;
+      remarks: string;
+    }
+  ) => void;
+
+  restoredDraft?: {
+    amount: string;
+    transactionDate: string;
+    categoryId: string;
+    paymentModeId: string;
+    remarks: string;
+  } | null;
 };
 
 function TransactionDrawer({
@@ -57,6 +74,8 @@ function TransactionDrawer({
   transaction,
   onClose,
   onTransactionSaved,
+  onDraftChange,
+  restoredDraft,
 }: Props) {
 
   const [
@@ -113,7 +132,7 @@ function TransactionDrawer({
     selectedCashBook,
   } = useCashBook();
 
-  
+
 
   const currentMember =
     useCurrentMember();
@@ -134,7 +153,35 @@ function TransactionDrawer({
      * CREATE MODE
      */
     if (!transaction) {
+
       setSelectedType(type);
+
+      if (restoredDraft) {
+
+        setAmount(
+          restoredDraft.amount
+        );
+
+        setTransactionDate(
+          restoredDraft.transactionDate
+        );
+
+        setCategoryId(
+          restoredDraft.categoryId
+        );
+
+        setPaymentModeId(
+          restoredDraft.paymentModeId
+        );
+
+        setRemarks(
+          restoredDraft.remarks
+        );
+
+        setError("");
+
+        return;
+      }
 
       resetForm();
 
@@ -184,6 +231,31 @@ function TransactionDrawer({
   /*
    * Reset form for a new transaction.
    */
+
+  useEffect(() => {
+
+    if (!open || transaction) {
+      return;
+    }
+
+    onDraftChange?.({
+      amount,
+      transactionDate,
+      categoryId,
+      paymentModeId,
+      remarks,
+    });
+
+  }, [
+    open,
+    transaction,
+    amount,
+    transactionDate,
+    categoryId,
+    paymentModeId,
+    remarks,
+    onDraftChange,
+  ]);
   function resetForm() {
 
     setAmount("");
@@ -609,10 +681,9 @@ function TransactionDrawer({
       <div
         className="drawer-overlay"
         onClick={
-          saving
-            ? undefined
-            : onClose
-        }
+          saving ? undefined : () => {
+            onClose(true);
+        }}
       />
 
       <aside
@@ -638,9 +709,7 @@ function TransactionDrawer({
           <button
             type="button"
             className="drawer-close"
-            onClick={
-              onClose
-            }
+            onClick={() => onClose()}
             disabled={
               saving
             }
@@ -654,31 +723,31 @@ function TransactionDrawer({
 
         <TransactionForm
 
-            type={selectedType}
+          type={selectedType}
 
           selectedType={
             selectedType
           }
 
           onTypeChange={
-  (newType) => {
+            (newType) => {
 
-    setSelectedType(
-      newType
-    );
+              setSelectedType(
+                newType
+              );
 
-    /*
-     * Clear category because
-     * Cash In and Cash Out can
-     * have different categories.
-     */
-    setCategoryId("");
-    setPaymentModeId("");
+              /*
+               * Clear category because
+               * Cash In and Cash Out can
+               * have different categories.
+               */
+              setCategoryId("");
+              setPaymentModeId("");
 
-    setError("");
+              setError("");
 
-  }
-}
+            }
+          }
 
           amount={
             amount
