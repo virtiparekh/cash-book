@@ -52,6 +52,17 @@ function LoginPage({
   ] = useState(false);
 
 
+  const [showForgotPassword, setShowForgotPassword] =
+    useState(false);
+
+  const [resetEmail, setResetEmail] =
+    useState("");
+
+  const [resetLoading, setResetLoading] =
+    useState(false);
+
+  const [resetMessage, setResetMessage] =
+    useState("");
   /*
    * -------------------------------------------------
    * Login
@@ -81,7 +92,6 @@ function LoginPage({
 
     const trimmedLoginId =
       loginId.trim();
-
 
     /*
      * -------------------------------------------------
@@ -298,6 +308,54 @@ function LoginPage({
 
   };
 
+  /*
+       * -------------------------------------------------
+       * Forgot Password
+       * -------------------------------------------------
+       */
+
+    const handleForgotPassword = async (
+      event: React.FormEvent<HTMLFormElement>
+    ): Promise<void> => {
+      event.preventDefault();
+
+      setResetMessage("");
+
+      const email = resetEmail.trim().toLowerCase();
+
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setResetMessage("Please enter a valid email address.");
+        return;
+      }
+
+      try {
+        setResetLoading(true);
+
+        const { error } = await supabase.auth.resetPasswordForEmail(
+          email,
+          {
+            redirectTo: `${window.location.origin}${appPath("/reset-password")}`,
+          }
+        );
+
+        if (error) {
+          throw error;
+        }
+
+        setResetMessage(
+          "If an account exists for this email, a password-reset link will be sent. Please check your inbox."
+        );
+      } catch (error: unknown) {
+        setResetMessage(
+          error instanceof Error
+            ? error.message
+            : "Unable to request a password reset. Please try again."
+        );
+      } finally {
+        setResetLoading(false);
+      }
+    };
+
 
   return (
 
@@ -360,85 +418,108 @@ function LoginPage({
             </p>
 
 
-            <form
-              onSubmit={handleLogin}
-            >
 
+            {showForgotPassword ? (
+              <form onSubmit={handleForgotPassword}>
+                <Input
+                  label="Registered Email Address"
+                  type="email"
+                  value={resetEmail}
+                  placeholder="Enter your registered email"
+                  disabled={resetLoading}
+                  required={true}
+                  autoComplete="email"
+                  onChange={(event) => {
+                    setResetEmail(event.target.value);
+                    setResetMessage("");
+                  }}
+                />
 
-              <Input
-                label="Email or Phone Number"
-                type="text"
-                value={loginId}
-                placeholder="Email or 10-digit phone number"
-                disabled={loading}
-                required={true}
-                autoComplete="username"
-                onChange={(event) =>
-                  setLoginId(
-                    event.target.value
-                  )
-                }
-              />
+                {resetMessage && (
+                  <p role="status" aria-live="polite">
+                    {resetMessage}
+                  </p>
+                )}
 
-
-              <Input
-                label="Password"
-                type="password"
-                value={password}
-                placeholder="Enter your password"
-                disabled={loading}
-                required={true}
-                autoComplete="current-password"
-                onChange={(event) =>
-                  setPassword(
-                    event.target.value
-                  )
-                }
-              />
-
-
-              <div className="login-options">
-
-                <label className="remember-me">
-
-                  <input
-                    type="checkbox"
-                  />
-
-                  {" "}
-
-                  Remember Me
-
-                </label>
-
-              </div>
-
-
-              <div className="login-actions">
+                <div className="login-actions">
+                  <Button type="submit" disabled={resetLoading}>
+                    {resetLoading ? (
+                      <Loader text="Sending Reset Link..." />
+                    ) : (
+                      "Send Reset Link"
+                    )}
+                  </Button>
+                </div>
 
                 <Button
-                  type="submit"
-                  disabled={loading}
+                  variant="secondary"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setResetMessage("");
+                  }}
                 >
-
-                  {loading ? (
-
-                    <Loader
-                      text="Logging In..."
-                    />
-
-                  ) : (
-
-                    "Login"
-
-                  )}
-
+                  Back to Login
                 </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleLogin}>
+                <Input
+                  label="Email or Phone Number"
+                  type="text"
+                  value={loginId}
+                  placeholder="Email or 10-digit phone number"
+                  disabled={loading}
+                  required={true}
+                  autoComplete="username"
+                  onChange={(event) => setLoginId(event.target.value)}
+                />
 
-              </div>
+                <Input
+                  label="Password"
+                  type="password"
+                  value={password}
+                  placeholder="Enter your password"
+                  disabled={loading}
+                  required={true}
+                  autoComplete="current-password"
+                  onChange={(event) => setPassword(event.target.value)}
+                />
 
+                <div className="login-options">
+                  <label className="remember-me">
+                    <input type="checkbox" />
+                    {" "}
+                    Remember Me
+                  </label>
+                </div>
 
-            </form>
+                <button
+                  type="button"
+                  className="forgot-password-link"
+                  onClick={() => {
+                    setResetEmail(
+                      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(loginId.trim())
+                        ? loginId.trim()
+                        : ""
+                    );
+                    setResetMessage("");
+                    setShowForgotPassword(true);
+                  }}
+                >
+                  Forgot Password?
+                </button>
+
+                <div className="login-actions">
+                  <Button type="submit" disabled={loading}>
+                    {loading ? (
+                      <Loader text="Logging In..." />
+                    ) : (
+                      "Login"
+                    )}
+                  </Button>
+                </div>
+              </form>
+            )}
 
 
             <div className="login-footer">

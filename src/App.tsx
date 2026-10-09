@@ -34,6 +34,10 @@ import SignupPage
 import AcceptInvitationPage
   from "./pages/AcceptInvitationPage";
 
+import ResetPasswordPage
+  from "./pages/ResetPasswordPage";
+
+
 import { appPath } from "./utils/appUrl";
 function App() {
 
@@ -84,6 +88,16 @@ function App() {
 
   const isSignupPage =
     currentPath === "/signup";
+
+
+  /*
+* -------------------------------------------------
+* Reset Password route
+* -------------------------------------------------
+*/
+
+  const isResetPasswordPage =
+    currentPath === "/reset-password";
 
 
   /*
@@ -490,6 +504,16 @@ function App() {
 
     );
 
+  }
+
+  /*
+ * -------------------------------------------------
+ * RESET PASSWORD ROUTE
+ * -------------------------------------------------
+ */
+
+  if (isResetPasswordPage) {
+    return <ResetPasswordPage />;
   }
 
 

@@ -14,7 +14,9 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isPasswordRecovery: boolean;
   signOut: () => Promise<void>;
+  clearPasswordRecovery: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(
@@ -35,12 +37,13 @@ export function AuthProvider({
 
   const [loading, setLoading] = useState(true);
 
+  const [isPasswordRecovery, setIsPasswordRecovery] =
+    useState(false);
+
   useEffect(() => {
     const loadSession = async (): Promise<void> => {
-      const {
-        data,
-        error,
-      } = await supabase.auth.getSession();
+      const { data, error } =
+        await supabase.auth.getSession();
 
       if (error) {
         console.error(
@@ -51,25 +54,28 @@ export function AuthProvider({
 
       setSession(data.session);
       setUser(data.session?.user ?? null);
-
       setLoading(false);
     };
 
     void loadSession();
 
-    const {
-      data: authListener,
-    } = supabase.auth.onAuthStateChange(
-      (_event, updatedSession) => {
-        setSession(updatedSession);
+    const { data: authListener } =
+      supabase.auth.onAuthStateChange(
+        (event, updatedSession) => {
+          setSession(updatedSession);
+          setUser(updatedSession?.user ?? null);
 
-        setUser(
-          updatedSession?.user ?? null
-        );
+          if (event === "PASSWORD_RECOVERY") {
+            setIsPasswordRecovery(true);
+          }
 
-        setLoading(false);
-      }
-    );
+          if (event === "SIGNED_OUT") {
+            setIsPasswordRecovery(false);
+          }
+
+          setLoading(false);
+        }
+      );
 
     return () => {
       authListener.subscription.unsubscribe();
@@ -77,19 +83,24 @@ export function AuthProvider({
   }, []);
 
   const signOut = async (): Promise<void> => {
-    const { error } =
-      await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
 
     if (error) {
       throw error;
     }
   };
 
+  const clearPasswordRecovery = (): void => {
+  setIsPasswordRecovery(false);
+};
+
   const value: AuthContextType = {
     user,
     session,
     loading,
+    isPasswordRecovery,
     signOut,
+    clearPasswordRecovery,
   };
 
   return (

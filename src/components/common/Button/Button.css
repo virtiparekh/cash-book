@@ -44,6 +44,7 @@
 .app-button--primary {
   background: #2563eb;
   color: white;
+  margin-bottom: 10px;
 }
 
 .app-button--primary:hover:not(:disabled) {

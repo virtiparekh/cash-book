@@ -1422,15 +1422,15 @@ function DashboardPage({
 
     if (!keepDraft) {
 
-    localStorage.removeItem(
-      TRANSACTION_DRAWER_STORAGE_KEY
-    );
+      localStorage.removeItem(
+        TRANSACTION_DRAWER_STORAGE_KEY
+      );
 
-    setRestoredTransactionDraft(
-      null
-    );
+      setRestoredTransactionDraft(
+        null
+      );
 
-  }
+    }
 
   };
 
