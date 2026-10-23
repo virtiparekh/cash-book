@@ -59,6 +59,8 @@ import ReportsPage
 import SettingsPage
   from "./SettingsPage";
 
+import BudgetManagementPage from "./BudgetManagementPage";
+
 import Popup
   from "../components/common/Popup/Popup";
 
@@ -66,13 +68,11 @@ import Button from "../components/common/Button/Button";
 import type { CashBookGroup } from "../types/cashBook";
 
 type DashboardPageProps = {
-
   userEmail: string;
   selectedCashBook: CashBookGroup;
   cashBooks: CashBookGroup[];
   onCashBookChange: (CashBookId: string) => void;
   onLogout: () => void;
-
 };
 
 
@@ -112,6 +112,10 @@ function DashboardPage({
       return "Transactions";
     }
 
+    if (path.endsWith("/budget-management")) {
+      return "BudgetManagementPage";
+    }
+
     if (
       path.endsWith("/members")
     ) {
@@ -144,6 +148,7 @@ function DashboardPage({
     > = {
       Dashboard: "/dashboard",
       Transactions: "/transactions",
+      BudgetManagementPage: "/budget-management",
       Members: "/members",
       Reports: "/reports",
       Settings: "/settings",
@@ -183,6 +188,11 @@ function DashboardPage({
 
         return;
 
+      }
+
+      if (path.endsWith("/budget-management")) {
+        setActiveItem("BudgetManagementPage");
+        return;
       }
 
       if (
@@ -298,6 +308,11 @@ function DashboardPage({
 
         return (
           <TransactionsPage />
+        );
+
+      case "BudgetManagementPage":
+        return (
+          <BudgetManagementPage />
         );
 
 
@@ -1113,9 +1128,17 @@ function DashboardPage({
    * -------------------------------------------------
    */
 
-  const filteredNetBalance =
-    filteredTotalCashIn -
-    filteredTotalCashOut;
+  // const filteredNetBalance = filteredTotalCashIn - filteredTotalCashOut;
+
+  /*
+   * -------------------------------------------------
+   * Opening Balance
+   * -------------------------------------------------
+   */
+
+  const openingBalance = Number(selectedCashBook.openingBalance ?? 0);
+
+  const currentBalance = openingBalance + filteredTotalCashIn - filteredTotalCashOut;
 
 
   /*
@@ -1715,17 +1738,10 @@ function DashboardPage({
 
             <FinancialSummary
 
-              totalCashIn={
-                filteredTotalCashIn
-              }
-
-              totalCashOut={
-                filteredTotalCashOut
-              }
-
-              netBalance={
-                filteredNetBalance
-              }
+              openingBalance={openingBalance}
+              totalCashIn={filteredTotalCashIn}
+              totalCashOut={filteredTotalCashOut}
+              netBalance={currentBalance}
 
             />
 

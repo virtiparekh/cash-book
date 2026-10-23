@@ -1,13 +1,35 @@
+
 .transaction-section {
-  margin-top: 32px;
+  margin-top: 28px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .transaction-toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   margin-bottom: 18px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
+
+.transaction-toolbar h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.transaction-toolbar p {
+  margin-top: 6px;
+  margin-bottom: 0;
+  color: #6b7280;
+  font-size: 14px;
+}
+
 
 .transaction-toolbar h3 {
   margin: 0;
@@ -434,26 +456,61 @@
    Pagination Mobile
 ------------------------------------------------ */
 
-@media (max-width: 768px) {
 
+@media (max-width: 768px) {
   .transaction-pagination {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 12px 0;
   }
 
   .pagination-info {
     width: 100%;
     text-align: center;
+    white-space: normal;
+    line-height: 1.5;
   }
 
   .pagination-controls {
+    display: flex;
+    align-items: center;
     justify-content: center;
+    flex-wrap: wrap;
+    gap: 6px;
   }
 
   .pagination-size {
+    display: flex;
+    align-items: center;
     justify-content: center;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  .pagination-controls {
+    gap: 4px;
   }
 
+  .pagination-button {
+    min-width: 30px;
+    height: 32px;
+    padding: 0 6px;
+  }
+
+  .pagination-size {
+    font-size: 12px;
+  }
+
+  .pagination-size select {
+    height: 32px;
+  }
 }
+
 
 .transaction-remark-cell {
   display: flex;

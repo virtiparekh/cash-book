@@ -77,6 +77,28 @@ function Sidebar({
           </span>
         </button>
 
+        
+        <button
+          type="button"
+          className={`sidebar-item ${
+            activeItem === "BudgetManagementPage"
+              ? "active"
+              : ""
+          }`}
+          onClick={() =>
+            handleNavigation("BudgetManagementPage")
+          }
+        >
+          <span className="sidebar-icon">
+            ₹
+          </span>
+
+          <span>
+            Budget Management
+          </span>
+        </button>
+
+
 
         {/* {isAdmin && ( */}
           <button

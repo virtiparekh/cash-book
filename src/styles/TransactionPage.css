@@ -57,30 +57,20 @@
 .transactions-tabs {
     display: flex;
     align-items: stretch;
-
     width: 100%;
-
     border-bottom: 1px solid #e5e7eb;
-
     margin-bottom: 24px;
 }
 
 .transactions-tab {
     appearance: none;
-
     border: 0;
     border-bottom: 2px solid transparent;
-
     background: transparent;
-
     padding: 12px 18px;
-
     font: inherit;
-
     cursor: pointer;
-
     white-space: nowrap;
-
     transition:
         color 0.15s ease,
         border-color 0.15s ease,
@@ -88,7 +78,7 @@
 }
 
 .transactions-tab:hover {
-    background: #f8fafc;
+    color: #2563eb;
 }
 
 .transactions-tab--active {
@@ -118,9 +108,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-
     gap: 20px;
-
     margin-bottom: 24px;
 }
 
@@ -141,20 +129,13 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
     flex: 0 0 auto;
-
     min-height: 38px;
-
     padding: 0 16px;
-
     border: 1px solid transparent;
     border-radius: 8px;
-
     font: inherit;
-
     cursor: pointer;
-
     transition:
         background-color 0.15s ease,
         border-color 0.15s ease;
@@ -172,13 +153,9 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-
     height: auto;
-
     padding: 18px;
-
     box-sizing: border-box;
-
     border: 1px dashed #dc2626;
     border-radius: 12px;
     margin-bottom: 10px;
@@ -191,7 +168,6 @@
 
 .recurring-transactions-empty p {
     margin: 0;
-
     max-width: 480px;
 }
 
@@ -225,8 +201,7 @@
     .transactions-tab {
         padding: 11px 14px;
     }
-
-
+    
     .recurring-transactions-header {
         align-items: stretch;
         flex-direction: column;
@@ -782,9 +757,6 @@
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 16px;
-    padding-top: 14px;
-    border-top: 1px solid #f1f5f9;
 }
 
 .recurring-transaction-action-button {
@@ -823,6 +795,11 @@
 .recurring-transaction-action-button--danger {
     border-color: #fecaca;
     color: #dc2626;
+}
+
+.recurring-transaction-action-button--edit {
+    color: #2563eb;
+    border-color: #bfdbfe
 }
 
 .recurring-transaction-action-button--danger:hover {
@@ -1036,4 +1013,14 @@
 
     font-size: 13px;
     font-weight: 500;
+}
+
+@media (max-width: 500px) {
+    .recurring-transaction-card-actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+        padding-top: 10px;
+    }
 }

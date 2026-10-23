@@ -1,257 +1,257 @@
+
 .cashbook-toolbar {
-
     display: flex;
-
     justify-content: space-between;
-
-    align-items: end;
-
+    align-items: flex-end;
     gap: 16px;
-
-    margin: 20px 0;
-
+    margin: 20px 0 28px;
     flex-wrap: wrap;
-    margin-bottom: 28px;
-
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .toolbar-left {
-
     display: flex;
-
+    align-items: flex-end;
     gap: 12px;
-
     flex-wrap: wrap;
-
+    flex: 1 1 auto;
+    min-width: 0;
 }
 
 .toolbar-left button {
-
     height: 38px;
-
     padding: 0 16px;
-
-    background: white;
-
+    background: #ffffff;
     border: 1px solid #dbe2ea;
-
     border-radius: 8px;
-
     font-size: 14px;
-
     cursor: pointer;
-
+    box-sizing: border-box;
 }
 
 .toolbar-right {
-
     display: flex;
-
-    gap: 12px;
-
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 .cash-in {
-
     background: #16a34a;
-
-    color: white;
-
+    color: #ffffff;
     border: none;
-
     padding: 0 18px;
-
     height: 40px;
-
     border-radius: 8px;
-
     cursor: pointer;
-
 }
 
 .cash-out {
-
     background: #dc2626;
-
-    color: white;
-
+    color: #ffffff;
     border: none;
-
     padding: 0 18px;
-
     height: 40px;
-
     border-radius: 8px;
-
     cursor: pointer;
-
 }
 
-@media (max-width:900px) {
+.clear-filters-button {
+    height: 40px;
+    padding: 0 16px;
+    background: #ffffff;
+    color: #475569;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    box-sizing: border-box;
+    transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease,
+        color 0.15s ease;
+}
 
+.clear-filters-button:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+/* Custom date filters */
+.custom-date-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.custom-date-filter label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.custom-date-filter input {
+    height: 38px;
+    width: 100%;
+    min-width: 0;
+    padding: 0 10px;
+    box-sizing: border-box;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    outline: none;
+}
+
+.custom-date-filter input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+.custom-date-range {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    min-width: 0;
+}
+
+.custom-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.custom-date-field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+}
+
+.custom-date-field input {
+    height: 38px;
+    width: 100%;
+    min-width: 0;
+    padding: 0 10px;
+    box-sizing: border-box;
+    border: 1px solid #dbe2ea;
+    border-radius: 8px;
+    background: #ffffff;
+    font-size: 14px;
+    color: #334155;
+    outline: none;
+}
+
+.custom-date-field input:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.08);
+}
+
+/* Tablet */
+@media (max-width: 900px) {
     .cashbook-toolbar {
-
-        flex-direction: column;
-
         align-items: stretch;
-
+        gap: 14px;
     }
 
     .toolbar-left {
-
         display: grid;
-
-        grid-template-columns:
-            repeat(auto-fit,
-                minmax(180px, 1fr));
-
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         width: 100%;
+        gap: 12px;
+    }
 
+    .toolbar-left > * {
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .toolbar-left select,
+    .toolbar-left input {
+        max-width: 100%;
+        box-sizing: border-box;
     }
 
     .toolbar-right {
-
+        display: flex;
         justify-content: flex-end;
-
+        flex-wrap: wrap;
+        width: 100%;
     }
 
+    .custom-date-range {
+        width: 100%;
+    }
 }
 
-@media (max-width:600px) {
+/* Mobile */
+@media (max-width: 600px) {
+    .cashbook-toolbar {
+        margin: 16px 0 22px;
+        gap: 12px;
+    }
+
+    .toolbar-left {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .toolbar-left > * {
+        width: 100%;
+    }
+
+    .toolbar-left button {
+        width: 100%;
+    }
 
     .toolbar-right {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+    }
 
-        flex-direction: column;
-
+    .clear-filters-button {
+        grid-column: 1 / -1;
+        width: 100%;
     }
 
     .cash-in,
     .cash-out {
-
         width: 100%;
-
+        min-width: 0;
+        padding: 0 10px;
+        height: 40px;
     }
 
+    .custom-date-range {
+        gap: 8px;
+    }
+
+    .custom-date-field input {
+        padding: 0 6px;
+        font-size: 12px;
+    }
 }
 
-.custom-date-filter {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+/* Very narrow phones */
+@media (max-width: 350px) {
+    .toolbar-right {
+        gap: 6px;
+    }
 
-.custom-date-filter label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.custom-date-filter input {
-  height: 38px;
-  min-width: 150px;
-  padding: 0 10px;
-
-  box-sizing: border-box;
-
-  border: 1px solid #dbe2ea;
-  border-radius: 8px;
-
-  background: #ffffff;
-  color: #374151;
-
-  font-size: 14px;
-  outline: none;
-}
-
-.custom-date-filter input:focus {
-  border-color: #2563eb;
-
-  box-shadow:
-    0 0 0 3px
-    rgba(37, 99, 235, 0.08);
-}
-
-.custom-date-range {
-  display: flex;
-  align-items: end;
-  gap: 10px;
-}
-
-.custom-date-field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.custom-date-field label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #64748b;
-}
-
-.custom-date-field input {
-  height: 38px;
-  padding: 0 10px;
-
-  border: 1px solid #dbe2ea;
-  border-radius: 8px;
-
-  background: #ffffff;
-
-  font-size: 14px;
-
-  color: #334155;
-
-  outline: none;
-}
-
-.custom-date-field input:focus {
-  border-color: #2563eb;
-  box-shadow:
-    0 0 0 3px
-    rgba(37, 99, 235, 0.08);
-}
-
-@media (max-width: 900px) {
-
-  .custom-date-range {
-    width: 100%;
-  }
-
-  .custom-date-field {
-    flex: 1;
-  }
-
-  .custom-date-field input {
-    width: 100%;
-    box-sizing: border-box;
-  }
-
-}
-
-.clear-filters-button {
-  height: 40px;
-  padding: 0 16px;
-
-  background: #ffffff;
-  color: #475569;
-
-  border: 1px solid #dbe2ea;
-  border-radius: 8px;
-
-  font-size: 14px;
-  font-weight: 500;
-
-  cursor: pointer;
-
-  transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.clear-filters-button:hover {
-  background: #f8fafc;
-  border-color: #94a3b8;
-  color: #1e293b;
+    .cash-in,
+    .cash-out,
+    .clear-filters-button {
+        font-size: 12px;
+        padding: 0 6px;
+    }
 }
